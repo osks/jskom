@@ -39,7 +39,7 @@ def get_bool_arg_with_default(args, arg, default):
 def kom_error_to_error_code(ex):
     return kom_error_code_dict[ex.__class__]
 
-def require_login(f):
+def requires_login(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
         g.ksession = validate_session()
@@ -143,7 +143,7 @@ def login():
 
 
 @app.route("/auth/logout", methods=['POST'])
-@require_login
+@requires_login
 def logout():
     try:
         g.ksession.logout()
@@ -154,7 +154,7 @@ def logout():
 
 
 @app.route('/texts/<int:text_no>')
-@require_login
+@requires_login
 def get_text(text_no):
     try:
         return jsonify(to_dict(g.ksession.get_text(text_no), True, g.ksession))
@@ -170,7 +170,7 @@ def get_text(text_no):
 #           "comment_to_list": [ { "type": "footnote", "text_no": 19675793 } ] }' \
 #      http://localhost:5000/texts
 @app.route('/texts/', methods=['POST'])
-@require_login
+@requires_login
 def create_text():
     #app.logger.debug(request.json)
     
@@ -180,7 +180,7 @@ def create_text():
 
 
 @app.route('/conferences/')
-@require_login
+@requires_login
 def get_conferences():
     micro = get_bool_arg_with_default(request.args, 'micro', True)
     unread = get_bool_arg_with_default(request.args, 'unread', False)
@@ -193,7 +193,7 @@ def get_conferences():
 
 
 @app.route('/conferences/<int:conf_no>')
-@require_login
+@requires_login
 def get_conference(conf_no):
     try:
         micro = get_bool_arg_with_default(request.args, 'micro', True)
@@ -204,7 +204,7 @@ def get_conference(conf_no):
 
 
 @app.route('/conferences/<int:conf_no>/read-markings')
-@require_login
+@requires_login
 def get_conference_read_markings(conf_no):
     # Return read-markings. Mostly used with ?unread=true to return
     # unread texts in the given conference.
@@ -221,7 +221,7 @@ def get_conference_read_markings(conf_no):
 
 @app.route('/conferences/<int:conf_no>/texts/<int:local_text_no>/read-marking',
            methods=['PUT', 'DELETE'])
-@require_login
+@requires_login
 def conference_text_read_marking(conf_no, local_text_no):
     # Mark text as read in the specified recipient conference
     
@@ -233,7 +233,7 @@ def conference_text_read_marking(conf_no, local_text_no):
         
 
 @app.route('/texts/<int:text_no>/read-marking', methods=['PUT', 'DELETE'])
-@require_login
+@requires_login
 def text_read_marking(text_no):
     # Mark text as read in all recipient conferences
     
