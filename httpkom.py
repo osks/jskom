@@ -70,7 +70,6 @@ def validate_session():
             session.pop('session_id') # invalid session cookie, delete it
     return None
 
-
 def empty_response(status_code):
     response = make_response("")
     del response.headers['Content-Type'] # text/html by default in Flask
@@ -116,6 +115,10 @@ def komsession_error(error):
     return error_response(400, error_msg=str(error))
 
 
+@app.route("/")
+def index():
+    return render_template('index.html')
+
 @app.route("/status")
 def status():
     return render_template('status.html', kom_sessions=kom_sessions)
@@ -142,6 +145,8 @@ def login():
     return empty_response(204)
 
 
+# curl -b cookies.txt -c cookies.txt -v \
+#      -X POST http://localhost:5000/auth/logout
 @app.route("/auth/logout", methods=['POST'])
 @requires_login
 def logout():
@@ -153,6 +158,8 @@ def logout():
     return empty_response(204)
 
 
+# curl -b cookies.txt -c cookies.txt -v \
+#      -X GET http://localhost:5000/texts/19680717
 @app.route('/texts/<int:text_no>')
 @requires_login
 def get_text(text_no):
@@ -168,7 +175,7 @@ def get_text(text_no):
 #           "recipient_list": [ { "recpt": { "conf_no": 14506 }, "type": "to" } ], \
 #           "content_type": "text/x-kom-basic", \
 #           "comment_to_list": [ { "type": "footnote", "text_no": 19675793 } ] }' \
-#      http://localhost:5000/texts
+#      http://localhost:5000/texts/
 @app.route('/texts/', methods=['POST'])
 @requires_login
 def create_text():
@@ -179,6 +186,8 @@ def create_text():
     return jsonify(text_no=text_no)
 
 
+# curl -b cookies.txt -c cookies.txt -v \
+#      -X GET http://localhost:5000/conferences/?unread=true
 @app.route('/conferences/')
 @requires_login
 def get_conferences():
@@ -192,6 +201,8 @@ def get_conferences():
         abort(400) # nothing else is implemented
 
 
+# curl -b cookies.txt -c cookies.txt -v \
+#      -X GET http://localhost:5000/conferences/14506
 @app.route('/conferences/<int:conf_no>')
 @requires_login
 def get_conference(conf_no):
@@ -203,6 +214,8 @@ def get_conference(conf_no):
         return error_response(404, kom_error=ex)
 
 
+# curl -b cookies.txt -c cookies.txt -v \
+#      -X GET http://localhost:5000/conferences/14506/read-markings?unread=true
 @app.route('/conferences/<int:conf_no>/read-markings')
 @requires_login
 def get_conference_read_markings(conf_no):
@@ -219,6 +232,8 @@ def get_conference_read_markings(conf_no):
         abort(404) # not implemented
 
 
+# curl -b cookies.txt -c cookies.txt -v \
+#      -X PUT http://localhost:5000/conferences/14506/texts/29/read-marking
 @app.route('/conferences/<int:conf_no>/texts/<int:local_text_no>/read-marking',
            methods=['PUT', 'DELETE'])
 @requires_login
@@ -232,6 +247,8 @@ def conference_text_read_marking(conf_no, local_text_no):
         raise NotImplementedError()
         
 
+# curl -b cookies.txt -c cookies.txt -v \
+#      -X PUT http://localhost:5000/texts/19680717/read-marking
 @app.route('/texts/<int:text_no>/read-marking', methods=['PUT', 'DELETE'])
 @requires_login
 def text_read_marking(text_no):
