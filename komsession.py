@@ -184,9 +184,9 @@ class KomText(object):
             
             # text_stat is required for this
             if text is not None:
-                # If a text has no new lines, it only has a body
+                # If a text has no linefeeds, it only has a body
                 if text.find('\n') == -1:
-                    self.subject = ""
+                    self.subject = "" # Should probably be None instead?
                     rawbody = text
                 else:
                     rawsubject, rawbody = text.split('\n', 1)
