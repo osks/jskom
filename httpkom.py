@@ -169,6 +169,14 @@ def get_text(text_no):
         return error_response(404, kom_error=ex)
 
 
+# TODO: Handle images. Add something like /texts/<int:text_no>/body
+# that returns the body of a text in the HTTP body, with the
+# content-type from the aux-item in the HTTP header. This means we
+# could use a text with an image in it just like a normal image, and
+# use the URL in an img-tag.
+
+
+
 # curl -b cookies.txt -c cookies.txt -v \
 #      -X POST -H "Content-Type: application/json" \
 #      -d '{"body": "räksmörgås", "subject": "jaha", \
