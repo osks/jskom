@@ -18,6 +18,7 @@ $(function() {
 });
 
 jskom.Models.Text = Backbone.Model.extend({
+    idAttribute: 'text_no',
     url: function() {
         var base = '/texts';
         if (this.isNew()) return base;
@@ -67,7 +68,7 @@ jskom.Router = Backbone.Router.extend({
     
     getText: function(text_no) {
         console.log("route - getText(" + text_no + ")");
-        var text = new jskom.Models.Text({ id: text_no });
+        var text = new jskom.Models.Text({ text_no: text_no });
         text.fetch({
             success: function(model, resp) {
                 console.log("getText - success");
