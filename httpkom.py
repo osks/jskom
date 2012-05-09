@@ -115,6 +115,13 @@ def komsession_error(error):
     return error_response(400, error_msg=str(error))
 
 
+@app.route("/jskom/", defaults={'pth': '' })
+@app.route("/jskom/<path:pth>")
+def jskom(pth):
+    # pth is for html5 push state
+    return render_template('jskom.html')
+
+
 @app.route("/")
 def index():
     return render_template('index.html')
@@ -148,11 +155,14 @@ def login():
 # curl -b cookies.txt -c cookies.txt -v \
 #      -X POST http://localhost:5000/auth/logout
 @app.route("/auth/logout", methods=['POST'])
-@requires_login
 def logout():
+    ksession = validate_session()
+    if not ksession:
+        return empty_response(204) # what should we return when we are not logged in?
+    
     try:
-        g.ksession.logout()
-        g.ksession.disconnect()
+        ksession.logout()
+        ksession.disconnect()
     finally:
         destroy_session()
     return empty_response(204)
