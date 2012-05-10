@@ -39,6 +39,7 @@ MICommentIn_str_to_type = { 'comment': kom.MIC_COMMENT,
 
 
 class KomSession(object):
+    """Hej!"""
     def __init__(self, host, port=4894):
         self.host = host
         self.port = port
@@ -385,10 +386,17 @@ def MICommentTo_to_dict(micto, lookups, session):
     if not micto.type in MICommentTo_type_to_str:
         raise KeyError("Unknown MICommentTo type: %s" % micto.type)
     
-    cts = session.get_text_stat(micto.text_no)
+    author = None
+    if lookups:
+        try:
+            cts = session.get_text_stat(micto.text_no)
+            author = pers_to_dict(cts.author, lookups, session)
+        except (kom.NoSuchText, kom.TextZero):
+            pass
+    
     return dict(type=MICommentTo_type_to_str[micto.type],
                 text_no=micto.text_no,
-                author=pers_to_dict(cts.author, lookups, session))
+                author=author)
 
 def MICommentTo_from_dict(d, lookups, session):
     if d['type'] not in MICommentTo_str_to_type:
@@ -400,10 +408,17 @@ def MICommentIn_to_dict(micin, lookups, session):
     if not micin.type in MICommentIn_type_to_str:
         raise KeyError("Unknown MICommentIn type: %s" % micin.type)
     
-    cts = session.get_text_stat(micin.text_no)
+    author = None
+    if lookups:
+        try:
+            cts = session.get_text_stat(micin.text_no)
+            author = pers_to_dict(cts.author, lookups, session)
+        except (kom.NoSuchText, kom.TextZero):
+            pass
+    
     return dict(type=MICommentIn_type_to_str[micin.type],
                 text_no=micin.text_no,
-                author=pers_to_dict(cts.author, lookups, session))
+                author=author)
 
 def MICommentIn_from_dict(d, lookups, session):
     if d['type'] not in MICommentIn_str_to_type:

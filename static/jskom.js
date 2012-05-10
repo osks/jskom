@@ -7,6 +7,7 @@ var jskom = {
     Collections: {},
     Views: {},
     init: function() {
+        jskom.texts = new jskom.Collections.Texts();
         jskom.app = new jskom.Router();
         jskom.view = new jskom.Views.App().render();
         Backbone.history.start({pushState: true, root: "/jskom/"});
@@ -30,6 +31,12 @@ jskom.Models.Text = Backbone.Model.extend({
         body: null
     }
 });
+
+jskom.Collections.Texts = Backbone.Collection.extend({
+    model: jskom.Models.Text,
+    url: '/texts'
+});
+
 
 jskom.Router = Backbone.Router.extend({
     routes: {
@@ -79,7 +86,7 @@ jskom.Router = Backbone.Router.extend({
             error: function(model, resp) {
                 console.log("getText - error");
                 console.log(resp);
-                if (resp.status == 403) jskom.app.navigate("login", { trigger: true });
+                if (resp.status == 401) jskom.app.navigate("login", { trigger: true });
             }
         });
     }
@@ -136,7 +143,7 @@ jskom.Views.Login = Backbone.View.extend({
         var username = this.$('input[name=username]').val();
         var password = this.$('input[name=password]').val();
         $.ajax({
-            url: '/auth/login',
+            url: '/login',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ "username": username, "password": password })
@@ -168,12 +175,12 @@ jskom.Views.Logout = Backbone.View.extend({
     onLogoutSubmit: function(e){
         e.preventDefault();
         $.ajax({
-            url: '/auth/logout',
+            url: '/logout',
             type: 'POST',
             contentType: 'application/json',
             data: '',
             statusCode: {
-                403: function() {
+                401: function() {
                     // Already logged out
                     jskom.app.navigate("login", { trigger: true });
                 },

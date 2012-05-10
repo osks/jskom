@@ -9,7 +9,8 @@ import functools
 
 import mimeparse
 
-from flask import Flask, g, abort, request, jsonify, session, make_response, render_template
+from flask import Flask, g, abort, request, jsonify, session, make_response, \
+    render_template, Response, url_for
 
 import kom
 import komauxitems
@@ -39,41 +40,69 @@ def get_bool_arg_with_default(args, arg, default):
 def kom_error_to_error_code(ex):
     return kom_error_code_dict[ex.__class__]
 
+
+
+def authenticate():
+    """Sends a 401 response that enables basic auth"""
+    # Note: We use our own auth scheme ("httpkom") to stop browsers
+    # from showing the typical login window when doing javascript/ajax
+    # requests.
+    return empty_response(401, headers={
+            'WWW-Authenticate': 'httpkom realm="httpkom:%s"' % kom_server })
+
 def requires_login(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
+        auth = request.authorization
         g.ksession = validate_session()
-        if not g.ksession:
-            return empty_response(403)
-        else:
+        if g.ksession:
             return f(*args, **kwargs)
+        
+        if auth:
+            g.ksession = create_komsession(auth.username, auth.password)
+            save_session(g.ksession)
+            return f(*args, **kwargs)
+        
+        return authenticate()
     return decorated
 
-def create_session(ksession):
-    session_id = "%X" % random.randint(0, sys.maxsize)
-    kom_sessions[session_id] = ksession
-    session['session_id'] = session_id
-    return session_id
+def create_komsession(username, password):
+    ksession = KomSession(kom_server)
+    ksession.connect()
+    try:
+        ksession.login(username, password)
+        # todo: check for exceptions that we should return 401 for.
+    except:
+        ksession.disconnect()
+        raise
+    return ksession
+
+def save_session(ksession):
+    komsession_id = "%X" % random.randint(0, sys.maxsize)
+    kom_sessions[komsession_id] = ksession
+    session['komsession_id'] = komsession_id
+    return komsession_id
 
 def destroy_session():
-    if 'session_id' in session:
-        session_id = session.pop('session_id')
-        if session_id in kom_sessions:
-            del kom_sessions[session_id]
+    if 'komsession_id' in session:
+        komsession_id = session.pop('komsession_id')
+        if komsession_id in kom_sessions:
+            del kom_sessions[komsession_id]
 
 def validate_session():
-    if 'session_id' in session:
-        session_id = session.get('session_id')
-        if session_id in kom_sessions:
-            return kom_sessions[session_id]
+    if 'komsession_id' in session:
+        komsession_id = session.get('komsession_id')
+        if komsession_id in kom_sessions:
+            return kom_sessions[komsession_id]
         else:
-            session.pop('session_id') # invalid session cookie, delete it
+            del session['komsession_id'] # invalid session cookie, delete it
     return None
 
-def empty_response(status_code):
-    response = make_response("")
+
+
+def empty_response(status, headers=None):
+    response = Response("", status=status, headers=headers)
     del response.headers['Content-Type'] # text/html by default in Flask
-    response.status_code = status_code
     return response
 
 def error_response(status_code, kom_error=None, error_msg=""):
@@ -94,13 +123,10 @@ def error_response(status_code, kom_error=None, error_msg=""):
     return response
 
 
+
 @app.errorhandler(400)
 def badrequest(error):
     return empty_response(400)
-
-@app.errorhandler(403)
-def forbidden(error):
-    return empty_response(403)
 
 @app.errorhandler(404)
 def notfound(error):
@@ -115,11 +141,13 @@ def komsession_error(error):
     return error_response(400, error_msg=str(error))
 
 
-@app.route("/jskom/", defaults={'pth': '' })
-@app.route("/jskom/<path:pth>")
-def jskom(pth):
+
+@app.route("/jskom/", defaults={'path': '' })
+@app.route("/jskom/<path:path>")
+def jskom(path):
     # pth is for html5 push state
     return render_template('jskom.html')
+
 
 
 @app.route("/")
@@ -129,32 +157,26 @@ def index():
 @app.route("/status")
 def status():
     return render_template('status.html', kom_sessions=kom_sessions)
+    
 
 
 # curl -b cookies.txt -c cookies.txt -v \
 #      -X POST -H "Content-Type: application/json" \
 #      -d '{ "username": "Oskars testperson", "password": "test123" }' \
-#      http://localhost:5000/auth/login
-@app.route("/auth/login", methods=['POST'])
+#      http://localhost:5000/login
+@app.route("/login", methods=['POST'])
 def login():
     if validate_session():
         return empty_response(204) # what should we return when already logged in?
     
-    ksession = KomSession(kom_server)
-    ksession.connect()
-    try:
-        ksession.login(request.json['username'], request.json['password'])
-        create_session(ksession)
-    except:
-        ksession.disconnect()
-        raise
-    
+    ksession = create_komsession(request.json['username'], request.json['password'])
+    save_session(ksession)
     return empty_response(204)
 
 
 # curl -b cookies.txt -c cookies.txt -v \
-#      -X POST http://localhost:5000/auth/logout
-@app.route("/auth/logout", methods=['POST'])
+#      -X POST http://localhost:5000/logout
+@app.route("/logout", methods=['POST'])
 def logout():
     ksession = validate_session()
     if not ksession:
@@ -174,6 +196,7 @@ def logout():
 @requires_login
 def get_text(text_no):
     try:
+        app.logger.debug(text_no)
         return jsonify(to_dict(g.ksession.get_text(text_no), True, g.ksession))
     except kom.NoSuchText as ex:
         return error_response(404, kom_error=ex)
@@ -184,7 +207,6 @@ def get_text(text_no):
 # content-type from the aux-item in the HTTP header. This means we
 # could use a text with an image in it just like a normal image, and
 # use the URL in an img-tag.
-
 
 
 # curl -b cookies.txt -c cookies.txt -v \
