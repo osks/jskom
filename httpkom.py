@@ -71,7 +71,8 @@ def create_komsession(username, password):
     ksession.connect()
     try:
         ksession.login(username, password)
-        # todo: check for exceptions that we should return 401 for.
+        # todo: check for exceptions that we should return 401 for. or
+        # should that be done here? we don't want to return http stuff here
     except:
         ksession.disconnect()
         raise
@@ -98,6 +99,20 @@ def validate_session():
             del session['komsession_id'] # invalid session cookie, delete it
     return None
 
+def _login(username, password):
+    app.logger.debug("Logging in")
+    ksession = create_komsession(username, password)
+    save_session(ksession)
+    return ksession
+
+def _logout(ksession):
+    app.logger.debug("Logging out")
+    try:
+        ksession.logout()
+        ksession.disconnect()
+    finally:
+        destroy_session()
+    
 
 
 def empty_response(status, headers=None):
@@ -161,16 +176,30 @@ def status():
 
 
 # curl -b cookies.txt -c cookies.txt -v \
+#      -X GET http://localhost:5000/login
+@app.route("/login")
+def login():
+    """Check if already logged in or not."""
+    if validate_session():
+        # todo: return something interesting in the body? like person name/number
+        return empty_response(204)
+    else:
+        return empty_response(401)
+
+
+# curl -b cookies.txt -c cookies.txt -v \
 #      -X POST -H "Content-Type: application/json" \
 #      -d '{ "username": "Oskars testperson", "password": "test123" }' \
 #      http://localhost:5000/login
 @app.route("/login", methods=['POST'])
 def login():
-    if validate_session():
-        return empty_response(204) # what should we return when already logged in?
+    ksession = validate_session()
+    if ksession:
+        # already loggedin, logout first, then try to login with the
+        # supplied credentials.
+        _logout(ksession)
     
-    ksession = create_komsession(request.json['username'], request.json['password'])
-    save_session(ksession)
+    _login(request.json['username'], request.json['password'])
     return empty_response(204)
 
 
@@ -181,13 +210,9 @@ def logout():
     ksession = validate_session()
     if not ksession:
         return empty_response(204) # what should we return when we are not logged in?
-    
-    try:
-        ksession.logout()
-        ksession.disconnect()
-    finally:
-        destroy_session()
-    return empty_response(204)
+    else:
+        _logout(ksession)
+        return empty_response(204)
 
 
 # curl -b cookies.txt -c cookies.txt -v \
