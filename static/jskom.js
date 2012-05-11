@@ -22,9 +22,9 @@ $(function() {
 jskom.Models.Text = Backbone.Model.extend({
     idAttribute: 'text_no',
     url: function() {
-        var base = '/texts';
+        var base = '/texts/';
         if (this.isNew()) return base;
-        return base + (base.charAt(base.length - 1) == '/' ? '' : '/') + this.id;
+        return base + this.id;
     },
     defaults: {
         text_no: null,
@@ -38,7 +38,7 @@ jskom.Collections.Texts = Backbone.Collection.extend({
     url: '/texts/'
 });
 
-jskom.Models.Conference = Backbone.Model.extend({
+jskom.Models.UnreadConference = Backbone.Model.extend({
     idAttribute: 'conf_no',
     defaults: {
         conf_no: null,
@@ -47,7 +47,7 @@ jskom.Models.Conference = Backbone.Model.extend({
 });
 
 jskom.Collections.UnreadConferences = Backbone.Collection.extend({
-    model: jskom.Models.Conference,
+    model: jskom.Models.UnreadConference,
     url: '/conferences/unread/',
     // Because httkomr doesn't return an array of models by default we need
     // to point Backbone.js at the correct property
@@ -73,8 +73,6 @@ jskom.Router = Backbone.Router.extend({
  
     index: function () {
         console.log("route - index");
-        //var appView = new jskom.Views.App();
-        //$('body').append(appView.render().el);
         
         jskom.unreadConferences.fetch({
             success: function(collection, resp) {
