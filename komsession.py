@@ -87,6 +87,12 @@ class KomSession(object):
             conf_nos = kom.ReqGetUnreadConfs(self.conn, self.current_user()).response()
             return [ self.get_conference(conf_no, micro) for conf_no in conf_nos ]
         raise NotImplementedError()
+
+    def get_unread_conferences(self):
+        conf_nos = kom.ReqGetUnreadConfs(self.conn, self.current_user()).response()
+        return [ KomUnreadConference(self.get_conference(conf_no, micro=True),
+                                     self.conn.no_unread[conf_no])
+                 for conf_no in conf_nos ]
         
     def get_conference(self, conf_no, micro=True):
         if micro:
@@ -133,6 +139,7 @@ class KomSession(object):
             self.mark_as_read_local(mi.loc_no, mi.recpt)
 
 
+
 class KomConference(object):
     def __init__(self, conf_no=None, conf=None):
         self.conf_no = conf_no
@@ -158,6 +165,7 @@ class KomConference(object):
 
 
 class KomUConference(object):
+    """U stands for micro"""
     def __init__(self, conf_no=None, uconf=None):
         self.conf_no = conf_no
         
@@ -167,6 +175,13 @@ class KomUConference(object):
             self.highest_local_no = uconf.highest_local_no
             self.nice = uconf.nice
 
+
+class KomUnreadConference(object):
+    def __init__(self, uconf=None, no_of_unread=None):
+        self.conf_no = uconf.conf_no
+        self.name = uconf.name
+        self.no_of_unread = no_of_unread
+        
 
 class KomText(object):
     def __init__(self, text_no=None, text=None, text_stat=None):
@@ -238,6 +253,8 @@ def to_dict(obj, lookups=False, session=None):
         return KomConference_to_dict(obj, lookups, session)
     elif isinstance(obj, KomUConference):
         return KomUConference_to_dict(obj, lookups, session)
+    elif isinstance(obj, KomUnreadConference):
+        return KomUnreadConference_to_dict(obj, lookups, session)
     elif isinstance(obj, kom.ConfType):
         return ConfType_to_dict(obj, lookups, session)
     else:
@@ -270,7 +287,7 @@ def ConfType_to_dict(conf_type, lookups, session):
 def KomConference_to_dict(conf, lookups, session):
     return dict(
         conf_no=conf.conf_no,
-        name=conf.name.decode('latin1'),
+        name=conf.name,
         type=to_dict(conf.type),
         creation_time=conf.creation_time.to_date_and_time(),
         last_written=conf.last_written.to_date_and_time(),
@@ -292,10 +309,17 @@ def KomConference_to_dict(conf, lookups, session):
 def KomUConference_to_dict(conf, lookups, session):
     return dict(
         conf_no=conf.conf_no,
-        name=conf.name.decode('latin1'),
+        name=conf.name,
         type=to_dict(conf.type),
         highest_local_no=conf.highest_local_no,
         nice=conf.nice
+        )
+
+def KomUnreadConference_to_dict(conf, lookups, session):
+    return dict(
+        conf_no=conf.conf_no,
+        name=conf.name,
+        no_of_unread=conf.no_of_unread
         )
 
 def KomText_to_dict(komtext, lookups, session):

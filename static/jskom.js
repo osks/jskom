@@ -8,6 +8,7 @@ var jskom = {
     Views: {},
     init: function() {
         jskom.texts = new jskom.Collections.Texts();
+        jskom.unreadConferences = new jskom.Collections.UnreadConferences();
         jskom.app = new jskom.Router();
         jskom.view = new jskom.Views.App().render();
         Backbone.history.start({pushState: true, root: "/jskom/"});
@@ -34,7 +35,25 @@ jskom.Models.Text = Backbone.Model.extend({
 
 jskom.Collections.Texts = Backbone.Collection.extend({
     model: jskom.Models.Text,
-    url: '/texts'
+    url: '/texts/'
+});
+
+jskom.Models.Conference = Backbone.Model.extend({
+    idAttribute: 'conf_no',
+    defaults: {
+        conf_no: null,
+        name: null
+    }
+});
+
+jskom.Collections.UnreadConferences = Backbone.Collection.extend({
+    model: jskom.Models.Conference,
+    url: '/conferences/unread/',
+    // Because httkomr doesn't return an array of models by default we need
+    // to point Backbone.js at the correct property
+    parse: function(resp, xhr) {
+        return resp.confs;
+    },
 });
 
 
@@ -54,23 +73,38 @@ jskom.Router = Backbone.Router.extend({
  
     index: function () {
         console.log("route - index");
-        //this.navigate("login", { trigger: true });
-        var appView = new jskom.Views.App();
-        $('body').append(appView.render().el);
+        //var appView = new jskom.Views.App();
+        //$('body').append(appView.render().el);
+        
+        jskom.unreadConferences.fetch({
+            success: function(collection, resp) {
+                console.log("get unread confs - success");
+                var view = new jskom.Views.UnreadConferences({
+                    collection: collection
+                });
+                jskom.view.$el.empty();
+                jskom.view.$el.append(view.render().el);
+            },
+            error: function(model, resp) {
+                console.log("get unread confs - error");
+                if (resp.status == 401) jskom.app.navigate("login", { trigger: true });
+                // TODO: error handling
+            }
+        });
     },
     
     login: function() {
         console.log("route - login");
-        var loginView = new jskom.Views.Login();
+        var view = new jskom.Views.Login();
         jskom.view.$el.empty();
-        jskom.view.$el.append(loginView.render().el);
+        jskom.view.$el.append(view.render().el);
     },
     
     logout: function() {
         console.log("route - logout");
-        var logoutView = new jskom.Views.Logout();
+        var view = new jskom.Views.Logout();
         jskom.view.$el.empty();
-        jskom.view.$el.append(logoutView.render().el);
+        jskom.view.$el.append(view.render().el);
     },
     
     getText: function(text_no) {
@@ -79,16 +113,72 @@ jskom.Router = Backbone.Router.extend({
         text.fetch({
             success: function(model, resp) {
                 console.log("getText - success");
-                var showTextView = new jskom.Views.ShowText({ model: text });
+                var view = new jskom.Views.ShowText({ model: text });
                 jskom.view.$el.empty();
-                jskom.view.$el.append(showTextView.render().el);
+                jskom.view.$el.append(view.render().el);
             },
             error: function(model, resp) {
                 console.log("getText - error");
                 console.log(resp);
                 if (resp.status == 401) jskom.app.navigate("login", { trigger: true });
+                // TODO: error handling
             }
         });
+    }
+});
+
+jskom.Views.UnreadConferences = Backbone.View.extend({
+    template: _.template(
+        '<h2>Unread Conferences</h2>' +
+        '<ul>' + 
+        '</ul>'
+    ),
+    
+    initialize: function(options) {
+        _.bindAll(this, 'render', 'addAll', 'addOne');
+        // This is so we can modify the list without having to redraw the entire list
+        this.collection.bind('add', this.addOne);
+    },
+    
+    render: function() {
+        $(this.el).html(this.template());
+        this.addAll();
+        return this;
+    },
+    
+    addAll: function() {
+        this.collection.each(this.addOne);
+    },
+    
+    addOne: function(model) {
+        view = new jskom.Views.UnreadConference({ model: model });
+        view.render();
+        this.$('ul').append(view.el);
+        model.bind('remove', view.remove);
+    }
+});
+
+jskom.Views.UnreadConference = Backbone.View.extend({
+    tagName: 'li',
+    
+    template: _.template(
+        '<span class="name">{{ name }}</span> ' +
+        '(<span class="no_of_unread">{{ no_of_unread }}</span>)'
+    ),
+    
+    initialize: function(options) {
+        _.bindAll(this, 'render', 'remove');
+        this.model.bind('change', this.render);
+        this.model.bind('destroy', this.remove);
+    },
+    
+    render: function() {
+        this.$el.html(this.template(this.model.toJSON()));
+        return this;
+    },
+    
+    remove: function() {
+        this.$el.remove();
     }
 });
 
@@ -110,12 +200,7 @@ jskom.Views.ShowText = Backbone.View.extend({
     },
     
     render: function() {
-        // TODO: Can't we just send in the model?
-        $(this.el).empty().html(this.template({
-            text_no: this.model.get('text_no'),
-            subject: this.model.get('subject'),
-            body: this.model.get('body')
-        }));
+        $(this.el).html(this.template(this.model.toJSON()));
         return this;
     },
 });
@@ -153,7 +238,7 @@ jskom.Views.Login = Backbone.View.extend({
     },
     
     render: function () {
-        $(this.el).empty().html(this.template());
+        $(this.el).html(this.template());
         return this;
     } 
 });
@@ -192,7 +277,7 @@ jskom.Views.Logout = Backbone.View.extend({
     },
     
     render: function () {
-        $(this.el).empty().html(this.template());
+        $(this.el).html(this.template());
         return this;
     } 
 });

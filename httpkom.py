@@ -242,6 +242,15 @@ def get_conferences():
 
 
 # curl -b cookies.txt -c cookies.txt -v \
+#      -X GET http://localhost:5000/conferences/unread/
+@app.route('/conferences/unread/')
+@requires_login
+def get_conferences_unread():
+    return jsonify(confs=to_dict(g.ksession.get_unread_conferences(),
+                                 True, g.ksession))
+
+
+# curl -b cookies.txt -c cookies.txt -v \
 #      -X GET http://localhost:5000/conferences/14506
 @app.route('/conferences/<int:conf_no>')
 @requires_login

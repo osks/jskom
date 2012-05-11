@@ -2639,8 +2639,8 @@ class CachedUserConnection(CachedConnection):
     def fetch_membership(self, no):
         return ReqQueryReadTexts11(self, self._user_no, no, 1, 0).response()
     
-    def fetch_unread(self, no):
-        return len(self.get_unread_texts(no))
+    def fetch_unread(self, conf_no):
+        return len(self.get_unread_texts(conf_no))
 
     def get_unread_texts(self, conf_no):
         unread = []
