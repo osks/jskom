@@ -6,123 +6,135 @@ var jskom = {
     Models: {},
     Collections: {},
     Views: {},
+    Controllers: {},
+    
     init: function() {
-        jskom.texts = new jskom.Collections.Texts();
-        jskom.unreadConferences = new jskom.Collections.UnreadConferences();
-        jskom.vent = _.extend({}, Backbone.Events); // event aggregator
-        jskom.app = new jskom.Views.App().render();
-        jskom.router = new jskom.Router();
-        Backbone.history.start({pushState: true, root: "/jskom/"});
+        //jskom.vent = _.extend({}, Backbone.Events); // event aggregator
+        
+        new jskom.Controllers.MainController();
         
         // debug
-        jskom.vent.on('all', function(eventName) {
-            console.log("vent: " + eventName);
-        });
+        //jskom.vent.on('all', function(eventName) {
+        //    console.log("vent: " + eventName);
+        //});
     }
 };
 
-jskom.Router = Backbone.Router.extend({
-    routes: {
-        "": "home",
-        "login": "login",
-        "texts/:text_no": "getText",
-        "*actions": "defaultRoute"
+$(function() {
+    jskom.init();
+});
+
+
+jskom.Controllers.MainController = function(options) {
+    options || (options = {});
+    this.initialize.apply(this, arguments);
+};
+
+_.extend(jskom.Controllers.MainController.prototype, {
+    initialize: function(options) {
+        this.layout = new jskom.Views.Layout().render();
+        this.appView = null;
+        this._checkCurrentSession();
     },
     
-    defaultRoute: function() {
-        // basically 404
-        this.navigate("", { trigger: true });
-    },
-    
-    home: function () {
-        console.log("route - index");
-        jskom.app.showHome();
-    },
-    
-    login: function() {
-        console.log("route - login");
-        jskom.app.showLogin();
-    },
-    
-    getText: function(text_no) {
-        console.log("route - getText(" + text_no + ")");
-        var text = new jskom.Models.Text({ text_no: text_no });
-        text.fetch({
-            success: function(model, resp) {
-                console.log("getText - success");
-                var view = new jskom.Views.ShowText({ model: text });
-                jskom.app.$el.empty();
-                jskom.app.$el.append(view.render().el);
+    _checkCurrentSession: function() {
+        var cookieSessionId = jskom.Models.Session.getSessionIdFromCookie();
+        var currentSession = new jskom.Models.Session({ id: cookieSessionId });
+        var self = this;
+        currentSession.fetch({
+            success: function(session, resp) {
+                session.on('destroy', function() {
+                    console.log("session.destroy");
+                    self.showLogin();
+                });
+                console.log("currentSession.fetch - success");
+                self.appView = new jskom.Views.App({ model: session });
+                self.layout.showView(self.appView);
+                self.showHome();
             },
-            error: function(model, resp) {
-                console.log("getText - error");
-                console.log(resp);
-                if (resp.status == 401) jskom.app.navigate("login", { trigger: true });
+            error: function(session, resp) {
+                console.log("currentSession.fetch - error");
+                self.showLogin();
+            }
+        });
+    },
+    
+    showHome: function() {
+        var unreadConferences = new jskom.Collections.UnreadConferences();
+        var self = this;
+        unreadConferences.fetch({
+            success: function(unreadConfs, resp) {
+                console.log("unreadConferences.fetch - success");
+                self.appView.showUnreadConferences(unreadConfs);
+            },
+            error: function(unreadConfs, resp) {
+                console.log("unreadConferences.fetch - error");
+                if (resp.status == 401) self.showLogin();
+                // TODO: error handling
+                //jskom.vent.trigger('message:error', resp.responseText);
+            }
+        });
+    },
+    
+    showLogin: function() {
+        this.appView = null;
+        
+        var session = new jskom.Models.Session();
+        var loginView = new jskom.Views.Login({ model: session });
+        var self = this;
+        session.on('sync', function(msg) {
+            console.log("session.sync");
+            self.appView = new jskom.Views.App({ model: session });
+            self.layout.showView(self.appView);
+            self.showHome();
+        });
+        session.on('destroy', function() {
+            console.log("session.destroy");
+            self.showLogin();
+        });
+        this.layout.showView(loginView);
+    },
+    
+    showText: function(text_no) {
+        var text = new jskom.Models.Text({ text_no: text_no });
+        var self = this;
+        text.fetch({
+            success: function(t, resp) {
+                console.log("text.fetch - success");
+                
+                self.appView.showText(t);
+            },
+            error: function(t, resp) {
+                console.log("text.fetch - error");
+                if (resp.status == 401) self.showLogin();
                 // TODO: error handling
             }
         });
     }
 });
 
-jskom.isLoggedIn = function(options) {
-    options || (options = {});
-    $.ajax({
-        url: '/login',
-        type: 'GET',
-        success: function(data, textStatus, jqXHR) {
-            if (options.success) options.success(data, textStatus, jqXHR);
-            
-            jskom.vent.trigger('loggedin:true');
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            if (options.error) options.error(jqXHR, textStatus, errorThrown);
-            
-            jskom.vent.trigger('loggedin:false');
-        }
-    });
-}
-
-jskom.login = function(username, password, options) {
-    options || (options = {});
-    $.ajax({
-        url: '/login',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ "username": username, "password": password }),
-        success: function(data, textStatus, jqXHR) {
-            if (options.success) options.success(data, textStatus, jqXHR);
-            
-            jskom.vent.trigger('login:success');
-            jskom.vent.trigger('loggedin:true');
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            if (options.error) options.error(jqXHR, textStatus, errorThrown);
-            
-            jskom.vent.trigger('login:failure');
-        }
-    });
-}
-
-jskom.logout = function(options) {
-    options || (options = {});
-    $.ajax({
-        url: '/logout',
-        type: 'POST',
-        contentType: 'application/json',
-        data: '',
-        success: function(data, textStatus, jqXHR) {
-            if (options.success) options.success(data, textStatus, jqXHR);
-            
-            jskom.vent.trigger('logout:success');
-            jskom.vent.trigger('loggedin:false');
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            if (options.error) options.error(jqXHR, textStatus, errorThrown);
-            
-            jskom.vent.trigger('logout:failure');
-        }
-    });
-}
+jskom.Models.Session = Backbone.Model.extend({
+    url: function() {
+        var base = '/sessions/';
+        if (this.isNew()) return base;
+        return base + this.id;
+    },
+    
+    defaults: {
+        username: null,
+        password: null, // TODO: Somehow not store password in model
+        pers_no: null
+    },
+},
+{
+    // Class methods here
+    
+    getSessionIdFromCookie: function() {
+        var session_id = $.cookie('session_id')
+        console.log("getSessionIdFromCookie: " + session_id)
+        return session_id;
+    }
+});
 
 jskom.Models.Text = Backbone.Model.extend({
     idAttribute: 'text_no',
@@ -138,11 +150,6 @@ jskom.Models.Text = Backbone.Model.extend({
         subject: null,
         body: null
     }
-});
-
-jskom.Collections.Texts = Backbone.Collection.extend({
-    model: jskom.Models.Text,
-    url: '/texts/'
 });
 
 jskom.Models.UnreadConference = Backbone.Model.extend({
@@ -163,123 +170,83 @@ jskom.Collections.UnreadConferences = Backbone.Collection.extend({
     },
 });
 
-
-jskom.Views.App = Backbone.View.extend({
+jskom.Views.Layout = Backbone.View.extend({
     el: '#jskom',
     
     template: _.template(
         '<div id="header"><h1>jskom</h1></div>' +
-        '<div id="message-area"></div>' +
-        '<div id="container"></div>'
+        '<div id="container"></div>' +
+        '<div id="footer">jskom by <a href="mailto:oskar@osd.se">Oskar Skoog</a></div>'
     ),
     
-    initialize: function () {
-        _.bindAll(this, 'render', 'showLogin', 'hideLogin', 'showLogout', 'hideLogout',
-                  'showMessage', 'hideMessage');
-        this.loginView = null;
-        this.logoutView = null;
-        
-        
-        jskom.vent.on('loggedin:true', function() {
-            this.showLogout();
-        }, this);
-        
-        jskom.vent.on('loggedin:false', function() {
-            jskom.router.navigate("login");
-            this.showLogin();
-        }, this);
-        
-        jskom.vent.on('login:success', function() {
-            this.hideMessage();
-            jskom.router.navigate("");
-            this.showHome();
-        }, this);
-        
-        jskom.vent.on('logout:success', function() {
-            this.hideMessage();
-            jskom.router.navigate("login");
-            this.showLogin();
-        }, this);
-        
-        jskom.vent.on('message:error', function(msg) {
-            this.showMessage(msg);
-        }, this);
+    initialize: function() {
+        _.bindAll(this, 'render', 'showView');
+        this.currentView = null;
     },
     
-    events: {
-    },
-
     render: function() {
         this.$el
             .empty()
             .append(this.template());
+        if (this.currentView != null) {
+            this.$('#container').append(this.currentView.render().el);
+        }
+        return this;
+    },
+    
+    showView: function(view) {
+        if (this.currentView !== view) {
+            if (this.currentView != null) {
+                this.currentView.remove();
+            }
+            this.currentView = view;
+            this.render();
+        }
+    }
+});
+
+jskom.Views.App = Backbone.View.extend({
+    template: _.template(
+        '<div id="menu"></div>' +
+        '<div id="main"></div>'
+    ),
+    
+    events: {
+    },
+    
+    initialize: function() {
+        _.bindAll(this, 'render');
+    },
+    
+    render: function() {
+        this.$el.empty().append(this.template());
+        
+        var logoutView = new jskom.Views.Logout({ model: this.model });
+        this.$('#menu').append(logoutView.render().el);
         
         return this;
     },
     
-    showMessage: function(msg) {
-        this.$('#message-area').html(msg);
-    },
-    
-    hideMessage: function() {
-        this.$('#message-area').html('');
-    },
-    
-    showLogin: function() {
-        this.hideLogout();
-        if (this.loginView == null) {
-            this.loginView = new jskom.Views.Login();
-            this.$('#container').empty().append(this.loginView.render().el);
-        }
-    },
-    
-    hideLogin: function() {
-        if (this.loginView != null) {
-            this.loginView.remove();
-            this.loginView = null;
-        }
-    },
-    
-    showLogout: function() {
-        this.hideLogin();
-        if (this.logoutView == null) {
-            this.logoutView = new jskom.Views.Logout();
-            this.$('#header').append(this.logoutView.render().el);
-        }
-    },
-    
-    hideLogout: function() {
-        if (this.logoutView != null) {
-            this.logoutView.remove();
-            this.logoutView = null;
-        }
-    },
-    
-    showHome: function() {
-        this.hideLogin();
-        this.showLogout();
-        jskom.unreadConferences.fetch({
-            success: function(collection, resp) {
-                console.log("get unread confs - success");
-                var view = new jskom.Views.UnreadConferences({
-                    collection: collection
-                });
-                this.$('#container').empty().append(view.render().el);
-            },
-            error: function(model, resp) {
-                console.log("get unread confs - error");
-                if (resp.status == 401) jskom.vent.trigger('loggedin:false');
-                // TODO: real error handling
-                jskom.vent.trigger('message:error', resp.responseText);
-            }
+    showUnreadConferences: function(unreadConfs) {
+        var view = new jskom.Views.UnreadConferences({
+            collection: unreadConfs
         });
+        this.$('#main').empty().append(view.render().el);
     },
+    
+    showText: function(text) {
+        var view = new jskom.Views.ShowText({ model: text });
+        this.$('#main').empty().append(view.render().el);
+    }
 });
 
 jskom.Views.ShowText = Backbone.View.extend({
     template: _.template(
         '<div>' +
         '  Text Number: {{ text_no }}' +
+        '</div>' +
+        '<div>' +
+        '  Author: {{ author.pers_name }} ({{ author.pers_no }})' +
         '</div>' +
         '<div>' +
         '  Subject: {{ subject }}' +
@@ -289,7 +256,7 @@ jskom.Views.ShowText = Backbone.View.extend({
         '  <pre>{{ body }}</pre>' +
         '</div>'
     ),
-
+    
     initialize: function() {
         _.bindAll(this, 'render');
     },
@@ -302,7 +269,8 @@ jskom.Views.ShowText = Backbone.View.extend({
 
 jskom.Views.Login = Backbone.View.extend({
     template: _.template(
-        '<form class="login">' +
+        '<h2>Login</h2>' + 
+        '<form>' +
         '  Username: <input type="text" name="username" value="" />' +
         '  <br/>' + 
         '  Password: <input type="password" name="password" value="" />' +
@@ -312,22 +280,31 @@ jskom.Views.Login = Backbone.View.extend({
     ),
     
     events: {
-        'submit form.login': 'onLoginSubmit'
+        'submit form': 'onSubmit'
     },
     
-    initialize: function () {
-        _.bindAll(this, 'render', 'onLoginSubmit', 'remove');
+    initialize: function() {
+        _.bindAll(this, 'render', 'onSubmit', 'remove');
     },
     
-    onLoginSubmit: function(e){
+    onSubmit: function(e) {
         e.preventDefault();
         var username = this.$('input[name=username]').val();
         var password = this.$('input[name=password]').val();
-        jskom.login(username, password, {
-            error: function(jqXHR, textStatus, errorThrown) {
-                jskom.vent.trigger('message:error', jqXHR.responseText);
+        var self = this;
+        this.model.on('sync', this.remove, this);
+        this.$('button[type=submit]').attr('disabled', 'disabled');
+        this.model.save(
+            { username: username, password: password },
+            {
+                error: function(session, resp) {
+                    console.log("session.save - error");
+                    self.$('button[type=submit]').removeAttr('disabled');
+                    
+                // tood: Show error message
+                }
             }
-        });
+        );
     },
     
     render: function() {
@@ -342,32 +319,28 @@ jskom.Views.Login = Backbone.View.extend({
 
 jskom.Views.Logout = Backbone.View.extend({
     template: _.template(
-        '<form class="logout">' +
+        '<form>' +
         '  <button type="submit">Logout</button>' +
         '</form>'
     ),
     
     events: {
-        'submit form.logout': 'onLogoutSubmit'
+        'submit form': 'onSubmit'
     },
     
-    initialize: function () {
-        _.bindAll(this, 'render', 'onLogoutSubmit', 'remove');
+    initialize: function() {
+        _.bindAll(this, 'render', 'onSubmit');
     },
     
-    onLogoutSubmit: function(e){
+    onSubmit: function(e){
         e.preventDefault();
-        jskom.logout();
+        this.model.destroy();
     },
     
     render: function() {
         this.$el.html(this.template());
         return this;
     },
-    
-    remove: function() {
-        this.$el.remove();
-    }
 });
 
 jskom.Views.UnreadConferences = Backbone.View.extend({
@@ -423,8 +396,4 @@ jskom.Views.UnreadConference = Backbone.View.extend({
     remove: function() {
         this.$el.remove();
     }
-});
-
-$(function() {
-    jskom.init();
 });

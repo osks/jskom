@@ -1,12 +1,20 @@
 #header {
-    border: 1px solid blue;
-}
-
-#message-area {
-    border: 1px solid orange;
+    border: 1px solid black;
 }
 
 #container {
-    border: 1px solid green;
+    border: 1px solid black;
+}
+
+#footer {
+    border: 1px solid black;
+}
+
+#menu {
+    border: 1px solid red;
+}
+
+#main {
+    border: 1px solid blue;
 }
 

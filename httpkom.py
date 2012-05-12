@@ -6,10 +6,11 @@ import random
 import sys
 import json
 import functools
+import uuid
 
 import mimeparse
 
-from flask import Flask, g, abort, request, jsonify, session, make_response, \
+from flask import Flask, g, abort, request, jsonify, make_response, \
     render_template, Response, url_for
 
 import kom
@@ -42,31 +43,17 @@ def kom_error_to_error_code(ex):
 
 
 
-def authenticate():
-    """Sends a 401 response that enables basic auth"""
-    # Note: We use our own auth scheme ("httpkom") to stop browsers
-    # from showing the typical login window when doing javascript/ajax
-    # requests.
-    return empty_response(401, headers={
-            'WWW-Authenticate': 'httpkom realm="httpkom:%s"' % kom_server })
-
 def requires_login(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
-        auth = request.authorization
-        g.ksession = validate_session()
+        g.ksession = _get_komsession(_get_session_id())
         if g.ksession:
             return f(*args, **kwargs)
         
-        if auth:
-            g.ksession = create_komsession(auth.username, auth.password)
-            save_session(g.ksession)
-            return f(*args, **kwargs)
-        
-        return authenticate()
+        return empty_response(401)
     return decorated
 
-def create_komsession(username, password):
+def _create_komsession(username, password):
     ksession = KomSession(kom_server)
     ksession.connect()
     try:
@@ -78,32 +65,34 @@ def create_komsession(username, password):
         raise
     return ksession
 
-def save_session(ksession):
-    komsession_id = "%X" % random.randint(0, sys.maxsize)
-    kom_sessions[komsession_id] = ksession
-    session['komsession_id'] = komsession_id
-    return komsession_id
+def _save_komsession(ksession):
+    session_id = str(uuid.uuid4())
+    kom_sessions[session_id] = ksession
+    return session_id
 
-def destroy_session():
-    if 'komsession_id' in session:
-        komsession_id = session.pop('komsession_id')
-        if komsession_id in kom_sessions:
-            del kom_sessions[komsession_id]
+def _destroy_komsession():
+    if 'session_id' in request.cookies:
+        session_id = request.cookies.get('session_id')
+        if session_id in kom_sessions:
+            del kom_sessions[session_id]
 
-def validate_session():
-    if 'komsession_id' in session:
-        komsession_id = session.get('komsession_id')
-        if komsession_id in kom_sessions:
-            return kom_sessions[komsession_id]
-        else:
-            del session['komsession_id'] # invalid session cookie, delete it
+def _get_session_id():
+    if 'session_id' in request.cookies:
+        return request.cookies.get('session_id')
+    return None
+
+def _get_komsession(session_id):
+    if session_id is not None:
+        if session_id in kom_sessions:
+            return kom_sessions[session_id]
+    
     return None
 
 def _login(username, password):
     app.logger.debug("Logging in")
-    ksession = create_komsession(username, password)
-    save_session(ksession)
-    return ksession
+    ksession = _create_komsession(username, password)
+    session_id = _save_komsession(ksession)
+    return session_id, ksession
 
 def _logout(ksession):
     app.logger.debug("Logging out")
@@ -111,9 +100,8 @@ def _logout(ksession):
         ksession.logout()
         ksession.disconnect()
     finally:
-        destroy_session()
+        _destroy_komsession()
     
-
 
 def empty_response(status, headers=None):
     response = Response("", status=status, headers=headers)
@@ -174,45 +162,134 @@ def status():
     return render_template('status.html', kom_sessions=kom_sessions)
     
 
-
-# curl -b cookies.txt -c cookies.txt -v \
-#      -X GET http://localhost:5000/login
-@app.route("/login")
-def login():
-    """Check if already logged in or not."""
-    if validate_session():
-        # todo: return something interesting in the body? like person name/number
-        return empty_response(204)
-    else:
-        return empty_response(401)
-
-
-# curl -b cookies.txt -c cookies.txt -v \
-#      -X POST -H "Content-Type: application/json" \
-#      -d '{ "username": "Oskars testperson", "password": "test123" }' \
-#      http://localhost:5000/login
-@app.route("/login", methods=['POST'])
-def login():
-    ksession = validate_session()
-    if ksession:
+@app.route("/sessions/", methods=['POST'])
+def create_session():
+    """Create a new session (i.e. login).
+    
+    Request::
+    
+      POST /sessions/ HTTP/1.1
+      
+      { "username": "oskars testperson", "password": "test123" }
+    
+    Responses:
+    
+    Successful login::
+    
+      HTTP/1.1 200 OK
+      Set-Cookie: session_id=abc123; expires=Sat, 19-May-2012 12:44:51 GMT; Max-Age=604800; Path=/
+      
+      { "pers_no": 14506, ... }
+    
+    Failed login::
+    
+      HTTP/1.1 401 Unauthorized
+      
+      { TODO: error stuff }
+    
+    Example::
+    
+      curl -b cookies.txt -c cookies.txt -v \\
+           -X POST -H "Content-Type: application/json" \\
+           -d '{ "username": "Oskars testperson", "password": "test123" }' \\
+            http://localhost:5000/sessions/
+    
+    """
+    old_ksession = _get_komsession(_get_session_id())
+    if old_ksession:
         # already loggedin, logout first, then try to login with the
         # supplied credentials.
-        _logout(ksession)
+        _logout(old_ksession)
     
-    _login(request.json['username'], request.json['password'])
-    return empty_response(204)
+    session_id, ksession = _login(request.json['username'], request.json['password'])
+    response = jsonify(dict(id=session_id, pers_no=ksession.current_user()))
+    response.set_cookie('session_id', value=session_id, max_age=7*24*60*60)
+    return response
 
 
-# curl -b cookies.txt -c cookies.txt -v \
-#      -X POST http://localhost:5000/logout
-@app.route("/logout", methods=['POST'])
-def logout():
-    ksession = validate_session()
-    if not ksession:
-        return empty_response(204) # what should we return when we are not logged in?
+@app.route("/sessions/<string:session_id>")
+def get_session(session_id):
+    """Get information about a session. Usable for checking if your
+    session is still valid.
+    
+    Request::
+    
+      GET /sessions/abc123 HTTP/1.1
+    
+    Responses:
+    
+    Session exists (i.e. logged in)::
+    
+      HTTP/1.1 200 OK
+      
+      { "id": "abc123", "pers_no": 14506, ... }
+
+    Session does not exist (i.e. not logged in)::
+    
+      HTTP/1.1 404 Not Found
+    
+    Example::
+    
+      curl -b cookies.txt -c cookies.txt -v \\
+           -X GET http://localhost:5000/sessions/abc123
+    
+    """
+    session_id = _get_session_id()
+    ksession = _get_komsession(session_id)
+    if ksession:
+        return jsonify(dict(id=session_id, pers_no=ksession.current_user()))
     else:
+        return empty_response(404)
+
+
+@app.route("/sessions/<string:session_id>", methods=['DELETE'])
+def delete_session(session_id):
+    """Delete a session (i.e. logout).
+    
+    Request::
+    
+      DELETE /sessions/abc123 HTTP/1.1
+    
+    Responses:
+    
+    Session exist::
+    
+      HTTP/1.1 204 No Content
+    
+    Session does not exist::
+    
+      HTTP/1.1 404 Not Found
+      Set-Cookie: session_id=; expires=Thu, 01-Jan-1970 00:00:00 GMT; Path=/
+    
+    Example::
+    
+      curl -b cookies.txt -c cookies.txt -v \\
+           -X DELETE http://localhost:5000/sessions/abc123
+    
+    """
+    ksession = _get_komsession(session_id)
+    if ksession:
         _logout(ksession)
-        return empty_response(204)
+        response = empty_response(204)
+        response.set_cookie('session_id', value='', expires=0)
+        return response
+    else:
+        return empty_response(404)
+    
+
+
+"""
+NOT IMPLEMENTED.
+
+(IDEA) Kolla vem man är inloggad som (använder session_id i cookien, latmask-funktion):
+  GET /sessions/whoami
+
+    Inloggad:
+      303
+      Location: /session/abc123
+"""
+def whoami_session():
+    pass
 
 
 # curl -b cookies.txt -c cookies.txt -v \
@@ -337,10 +414,5 @@ def text_read_marking(text_no):
 
 
 if __name__ == "__main__":
-    # We randomize a new secret key for sessions each time. Because
-    # our LysKOM sessions can't survive a restart, there is no reason
-    # for our HTTP session cookies to do so.
-    app.secret_key = os.urandom(32)
-    
     app.debug = True
     app.run()
