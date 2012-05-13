@@ -10,12 +10,13 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
+   
+   intro
+   conferences
+   sessions
+   texts
 
-.. automodule:: httpkom
-   :members:
 
-.. automodule:: komsession
-   :members:
 
 
 Indices and tables
