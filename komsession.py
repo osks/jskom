@@ -53,12 +53,12 @@ class KomSession(object):
         self.conn.socket.close()
         self.conn = None
     
-    def login(self, username, password):
-        pers_no = self.lookup_name_exact(username, True, False)
+    def login(self, pers_name, password):
+        pers_no = self.lookup_name_exact(pers_name, True, False)
         kom.ReqLogin(self.conn, pers_no, password).response()
         kom.ReqSetClientVersion(self.conn, version.name, version.version)
         self.conn.set_user(pers_no)
-    
+        
     def logout(self):
         kom.ReqLogout(self.conn).response()
     

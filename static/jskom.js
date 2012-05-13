@@ -6,13 +6,11 @@ var jskom = {
     Models: {},
     Collections: {},
     Views: {},
-    Controllers: {},
     
     init: function() {
         //jskom.vent = _.extend({}, Backbone.Events); // event aggregator
         
-        new jskom.Controllers.MainController();
-        
+        new jskom.Views.App();
         // debug
         //jskom.vent.on('all', function(eventName) {
         //    console.log("vent: " + eventName);
@@ -25,94 +23,6 @@ $(function() {
 });
 
 
-jskom.Controllers.MainController = function(options) {
-    options || (options = {});
-    this.initialize.apply(this, arguments);
-};
-
-_.extend(jskom.Controllers.MainController.prototype, {
-    initialize: function(options) {
-        this.layout = new jskom.Views.Layout().render();
-        this.appView = null;
-        this._checkCurrentSession();
-    },
-    
-    _checkCurrentSession: function() {
-        var cookieSessionId = jskom.Models.Session.getSessionIdFromCookie();
-        var currentSession = new jskom.Models.Session({ id: cookieSessionId });
-        var self = this;
-        currentSession.fetch({
-            success: function(session, resp) {
-                session.on('destroy', function() {
-                    console.log("session.destroy");
-                    self.showLogin();
-                });
-                console.log("currentSession.fetch - success");
-                self.appView = new jskom.Views.App({ model: session });
-                self.layout.showView(self.appView);
-                self.showHome();
-            },
-            error: function(session, resp) {
-                console.log("currentSession.fetch - error");
-                self.showLogin();
-            }
-        });
-    },
-    
-    showHome: function() {
-        var unreadConferences = new jskom.Collections.UnreadConferences();
-        var self = this;
-        unreadConferences.fetch({
-            success: function(unreadConfs, resp) {
-                console.log("unreadConferences.fetch - success");
-                self.appView.showUnreadConferences(unreadConfs);
-            },
-            error: function(unreadConfs, resp) {
-                console.log("unreadConferences.fetch - error");
-                if (resp.status == 401) self.showLogin();
-                // TODO: error handling
-                //jskom.vent.trigger('message:error', resp.responseText);
-            }
-        });
-    },
-    
-    showLogin: function() {
-        this.appView = null;
-        
-        var session = new jskom.Models.Session();
-        var loginView = new jskom.Views.Login({ model: session });
-        var self = this;
-        session.on('sync', function(msg) {
-            console.log("session.sync");
-            self.appView = new jskom.Views.App({ model: session });
-            self.layout.showView(self.appView);
-            self.showHome();
-        });
-        session.on('destroy', function() {
-            console.log("session.destroy");
-            self.showLogin();
-        });
-        this.layout.showView(loginView);
-    },
-    
-    showText: function(text_no) {
-        var text = new jskom.Models.Text({ text_no: text_no });
-        var self = this;
-        text.fetch({
-            success: function(t, resp) {
-                console.log("text.fetch - success");
-                
-                self.appView.showText(t);
-            },
-            error: function(t, resp) {
-                console.log("text.fetch - error");
-                if (resp.status == 401) self.showLogin();
-                // TODO: error handling
-            }
-        });
-    }
-});
-
 jskom.Models.Session = Backbone.Model.extend({
     url: function() {
         var base = '/sessions/';
@@ -121,10 +31,17 @@ jskom.Models.Session = Backbone.Model.extend({
     },
     
     defaults: {
-        username: null,
+        pers_name: null,
         password: null, // TODO: Somehow not store password in model
         pers_no: null
     },
+    
+    validate: function(attrs) {
+        if (!attrs.pers_name) {
+            // ugly hack to make them look the same as jqXHR...
+            return { responseText: "can't have an empty person name" };
+        }
+    }
 },
 {
     // Class methods here
@@ -170,7 +87,7 @@ jskom.Collections.UnreadConferences = Backbone.Collection.extend({
     },
 });
 
-jskom.Views.Layout = Backbone.View.extend({
+jskom.Views.App = Backbone.View.extend({
     el: '#jskom',
     
     template: _.template(
@@ -180,8 +97,9 @@ jskom.Views.Layout = Backbone.View.extend({
     ),
     
     initialize: function() {
-        _.bindAll(this, 'render', 'showView');
+        _.bindAll(this, 'render', 'showView', 'checkCurrentSession', 'showLogin', 'showSession');
         this.currentView = null;
+        this.checkCurrentSession();
     },
     
     render: function() {
@@ -192,6 +110,48 @@ jskom.Views.Layout = Backbone.View.extend({
             this.$('#container').append(this.currentView.render().el);
         }
         return this;
+    },
+    
+    checkCurrentSession: function() {
+        var currentSession = new jskom.Models.Session({
+            id: jskom.Models.Session.getSessionIdFromCookie()
+        });
+        if (currentSession.isNew()) {
+            this.showLogin();
+        } else {
+            var self = this;
+            currentSession.fetch({
+                success: function(session, resp) {
+                    console.log("currentSession.fetch - success");
+                    self.showSession(session);
+                },
+                error: function(session, resp) {
+                    console.log("currentSession.fetch - error");
+                    self.showLogin();
+                }
+            });
+        }
+    },
+    
+    showLogin: function() {
+        var session = new jskom.Models.Session();
+        var self = this;
+        session.on('change', function(msg) {
+            console.log("on session.change");
+            self.showSession(session);
+        });
+        var view = new jskom.Views.Login({ model: session });
+        this.showView(view);
+    },
+    
+    showSession: function(session) {
+        var self = this;
+        session.on('destroy', function() {
+            console.log("on session.destroy");
+            self.showLogin();
+        });
+        var appView = new jskom.Views.Session({ model: session });
+        this.showView(appView);
     },
     
     showView: function(view) {
@@ -205,7 +165,7 @@ jskom.Views.Layout = Backbone.View.extend({
     }
 });
 
-jskom.Views.App = Backbone.View.extend({
+jskom.Views.Session = Backbone.View.extend({
     template: _.template(
         '<div id="menu"></div>' +
         '<div id="main"></div>'
@@ -215,7 +175,8 @@ jskom.Views.App = Backbone.View.extend({
     },
     
     initialize: function() {
-        _.bindAll(this, 'render');
+        _.bindAll(this, 'render', 'remove', 'authFailed', 'showUnreadConfs', 'showText');
+        this.showUnreadConfs();
     },
     
     render: function() {
@@ -227,16 +188,50 @@ jskom.Views.App = Backbone.View.extend({
         return this;
     },
     
-    showUnreadConferences: function(unreadConfs) {
-        var view = new jskom.Views.UnreadConferences({
-            collection: unreadConfs
-        });
-        this.$('#main').empty().append(view.render().el);
+    remove: function() {
+        this.$el.remove();
     },
     
-    showText: function(text) {
-        var view = new jskom.Views.ShowText({ model: text });
-        this.$('#main').empty().append(view.render().el);
+    authFailed: function() {
+        // TODO: what do we do here?
+        // we can't destroy the session, because it might already be destroyed, so
+        // how do we make sure the App view removes us? Just remove ourselfs?
+        alert("authFailed");
+    },
+    
+    showUnreadConfs: function() {
+        var self = this;
+        new jskom.Collections.UnreadConferences().fetch({
+            success: function(unreadConfs, resp) {
+                console.log("unreadConferences.fetch - success");
+                var view = new jskom.Views.UnreadConferences({
+                    collection: unreadConfs
+                });
+                self.$('#main').empty().append(view.render().el);
+            },
+            error: function(unreadConfs, resp) {
+                console.log("unreadConferences.fetch - error");
+                if (resp.status == 401) self.authFailed();
+                // TODO: error handling
+            }
+        });
+    },
+    
+    showText: function(text_no) {
+        var self = this;
+        new jskom.Models.Text({ text_no: text_no }).fetch({
+            success: function(t, resp) {
+                console.log("text.fetch - success");
+                
+                var view = new jskom.Views.ShowText({ model: t });
+                self.$('#main').empty().append(view.render().el);
+            },
+            error: function(t, resp) {
+                console.log("text.fetch - error");
+                if (resp.status == 401) self.authFailed();
+                // TODO: error handling
+            }
+        });
     }
 });
 
@@ -270,8 +265,9 @@ jskom.Views.ShowText = Backbone.View.extend({
 jskom.Views.Login = Backbone.View.extend({
     template: _.template(
         '<h2>Login</h2>' + 
+        '<div class="message"></div>' + 
         '<form>' +
-        '  Username: <input type="text" name="username" value="" />' +
+        '  Person name: <input type="text" name="pers_name" value="" />' +
         '  <br/>' + 
         '  Password: <input type="password" name="password" value="" />' +
         '  <br/>' + 
@@ -287,26 +283,6 @@ jskom.Views.Login = Backbone.View.extend({
         _.bindAll(this, 'render', 'onSubmit', 'remove');
     },
     
-    onSubmit: function(e) {
-        e.preventDefault();
-        var username = this.$('input[name=username]').val();
-        var password = this.$('input[name=password]').val();
-        var self = this;
-        this.model.on('sync', this.remove, this);
-        this.$('button[type=submit]').attr('disabled', 'disabled');
-        this.model.save(
-            { username: username, password: password },
-            {
-                error: function(session, resp) {
-                    console.log("session.save - error");
-                    self.$('button[type=submit]').removeAttr('disabled');
-                    
-                // tood: Show error message
-                }
-            }
-        );
-    },
-    
     render: function() {
         this.$el.html(this.template());
         return this;
@@ -314,6 +290,27 @@ jskom.Views.Login = Backbone.View.extend({
     
     remove: function() {
         this.$el.remove();
+    },
+    
+    onSubmit: function(e) {
+        e.preventDefault();
+        var pers_name = this.$('input[name=pers_name]').val();
+        var password = this.$('input[name=password]').val();
+        this.$('button[type=submit]').attr('disabled', 'disabled');
+        var self = this;
+        this.model.save(
+            { pers_name: pers_name, password: password },
+            {
+                wait: true,
+                error: function(model, resp) {
+                    console.log("session.save - error");
+                    self.$('button[type=submit]').removeAttr('disabled');
+                    
+                    // todo: Show error message
+                    self.$('.message').html(resp.responseText).show();
+                }
+            }
+        );
     }
 });
 
@@ -384,7 +381,6 @@ jskom.Views.UnreadConference = Backbone.View.extend({
     
     initialize: function(options) {
         _.bindAll(this, 'render', 'remove');
-        this.model.on('change', this.render);
         this.model.on('destroy', this.remove);
     },
     

@@ -15,7 +15,8 @@ from flask import Flask, g, abort, request, jsonify, make_response, \
 
 import kom
 import komauxitems
-from komsession import KomSession, KomSessionError, KomText, to_dict, from_dict
+from komsession import KomSession, KomSessionError, KomText, to_dict, from_dict, \
+    AmbiguousName, NameNotFound
 
 
 app = Flask("httpkom")
@@ -53,11 +54,11 @@ def requires_login(f):
         return empty_response(401)
     return decorated
 
-def _create_komsession(username, password):
+def _create_komsession(pers_name, password):
     ksession = KomSession(kom_server)
     ksession.connect()
     try:
-        ksession.login(username, password)
+        ksession.login(pers_name, password)
         # todo: check for exceptions that we should return 401 for. or
         # should that be done here? we don't want to return http stuff here
     except:
@@ -88,9 +89,9 @@ def _get_komsession(session_id):
     
     return None
 
-def _login(username, password):
+def _login(pers_name, password):
     app.logger.debug("Logging in")
-    ksession = _create_komsession(username, password)
+    ksession = _create_komsession(pers_name, password)
     session_id = _save_komsession(ksession)
     return session_id, ksession
 
@@ -166,11 +167,15 @@ def status():
 def create_session():
     """Create a new session (i.e. login).
     
+    Note: "pers_name" in the request can be an abbreviated name, it
+    will be looked up before login. If the login is successful, the
+    matched full name will be returned in the response.
+    
     Request::
     
       POST /sessions/ HTTP/1.1
       
-      { "username": "oskars testperson", "password": "test123" }
+      { "pers_name": "oskars testp", "password": "test123" }
     
     Responses:
     
@@ -179,7 +184,7 @@ def create_session():
       HTTP/1.1 200 OK
       Set-Cookie: session_id=abc123; expires=Sat, 19-May-2012 12:44:51 GMT; Max-Age=604800; Path=/
       
-      { "pers_no": 14506, ... }
+      { "id": "abc123", "pers_no": 14506, "pers_name": "Oskars testperson", ... }
     
     Failed login::
     
@@ -191,7 +196,7 @@ def create_session():
     
       curl -b cookies.txt -c cookies.txt -v \\
            -X POST -H "Content-Type: application/json" \\
-           -d '{ "username": "Oskars testperson", "password": "test123" }' \\
+           -d '{ "pers_name": "Oskars testp", "password": "test123" }' \\
             http://localhost:5000/sessions/
     
     """
@@ -201,10 +206,18 @@ def create_session():
         # supplied credentials.
         _logout(old_ksession)
     
-    session_id, ksession = _login(request.json['username'], request.json['password'])
-    response = jsonify(dict(id=session_id, pers_no=ksession.current_user()))
-    response.set_cookie('session_id', value=session_id, max_age=7*24*60*60)
-    return response
+    try:
+        session_id, ksession = _login(request.json['pers_name'], request.json['password'])
+        pers_no = ksession.current_user()
+        pers_name = ksession.get_conf_name(pers_no)
+        response = jsonify(dict(id=session_id, pers_no=pers_no, pers_name=pers_name))
+        response.set_cookie('session_id', value=session_id, max_age=7*24*60*60)
+        return response
+    except (kom.InvalidPassword, kom.UndefinedPerson, kom.LoginDisallowed,
+            kom.ConferenceZero) as ex:
+        return error_response(401, kom_error=ex)
+    except (AmbiguousName, NameNotFound) as ex:
+        return error_response(401, error_msg=str(ex))
 
 
 @app.route("/sessions/<string:session_id>")
@@ -222,7 +235,7 @@ def get_session(session_id):
     
       HTTP/1.1 200 OK
       
-      { "id": "abc123", "pers_no": 14506, ... }
+      { "id": "abc123", "pers_no": 14506, "pers_name": "Oskars testperson", ... }
 
     Session does not exist (i.e. not logged in)::
     
@@ -237,7 +250,9 @@ def get_session(session_id):
     session_id = _get_session_id()
     ksession = _get_komsession(session_id)
     if ksession:
-        return jsonify(dict(id=session_id, pers_no=ksession.current_user()))
+        pers_no = ksession.current_user()
+        pers_name = ksession.get_conf_name(pers_no)
+        return jsonify(dict(id=session_id, pers_no=pers_no, pers_name=pers_name))
     else:
         return empty_response(404)
 

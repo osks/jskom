@@ -1,5 +1,6 @@
 #header {
     border: 1px solid black;
+    text-align: center;
 }
 
 #container {
@@ -8,13 +9,19 @@
 
 #footer {
     border: 1px solid black;
+    text-align: center;
 }
 
 #menu {
-    border: 1px solid red;
+    border: 1px solid green;
 }
 
 #main {
     border: 1px solid blue;
+}
+
+.message {
+    border: 1px solid red;
+    display: none;
 }
 
