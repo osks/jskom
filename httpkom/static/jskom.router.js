@@ -10,8 +10,8 @@ jskom.Router = Backbone.Router.extend({
     
     initialize: function(options) {
         this.app = new jskom.Views.App();
-        this._setUpSession(options.currentSession);
         this.urlRoot = options.urlRoot;
+        this._setUpSession(options.currentSession);
     },
     
     url: function(path) {
@@ -22,7 +22,7 @@ jskom.Router = Backbone.Router.extend({
         console.log('route - login');
         this.navigate('login', { replace: true });
         
-        var session = new jskom.Models.Session()
+        var session = new jskom.Models.Session();
         var loginView = new jskom.Views.Login({ model: session });
         loginView.on('login', function() {
             console.log("on login");
@@ -66,8 +66,9 @@ jskom.Router = Backbone.Router.extend({
     _withSessionView: function(callback) {
         if (this.sessionView) {
             //console.log('_withSessionView - has sessionView');
-            callback.call(this.sessionView);
+            
             this.app.showView(this.sessionView);
+            callback.call(this.sessionView);
         } else {
             //console.log('_withSessionView - no sessionView');
             this.login();
