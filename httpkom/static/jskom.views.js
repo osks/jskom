@@ -292,7 +292,7 @@ jskom.Views.Menu = Backbone.View.extend({
 '    <div class="navbar navbar-fixed-top">' +
 '      <div class="navbar-inner">' +
 '        <div id="menu-container" class="container-fluid">' +
-'          <a class="brand" href="#">jskom</a>' +
+'          <a class="brand" href="{{ homeUrl }}">jskom</a>' +
 '        </div>' +
 '      </div>' +
 '    </div>'
@@ -310,24 +310,6 @@ jskom.Views.Menu = Backbone.View.extend({
 '          </div>'
     ),
     
-    // This is shown when the window gets very narrow, a small "button" in the top right.
-    btnNavBarTemplate: _.template(
-'          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">' +
-'            <span class="icon-bar"></span>' +
-'            <span class="icon-bar"></span>' +
-'            <span class="icon-bar"></span>' +
-'          </a>'
-    ),
-    
-    // This will collapse when the window gets very narrow.
-    navTemplate: _.template(
-'          <div id="menu-nav" class="nav-collapse">' +
-'            <ul class="nav">' +
-'              <li class="active"><a class="home" href="{{ homeUrl }}">Home</a></li>' +
-'            </ul>' +
-'          </div>'
-    ),
-
     events: {
         'click #menu-nav a.home': 'onClickHome',
         'click #menu-right a.logout ': 'onClickLogout'
@@ -340,11 +322,9 @@ jskom.Views.Menu = Backbone.View.extend({
     
     render: function() {
         this.$el.empty();
-        this.$el.append(this.template());
+        this.$el.append(this.template({ homeUrl: jskom.router.url('') }));
         
         if (!this.model.isNew()) { // is this a correct check?
-            this.$('#menu-container').prepend(this.btnNavBarTemplate());
-            this.$('#menu-container').append(this.navTemplate({ homeUrl: jskom.router.url('') }));
             this.$('#menu-container').append(this.rightTemplate(this.model.toJSON()));
         }
         
