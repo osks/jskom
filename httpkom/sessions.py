@@ -80,7 +80,7 @@ def _logout(ksession):
 
 
 @app.route("/sessions/", methods=['POST'])
-def create():
+def sessions_create():
     """Create a new session (i.e. login).
     
     Note: "pers_name" in the request can be an abbreviated name, it
@@ -125,7 +125,7 @@ def create():
         # already loggedin, logout first, then try to login with the
         # supplied credentials.
         _logout(old_ksession)
-    
+        
     try:
         session_id, ksession = _login(request.json['pers_name'], request.json['password'])
         pers_no = ksession.current_user()
@@ -136,12 +136,12 @@ def create():
     except (kom.InvalidPassword, kom.UndefinedPerson, kom.LoginDisallowed,
             kom.ConferenceZero) as ex:
         return error_response(401, kom_error=ex)
-    except (AmbiguousName, NameNotFound) as ex:
-        return error_response(401, error_msg=str(ex))
+    except (AmbiguousName, NameNotFound) as ex2:
+        return error_response(401, error_msg=str(ex2))
 
 
 @app.route("/sessions/<string:session_id>")
-def get(session_id):
+def sessions_get(session_id):
     """Get information about a session. Usable for checking if your
     session is still valid.
     
@@ -182,7 +182,7 @@ def get(session_id):
 
 
 @app.route("/sessions/<string:session_id>", methods=['DELETE'])
-def delete(session_id):
+def sessions_delete(session_id):
     """Delete a session (i.e. logout).
     
     .. rubric:: Request
@@ -231,5 +231,5 @@ NOT IMPLEMENTED.
       303
       Location: /session/abc123
 """
-def whoami():
+def sessions_whoami():
     pass

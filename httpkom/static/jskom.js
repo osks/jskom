@@ -15,11 +15,13 @@ var jskom = {
         //    console.log("vent: " + eventName);
         //});
         
+        var jskomUrlRoot = '/jskom/';
         jskom.Models.Session.fetchCurrentSession(function(currentSession) {
             jskom.router = new jskom.Router({
-                currentSession: currentSession
+                currentSession: currentSession,
+                urlRoot: jskomUrlRoot
             });
-            Backbone.history.start({ pushState: true, root: '/jskom/' });
+            Backbone.history.start({ pushState: true, root: jskomUrlRoot });
         });
     }
 };

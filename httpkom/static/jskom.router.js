@@ -2,14 +2,20 @@ jskom.Router = Backbone.Router.extend({
     routes: {
         "": "home",
         "login": "login",
-        "texts/:text_no": "showText"
-        //"conferences/:conf_no": "",
-        //"conferences/:conf_no/unread": "search"
+        "texts/:text_no": "showText",
+        //"conferences/:conf_no": "foo",
+        "conferences/:conf_no/unread": "showUnreadTextsInConf",
+        "*path": "home"
     },
     
     initialize: function(options) {
         this.app = new jskom.Views.App();
         this._setUpSession(options.currentSession);
+        this.urlRoot = options.urlRoot;
+    },
+    
+    url: function(path) {
+        return this.urlRoot + path;
     },
     
     login: function() {
@@ -32,8 +38,8 @@ jskom.Router = Backbone.Router.extend({
         console.log('route - home');
         this.navigate('');
         
-        this._withSessionView(function(sessionView) {
-            sessionView.showUnreadConfs();
+        this._withSessionView(function() {
+            this.showUnreadConfs();
         });
     },
     
@@ -41,27 +47,30 @@ jskom.Router = Backbone.Router.extend({
         console.log('route - showText(' + text_no + ')');
         this.navigate('texts/' + text_no);
         
-        this._withSessionView(function(sessionView) {
-            sessionView.showText(text_no);
+        this._withSessionView(function() {
+            this.showText(text_no);
         });
     },
+    
+    showUnreadTextsInConf: function(conf_no) {
+        console.log('route - showUnreadInConf(' + conf_no + ')');
+        this.navigate("conferences/" + conf_no + "/unread");
+        
+        this._withSessionView(function() {
+            this.showUnreadTextsInConf(conf_no);
+        });
+    },
+    
+    
     
     _withSessionView: function(callback) {
         if (this.sessionView) {
             console.log('_withSessionView - has sessionView');
-            callback(this.sessionView);
+            callback.call(this.sessionView);
             this.app.showView(this.sessionView);
         } else {
             console.log('_withSessionView - no sessionView');
             this.login();
-        }
-    },
-    
-    _isLoggedIn: function() {
-        if (this.currentSession) {
-            return true;
-        } else {
-            return false;
         }
     },
     

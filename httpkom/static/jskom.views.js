@@ -87,7 +87,7 @@ jskom.Views.Login = Backbone.View.extend({
 
 jskom.Views.Session = Backbone.View.extend({
     template: _.template(
-        '<div id="menu"></div>' +
+        '<div class="message"></div>' + 
         '<div id="main"></div>'
     ),
     
@@ -100,10 +100,13 @@ jskom.Views.Session = Backbone.View.extend({
     },
     
     render: function() {
-        this.$el.empty().append(this.template());
+        this.$el.empty();
         
-        var logoutView = new jskom.Views.Logout({ model: this.model });
-        this.$('#menu').append(logoutView.render().el);
+        this.$el.append(
+            new jskom.Views.Menu({ model: this.model }).render().el);
+        
+        this.$el.append(
+            this.template());
         
         return this;
     },
@@ -125,8 +128,58 @@ jskom.Views.Session = Backbone.View.extend({
             },
             error: function(unreadConfs, resp) {
                 console.log("unreadConferences.fetch - error");
-                if (resp.status == 401) self.authFailed();
+                if (jqXHR.status == 401) {
+                    self.authFailed();
+                }
                 // TODO: error handling
+            }
+        });
+    },
+    
+    showUnreadTextsInConf: function(conf_no) {
+        var self = this;
+        /*$.ajax('/conferences/' + conf_no + '/read-markings/', {
+            type: 'GET',
+            data: { unread: true },
+            dataType: 'json',
+            success: function(data, textStatus, jqXHR) {
+                console.log("showUnreadInConf(" + conf_no + ") - success");
+                console.log(data.text_nos);
+                self.$('#main').empty().append('<pre>' + JSON.stringify(data.text_nos) + '</pre>');
+            },
+            error: function(jqXHR, textStatus, errorThrown) {success
+                console.log("showUnreadInConf(" + conf_no + ") - error");
+                if (jqXHR.status == 401) {
+                    self.authFailed();
+                } else {
+                    self.$('.message').html(jqXHR.responseText).show();
+                }
+            }
+        });*/
+        
+        
+        var readMarkings = new jskom.Collections.ReadMarkings([], { conf_no: conf_no });
+        readMarkings.fetch({
+            data: { unread: true },
+            success: function(collection, resp) {
+                console.log("readMarkings.fetch(" + conf_no + ") - success");
+                self.$('#main').empty();
+                // TODO: real views, so we can get nice click handling and stuff.
+                // perhaps a generic "TextLink" view?
+                collection.each(function(model) {
+                    self.$('#main')
+                        .append(new jskom.Views.TextLink({ model: model }).render().el);
+                });
+                // TODO: real views
+            },
+            error: function(collection, resp) {
+                console.log("readMarkings.fetch(" + conf_no + ") - error");
+                if (jqXHR.status == 401) {
+                    self.authFailed();
+                } else {
+                    self.$('.message').html(resp.responseText).show();
+                    // TODO: error handling
+                }
             }
         });
     },
@@ -142,14 +195,84 @@ jskom.Views.Session = Backbone.View.extend({
             },
             error: function(t, resp) {
                 console.log("text.fetch - error");
-                if (resp.status == 401) self.authFailed();
-                // TODO: error handling
+                if (jqXHR.status == 401) {
+                    self.authFailed();
+                } else {
+                    self.$('.message').html(resp.responseText).show();
+                    // TODO: error handling
+                }
             }
         });
     }
 });
 
+jskom.Views.TextLink = Backbone.View.extend({
+    // Works for any model that has an attribute called 'text_no'
+    tagName: 'a',
+    className: 'textLink',
+    
+    events: {
+        'click': 'onClick'
+    },
+    
+    initialize: function() {
+        _.bindAll(this, 'render', 'onClick');
+    },
+    
+    render: function() {
+        this.$el
+            .text(this.model.get('text_no'))
+            .attr('href', jskom.router.url('texts/' + this.model.get('text_no')));
+        return this;
+    },
+    
+    onClick: function(e) {
+        e.preventDefault();
+        jskom.router.showText(this.model.get('text_no'));
+    }
+});
+
+jskom.Views.Menu = Backbone.View.extend({
+    tagName: 'div',
+    id: 'menu',
+    
+    template: _.template(
+        '<ul></ul>'
+    ),
+    
+    events: {
+        'click a.home': 'onClickHome'
+    },
+    
+    initialize: function() {
+        _.bindAll(this, 'render', 'onClickHome');
+        this.model.on('destroy', this.remove, this);
+    },
+    
+    render: function() {
+        this.$el.html(this.template());
+        
+        this.$('ul').append(
+            $('<li></li>').append(
+                $('<a class="home">Home</a>').attr('href', jskom.router.url(''))));
+        
+        this.$('ul').append(
+            $('<li></li>').append(
+                new jskom.Views.Logout({ model: this.model }).render().el));
+        
+        return this;
+    },
+    
+    onClickHome: function(e) {
+        e.preventDefault();
+        jskom.router.home();
+    }
+});
+
 jskom.Views.Logout = Backbone.View.extend({
+    tagName: 'div',
+    className: 'logout',
+    
     template: _.template(
         '<form>' +
         '  <button type="submit">Logout</button>' +
@@ -212,27 +335,30 @@ jskom.Views.UnreadConference = Backbone.View.extend({
     
     template: _.template(
         '<span class="name">' +
-        '<a class="conf" href="{{ conf_no }}">{{ name }}</a>' +  // FIXME: href
+        '<a class="conf" href="{{ conf_url }}">{{ name }}</a>' +  // FIXME: href
         '</span> ' +
         '(<span class="no_of_unread">{{ no_of_unread }}</span>)'
     ),
     
     events: {
-        'click a.conf': 'showConf',
+        'click a.conf': 'onClick',
     },
     
     initialize: function(options) {
-        _.bindAll(this, 'render', 'showConf');
+        _.bindAll(this, 'render', 'onClick');
         this.model.on('destroy', this.remove);
     },
     
     render: function() {
-        this.$el.html(this.template(this.model.toJSON()));
+        var modelJson = this.model.toJSON();
+        modelJson.conf_url = jskom.router.url('conferences/' + modelJson.conf_no + '/unread');
+        this.$el.html(this.template(modelJson));
         return this;
     },
     
-    showConf: function() {
-        // todo
+    onClick: function(e) {
+        e.preventDefault();
+        jskom.router.showUnreadTextsInConf(this.model.get('conf_no'));
     }
 });
 

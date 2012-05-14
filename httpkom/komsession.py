@@ -82,23 +82,23 @@ class KomSession(object):
     def get_conf_name(self, conf_no):
         return self.conn.conf_name(conf_no)
     
-    def get_conferences(self, unread=False, micro=True):
+    def get_conferences(self, unread=False, full=False):
         if unread:
             conf_nos = kom.ReqGetUnreadConfs(self.conn, self.current_user()).response()
-            return [ self.get_conference(conf_no, micro) for conf_no in conf_nos ]
+            return [ self.get_conference(conf_no, full) for conf_no in conf_nos ]
         raise NotImplementedError()
 
     def get_unread_conferences(self):
         conf_nos = kom.ReqGetUnreadConfs(self.conn, self.current_user()).response()
-        return [ KomUnreadConference(self.get_conference(conf_no, micro=True),
+        return [ KomUnreadConference(self.get_conference(conf_no, full=False),
                                      self.conn.no_unread[conf_no])
                  for conf_no in conf_nos ]
         
-    def get_conference(self, conf_no, micro=True):
-        if micro:
-            return KomUConference(conf_no, self.conn.uconferences[conf_no])
-        else:
+    def get_conference(self, conf_no, full=False):
+        if full:
             return KomConference(conf_no, self.conn.conferences[conf_no])
+        else:
+            return KomUConference(conf_no, self.conn.uconferences[conf_no])
 
     def get_unread_in_conference(self, conf_no):
         return self.conn.get_unread_texts(conf_no)

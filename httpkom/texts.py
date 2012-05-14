@@ -14,7 +14,7 @@ from sessions import requires_session
 #      -X GET http://localhost:5000/texts/19680717
 @app.route('/texts/<int:text_no>')
 @requires_session
-def get_text(text_no):
+def texts_get(text_no):
     try:
         app.logger.debug(text_no)
         return jsonify(to_dict(g.ksession.get_text(text_no), True, g.ksession))
@@ -38,7 +38,7 @@ def get_text(text_no):
 #      http://localhost:5000/texts/
 @app.route('/texts/', methods=['POST'])
 @requires_session
-def create_text():
+def texts_create():
     #app.logger.debug(request.json)
     
     komtext = from_dict(request.json, KomText, True, g.ksession)
@@ -46,17 +46,22 @@ def create_text():
     return jsonify(text_no=text_no)
 
 
-        
-
 # curl -b cookies.txt -c cookies.txt -v \
 #      -X PUT http://localhost:5000/texts/19680717/read-marking
-@app.route('/texts/<int:text_no>/read-marking', methods=['PUT', 'DELETE'])
+@app.route('/texts/<int:text_no>/read-marking', methods=['PUT'])
 @requires_session
-def text_read_marking(text_no):
+def texts_put_read_marking(text_no):
     # Mark text as read in all recipient conferences
     
-    if request.method == 'PUT':
-        g.ksession.mark_as_read(text_no)
-        return empty_response(204)
-    elif request.method == 'DELETE':
-        raise NotImplementedError()
+    g.ksession.mark_as_read(text_no)
+    return empty_response(204)
+
+
+# curl -b cookies.txt -c cookies.txt -v \
+#      -X DELETE http://localhost:5000/texts/19680717/read-marking
+@app.route('/texts/<int:text_no>/read-marking', methods=['DELETE'])
+@requires_session
+def texts_delete_read_marking(text_no):
+    # Mark text as unread in all recipient conferences
+    
+    raise NotImplementedError()

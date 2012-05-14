@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import httpkom
+from httpkom import app
 
 
 if __name__ == "__main__":
-    httpkom.app.debug = True
-    httpkom.app.run()
+    app.debug = True
+    app.run()
