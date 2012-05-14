@@ -14,13 +14,14 @@ jskom.Router = Backbone.Router.extend({
     
     login: function() {
         console.log('route - login');
-        this.navigate('login', { trigger: false, replace: true });
+        this.navigate('login', { replace: true });
         
         var session = new jskom.Models.Session()
         var loginView = new jskom.Views.Login({ model: session });
         loginView.on('login', function() {
             console.log("on login");
             this._setUpSession(session);
+            this.navigate('', { replace: true });
             this.home();
         }, this);
         
