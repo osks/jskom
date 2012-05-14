@@ -128,7 +128,7 @@ jskom.Views.Session = Backbone.View.extend({
             },
             error: function(unreadConfs, resp) {
                 console.log("unreadConferences.fetch - error");
-                if (jqXHR.status == 401) {
+                if (resp.status == 401) {
                     self.authFailed();
                 }
                 // TODO: error handling
@@ -174,7 +174,7 @@ jskom.Views.Session = Backbone.View.extend({
             },
             error: function(collection, resp) {
                 console.log("readMarkings.fetch(" + conf_no + ") - error");
-                if (jqXHR.status == 401) {
+                if (resp.status == 401) {
                     self.authFailed();
                 } else {
                     self.$('.message').html(resp.responseText).show();
@@ -195,7 +195,7 @@ jskom.Views.Session = Backbone.View.extend({
             },
             error: function(t, resp) {
                 console.log("text.fetch - error");
-                if (jqXHR.status == 401) {
+                if (resp.status == 401) {
                     self.authFailed();
                 } else {
                     self.$('.message').html(resp.responseText).show();
