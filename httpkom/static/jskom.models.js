@@ -62,6 +62,12 @@ jskom.Models.Text = Backbone.Model.extend({
     
     defaults: {
         text_no: null,
+        creation_time: null,
+        author: null,
+        recipient_list: null,
+        comment_to_list: null,
+        comment_in_list: null,
+        content_type: null,
         subject: null,
         body: null
     }
@@ -89,17 +95,14 @@ jskom.Collections.UnreadConferences = Backbone.Collection.extend({
 });
 
 
-// Is it really worth having collections and models for read-markings?
-// Why not just simple ajax calls?
-
-jskom.Models.ReadMarking = Backbone.Model.extend({
+jskom.Models.LocalReadMarking = Backbone.Model.extend({
     idAttribute: 'text_no',
     
     defaults: {
         conf_no: null,
         local_text_no: null,
         text_no: null,
-        unread: true,
+        unread: null,
     },
     
     url: function() {
@@ -108,8 +111,21 @@ jskom.Models.ReadMarking = Backbone.Model.extend({
     },
 });
 
+jskom.Models.GlobalReadMarking = Backbone.Model.extend({
+    idAttribute: 'text_no',
+    
+    defaults: {
+        text_no: null,
+        unread: null,
+    },
+    
+    url: function() {
+        return '/texts/' + encodeURIComponent(this.get('text_no')) + '/read-marking';
+    },
+});
+
 jskom.Collections.ReadMarkings = Backbone.Collection.extend({
-    model: jskom.Models.ReadMarking,
+    model: jskom.Models.LocalReadMarking,
     
     url: function() {
         return '/conferences/' + encodeURIComponent(this.conf_no) + '/read-markings/';
@@ -125,10 +141,3 @@ jskom.Collections.ReadMarkings = Backbone.Collection.extend({
         return resp.rms;
     },
 });
-/*
-//var rm = new jskom.Models.ReadMarking();
-
-//var rms = new jskom.Collections.ReadMarkings({ conf_no: 14506 });
-//rms.fetch({ data: { unread: true }});
-
-*/

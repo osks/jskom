@@ -363,20 +363,33 @@ jskom.Views.UnreadConference = Backbone.View.extend({
 });
 
 jskom.Views.ShowText = Backbone.View.extend({
+    className: 'text',
+    
     template: _.template(
         '<div>' +
-        '  Text Number: {{ text_no }}' +
+        '  {{ text_no }} / {{ creation_time }} / {{ author.pers_name }}' +
+        '</div>' +
+            
+        '{{ comment_tos }}' +
+        '{{ recipients }}' +
+        
+        '<div>' +
+        '  subject: {{ subject }}' +
         '</div>' +
         '<div>' +
-        '  Author: {{ author.pers_name }} ({{ author.pers_no }})' +
-        '</div>' +
-        '<div>' +
-        '  Subject: {{ subject }}' +
-        '</div>' +
-        '<div>' +
-        '  Body:' +
         '  <pre>{{ body }}</pre>' +
-        '</div>'
+        '</div>' +
+        '{{ comment_ins }}'
+    ),
+    
+    commentToTemplate: _.template(
+        '<div>{{ type }} to text {{ text_no }} by {{ author.pers_name }}</div>'
+    ),
+    recipientTemplate: _.template(
+        '<div>{{ type }}: {{ recpt.conf_name }}</div>'
+    ),
+    commentInTemplate: _.template(
+        '<div>{{ type }} in text {{ text_no }} by {{ author.pers_name }}</div>'
     ),
     
     initialize: function() {
@@ -384,7 +397,64 @@ jskom.Views.ShowText = Backbone.View.extend({
     },
     
     render: function() {
-        $(this.el).html(this.template(this.model.toJSON()));
+        var modelJson = this.model.toJSON();
+        
+        modelJson.comment_tos = _.reduce(this.model.get('comment_to_list'), function(memo, ct) {
+            return memo + this.commentToTemplate(ct);
+        }, "", this);
+        
+        modelJson.recipients = _.reduce(this.model.get('recipient_list'), function(memo, r) {
+            return memo + this.recipientTemplate(r);
+        }, "", this);
+        
+        modelJson.comment_ins = _.reduce(this.model.get('comment_in_list'), function(memo, ci) {
+            return memo + this.commentInTemplate(ci);
+        }, "", this);
+        
+        this.$el.empty();
+        this.$el.append(this.template(modelJson));
+        
+        this.$el.append(new jskom.Views.MarkAsRead({
+            model: new jskom.Models.GlobalReadMarking({ text_no: this.model.get('text_no') })
+        }).render().el);
+        return this;
+    },
+});
+
+jskom.Views.MarkAsRead = Backbone.View.extend({
+    tagName: 'div',
+    className: 'markAsRead',
+    
+    template: _.template(
+        '<form>' +
+        '  <button type="submit">Mark as read</button>' +
+        '</form>'
+    ),
+    
+    events: {
+        'submit form': 'onSubmit'
+    },
+    
+    initialize: function() {
+        _.bindAll(this, 'render', 'onSubmit');
+    },
+    
+    onSubmit: function(e) {
+        e.preventDefault();
+        var self = this;
+        this.model.save({}, {
+            success: function(model, resp) {
+                self.remove();
+            },
+            error: function(model, resp) {
+                // what, can things fail?
+                self.$el.append('(error: ' + resp.responseText + ')');
+            }
+        });
+    },
+    
+    render: function() {
+        this.$el.html(this.template());
         return this;
     },
 });
