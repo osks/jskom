@@ -65,11 +65,11 @@ jskom.Router = Backbone.Router.extend({
     
     _withSessionView: function(callback) {
         if (this.sessionView) {
-            console.log('_withSessionView - has sessionView');
+            //console.log('_withSessionView - has sessionView');
             callback.call(this.sessionView);
             this.app.showView(this.sessionView);
         } else {
-            console.log('_withSessionView - no sessionView');
+            //console.log('_withSessionView - no sessionView');
             this.login();
         }
     },
