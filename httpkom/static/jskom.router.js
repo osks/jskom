@@ -10,10 +10,23 @@ jskom.Router = Backbone.Router.extend({
     
     initialize: function(options) {
         this.session = options.currentSession;
+        this._setUpSession(this.session);
         this.urlRoot = options.urlRoot;
         
         this.sessionView = null;
         this.app = new jskom.Views.App().render();
+    },
+    
+    _setUpSession: function(session) {
+        session.on('login', function() {
+            console.log("on login");
+            this.navigate('', { replace: true });
+            this.home();
+        }, this);
+        session.on('destroy', function() {
+            console.log("on session.destroy");
+            this.login();
+        }, this);
     },
     
     url: function(path) {
@@ -28,16 +41,7 @@ jskom.Router = Backbone.Router.extend({
         
         this.session = new jskom.Models.Session();
         this.sessionView = null;
-        this.session.on('login', function() {
-            console.log("on login");
-            this.navigate('', { replace: true });
-            this.home();
-        }, this);
-        this.session.on('destroy', function() {
-            console.log("on session.destroy");
-            this.login();
-        }, this);
-        
+        this._setUpSession(this.session);
         this.app.showMenuView(new jskom.Views.Menu({ model: this.session }));
         this.app.showView(new jskom.Views.Login({ model: this.session }));
     },
