@@ -2,12 +2,12 @@ jskom.Views.App = Backbone.View.extend({
     el: '#jskom',
     
     template: _.template(
-        '    <div id="container" class="container-fluid">' +
-        '      <hr>' +
-        '      <footer>' + 
-        '          <p>&copy; Oskar Skoog 2012</p>' +
-        '      </footer>' +
-        '    </div>'
+        '<div id="container" class="container-fluid">' +
+        '  <hr>' +
+        '  <footer>' + 
+        '      <p>&copy; Oskar Skoog 2012</p>' +
+        '  </footer>' +
+        '</div>'
     ),
     
     initialize: function(options) {
@@ -49,9 +49,9 @@ jskom.Views.Message = Backbone.View.extend({
     className: 'alert alert-block',
     
     template: _.template(
-        '  <a class="close" data-dismiss="alert" href="#">×</a>' +
-        '  <h4 class="alert-heading">{{ heading }}</h4>' +
-        '  {{ text }}'
+        '<a class="close" data-dismiss="alert" href="#">×</a>' +
+        '<h4 class="alert-heading">{{ heading }}</h4>' +
+        '{{ text }}'
     ),
     
     initialize: function(options) {
@@ -75,17 +75,17 @@ jskom.Views.Login = Backbone.View.extend({
     className: 'row-fluid',
     
     template: _.template(
-        '  <div class="span6">' +
-        '    <h2>Login</h2>' + 
-        '      <div class="message"></div>' + 
-        '      <form class="well">' +
-        '        <label>Person name</label>' +
-        '        <input type="text" class="span12" name="pers_name" />' +
-        '        <label>Password</label>' + 
-        '        <input type="password" class="span12" name="password" />' +
-        '        <button type="submit" class="btn">Login</button>' +
-        '     </form>' +
-        '  </div>'
+        '<div class="span6">' +
+        '  <h2>Login</h2>' + 
+        '    <div class="message"></div>' + 
+        '    <form class="well">' +
+        '      <label>Person name</label>' +
+        '      <input type="text" class="span12" name="pers_name" />' +
+        '      <label>Password</label>' + 
+        '      <input type="password" class="span12" name="password" />' +
+        '      <button type="submit" class="btn">Login</button>' +
+        '   </form>' +
+        '</div>'
     ),
     
     events: {
@@ -285,25 +285,25 @@ jskom.Views.Menu = Backbone.View.extend({
     id: 'menu',
     
     template: _.template(
-'    <div class="navbar navbar-fixed-top">' +
-'      <div class="navbar-inner">' +
-'        <div id="menu-container" class="container-fluid">' +
-'          <a class="brand" href="{{ homeUrl }}">jskom</a>' +
-'        </div>' +
-'      </div>' +
-'    </div>'
+        '<div class="navbar navbar-fixed-top">' +
+        '  <div class="navbar-inner">' +
+        '    <div id="menu-container" class="container-fluid">' +
+        '      <a class="brand" href="{{ homeUrl }}">jskom</a>' +
+        '    </div>' +
+        '  </div>' +
+        '</div>'
     ),
     
     rightTemplate: _.template(
-'          <div id="menu-right" class="btn-group pull-right">' +
-'            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">' +
-'              <i class="icon-user"></i> {{ pers_name }}' +
-'              <span class="caret"></span>' +
-'            </a>' +
-'            <ul class="dropdown-menu">' +
-'              <li><a class="logout" href="#">Logout</a></li>' +
-'            </ul>' +
-'          </div>'
+        '<div id="menu-right" class="btn-group pull-right">' +
+        '  <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">' +
+        '    <i class="icon-user"></i> {{ pers_name }}' +
+        '    <span class="caret"></span>' +
+        '  </a>' +
+        '  <ul class="dropdown-menu">' +
+        '    <li><a class="logout" href="#">Logout</a></li>' +
+        '  </ul>' +
+        '</div>'
     ),
     
     events: {
@@ -375,7 +375,7 @@ jskom.Views.UnreadConference = Backbone.View.extend({
     
     template: _.template(
         '<span class="name">' +
-        '<a class="conf" href="{{ conf_url }}">{{ name }}</a>' +  // FIXME: href
+        '  <a class="conf" href="{{ conf_url }}">{{ name }}</a>' +  // FIXME: href
         '</span> ' +
         '(<span class="no_of_unread">{{ no_of_unread }}</span>)'
     ),

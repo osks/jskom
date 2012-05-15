@@ -69,7 +69,7 @@ class KomSession(object):
         return self.conn.lookup_name(name, want_pers, want_confs)
 
     def lookup_name_exact(self, name, want_pers, want_confs):
-        matches = self.lookup_name(name, True, True)
+        matches = self.lookup_name(name, want_pers, want_confs)
         if len(matches) == 0:
             raise NameNotFound("recipient not found: %s" % name)
         elif len(matches) <> 1:
