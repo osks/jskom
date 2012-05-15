@@ -78,7 +78,7 @@ jskom.Views.Login = Backbone.View.extend({
         '<div class="span6">' +
         '  <h2>Login</h2>' + 
         '    <div class="message"></div>' + 
-        '    <form class="well">' +
+        '    <form>' +
         '      <label>Person name</label>' +
         '      <input type="text" class="span12" name="pers_name" />' +
         '      <label>Password</label>' + 
@@ -206,7 +206,8 @@ jskom.Views.Session = Backbone.View.extend({
                 // perhaps a generic "TextLink" view?
                 collection.each(function(model) {
                     self.$('#session-container')
-                        .append(new jskom.Views.TextLink({ model: model }).render().el);
+                        .append(new jskom.Views.TextLink(
+                            { text_no: model.get('text_no') }).render().el);
                 });
                 // TODO: real views
             },
@@ -255,7 +256,6 @@ jskom.Views.Session = Backbone.View.extend({
 });
 
 jskom.Views.TextLink = Backbone.View.extend({
-    // Works for any model that has an attribute called 'text_no'
     tagName: 'a',
     className: 'textLink',
     
@@ -263,20 +263,21 @@ jskom.Views.TextLink = Backbone.View.extend({
         'click': 'onClick'
     },
     
-    initialize: function() {
+    initialize: function(options) {
         _.bindAll(this, 'render', 'onClick');
+        this.text_no = options.text_no;
     },
     
     render: function() {
         this.$el
-            .text(this.model.get('text_no'))
-            .attr('href', jskom.router.url('texts/' + this.model.get('text_no')));
+            .text(this.text_no)
+            .attr('href', jskom.router.url('texts/' + this.text_no));
         return this;
     },
     
     onClick: function(e) {
         e.preventDefault();
-        jskom.router.showText(this.model.get('text_no'));
+        jskom.router.showText(this.text_no);
     }
 });
 
@@ -407,7 +408,8 @@ jskom.Views.ShowText = Backbone.View.extend({
     
     template: _.template(
         '<div>' +
-        '  {{ text_no }} / {{ creation_time }} / {{ author.pers_name }}' +
+        '  <span class="text-link">{{ text_no }}</span>' +
+        '  / {{ creation_time }} / {{ author.pers_name }}' +
         '</div>' +
             
         '{{ comment_tos }}' +
@@ -416,18 +418,18 @@ jskom.Views.ShowText = Backbone.View.extend({
         '<div>' +
         '  subject: {{ subject }}' +
         '</div>' +
-        '<pre>{{ body }}</pre>' +
+        '<div class="well">{{ body }}</div>' +
         '{{ comment_ins }}'
     ),
     
     commentToTemplate: _.template(
-        '<div>{{ type }} to text {{ text_no }} by {{ author.pers_name }}</div>'
+        '<div>{{ type }} to text <span class="text-link">{{ text_no }}</span> by {{ author.pers_name }}</div>'
     ),
     recipientTemplate: _.template(
         '<div>{{ type }}: {{ recpt.conf_name }}</div>'
     ),
     commentInTemplate: _.template(
-        '<div>{{ type }} in text {{ text_no }} by {{ author.pers_name }}</div>'
+        '<div>{{ type }} in text <span class="text-link">{{ text_no }}</span> by {{ author.pers_name }}</div>'
     ),
     
     initialize: function() {
@@ -451,6 +453,11 @@ jskom.Views.ShowText = Backbone.View.extend({
         
         this.$el.empty();
         this.$el.append(this.template(modelJson));
+        
+        this.$(".text-link").each(function() {
+            var text_no =  $(this).text();
+            $(this).empty().append(new jskom.Views.TextLink({ text_no: text_no }).render().el);
+        });
         
         this.$el.append(new jskom.Views.MarkAsRead({
             model: new jskom.Models.GlobalReadMarking({ text_no: this.model.get('text_no') })
