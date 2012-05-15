@@ -419,9 +419,7 @@ jskom.Views.ShowText = Backbone.View.extend({
         '<div>' +
         '  subject: {{ subject }}' +
         '</div>' +
-        '<pre>' +
-        '  {{ body }}' +
-        '</pre>' +
+        '<pre>{{ body }}</pre>' +
         '{{ comment_ins }}'
     ),
     
