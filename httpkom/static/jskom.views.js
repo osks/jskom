@@ -137,7 +137,7 @@ jskom.Views.Session = Backbone.View.extend({
     
     template: _.template(
         '<div class="row-fluid">' + 
-        '  <div class="span12">' +
+        '  <div class="span8">' +
         '    <h2 class="headline"></h2>' + 
         '    <div class="message"></div>' +
         '    <div id="session-container"></div>' +
@@ -408,15 +408,15 @@ jskom.Views.ShowText = Backbone.View.extend({
     
     template: _.template(
         '<div>' +
-        '  <span class="text-link">{{ text_no }}</span>' +
-        '  / {{ creation_time }} / {{ author.pers_name }}' +
+        '  <span class="text-link">{{ model.text_no }}</span>' +
+        '  / {{ model.creation_time }} / {{ model.author.pers_name }}' +
         '</div>' +
             
         '{{ comment_tos }}' +
         '{{ recipients }}' +
         
         '<div>' +
-        '  subject: {{ subject }}' +
+        '  subject: {{ model.subject }}' +
         '</div>' +
         '<div class="well">{{ body }}</div>' +
         '{{ comment_ins }}'
@@ -439,20 +439,26 @@ jskom.Views.ShowText = Backbone.View.extend({
     render: function() {
         var modelJson = this.model.toJSON();
         
-        modelJson.comment_tos = _.reduce(this.model.get('comment_to_list'), function(memo, ct) {
+        var comment_tos = _.reduce(this.model.get('comment_to_list'), function(memo, ct) {
             return memo + this.commentToTemplate(ct);
         }, "", this);
         
-        modelJson.recipients = _.reduce(this.model.get('recipient_list'), function(memo, r) {
+        var recipients = _.reduce(this.model.get('recipient_list'), function(memo, r) {
             return memo + this.recipientTemplate(r);
         }, "", this);
         
-        modelJson.comment_ins = _.reduce(this.model.get('comment_in_list'), function(memo, ci) {
+        var comment_ins = _.reduce(this.model.get('comment_in_list'), function(memo, ci) {
             return memo + this.commentInTemplate(ci);
         }, "", this);
         
         this.$el.empty();
-        this.$el.append(this.template(modelJson));
+        this.$el.append(this.template({
+            model: this.model.toJSON(),
+            body: this.model.get('body').replace(/\r?\n|\r/g, "<br>"),
+            comment_tos: comment_tos,
+            recipients: recipients,
+            comment_ins: comment_ins
+        }));
         
         this.$(".text-link").each(function() {
             var text_no =  $(this).text();
