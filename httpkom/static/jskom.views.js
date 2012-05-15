@@ -268,48 +268,96 @@ jskom.Views.Session = Backbone.View.extend({
 
 jskom.Views.Reader = Backbone.View.extend({
     template: _.template(
-        ''
+        '<div class="message"></div>' +
+        '<div class="reader-container"></div>' +
+        '<div class="reader-controls">' +
+        '  <button class="confs btn">Back to conference list</button>' +
+        '  <button class="next btn btn-primary">Next unread text</button>' +
+        '</div>'
     ),
     
+    events: {
+        'click .next': 'onNext',
+        'click .confs': 'onBack'
+    },
+    
     initialize: function() {
-        _.bindAll(this, 'render');
+        _.bindAll(this, 'render', 'onNext', 'onBack', 'showText', 'moveNext');
+        this.collection.on('remove', this.render, this);
+        this.moveNext();
     },
     
     render: function() {
         this.$el.empty();
-        if (this.collection.isEmpty()) {
-            this.$el.append("Nothing to read.");
+        this.$el.append(this.template());
+        
+        if (this.current == null) {
+            this.$('.reader-container').append("Nothing to read.");
         } else {
-            var qi = this.collection.shift();
-            var text = new jskom.Models.Text({ text_no: qi.get('text_no') });
-            var self = this;
-            text.fetch({
-                success: function(t, resp) {
-                    console.log("text.fetch - success");
-                    
-                    self.$el.append(
-                        new jskom.Views.ShowText({ model: t }).render().el
-                    );
-                },
-                error: function(t, resp) {
-                    console.log("text.fetch - error");
-                    if (resp.status == 401) {
-                        self.authFailed(); // FIXME
-                    } else {
-                        // TODO: error handling
-                        self.$('.message').append(new jskom.Views.Message({
-                            heading: 'Error!',
-                            text: resp.responseText
-                        }).render().el);
+            var qi = this.current;
+            
+            if (qi.text) {
+                this.showText(qi.text);
+            } else {
+                var self = this;
+                qi.fetchText({
+                    success: function(text, resp) {
+                        console.log("text.fetch - success");
+                        self.showText(text);
+                    },
+                    error: function(text, resp) {
+                        console.log("text.fetch - error");
+                        if (resp.status == 401) {
+                            self.authFailed(); // FIXME
+                        } else {
+                            // TODO: error handling
+                            self.$('.message').append(new jskom.Views.Message({
+                                heading: 'Error!',
+                                text: resp.responseText
+                            }).render().el);
+                        }
                     }
-                }
-            });
+                });
+            }
+            
+            // TODO: where should we do this?
+            this.current.globalReadMarking.save(); // error handling?
         }
+        
+        if (this.collection.length < 2) {
+            this.$('.next').hide();
+            this.$('.confs').addClass('btn-primary');
+        }
+        
         return this;
     },
     
-    next: function() {
+    moveNext: function() {
+        if (this.collection.isEmpty()) {
+            this.current = null;
+        } else {
+            this.current = this.collection.getFirstAndPrefetchNextText();
+        }
+    },
+    
+    showText: function(text) {
+        self.$('.reader-container').append(
+            new jskom.Views.ShowText({ model: text }).render().el
+        );
         
+        // This is nice, but a bit odd to have he code here
+        jskom.router.navigate('texts/' + text.get('text_no'));
+    },
+    
+    onNext: function(e) {
+        e.preventDefault();
+        this.moveNext();
+        this.render();
+    },
+    
+    onBack: function(e) {
+        e.preventDefault();
+        jskom.router.home();
     }
 });
 
@@ -415,7 +463,7 @@ jskom.Views.UnreadConferences = Backbone.View.extend({
     
     addAll: function() {
         if (this.collection.length > 0) {
-            this.collection.each(this.addOne);
+            var confsWithUnread = this.collection.each(this.addOne);
         } else {
             this.$el.append("<li>Nothing unread.</li>");
         }

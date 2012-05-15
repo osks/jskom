@@ -74,11 +74,49 @@ jskom.Models.Text = Backbone.Model.extend({
 });
 
 jskom.Models.ReadQueueItem = Backbone.Model.extend({
-    idAttribute: 'text_no'
+    idAttribute: 'text_no',
+    
+    initialize: function(options) {
+        this.globalReadMarking = new jskom.Models.GlobalReadMarking({
+            text_no: this.get('text_no')
+        });
+        this.text = null; // for pre-fetching
+    },
+    
+    fetchText: function(options) {
+        // TODO: If we have already started fetching a text and then calls this
+        // method again, we should be able to attach the success/error callback to
+        // the ongoing fetch, instead of starting a new fetch.
+        
+        options || (options = {})
+        var self = this;
+        var text = new jskom.Models.Text({ text_no: this.get('text_no') }).fetch({
+            success: function(t, resp) {
+                console.log("ReadQueueItem.fetchText - success");
+                self.text = t;
+                if (options.success) options.success(t, resp);
+            },
+            error: function(t, resp) {
+                console.log("ReadQueueItem.fetchText - error");
+                self.text = null;
+                // TODO: error handling
+                // what can we really do here?
+                if (options.error) options.error(t, resp);
+            }
+        });
+    }
 }),
 
 jskom.Collections.ReadQueue = Backbone.Collection.extend({
     model: jskom.Models.ReadQueueItem,
+    
+    getFirstAndPrefetchNextText: function() {
+        var cur = this.at(0);
+        if (this.length > 1) {
+            this.at(1).fetchText();
+        }
+        return cur;
+    }
 });
 
 jskom.Models.UnreadConference = Backbone.Model.extend({
@@ -86,7 +124,8 @@ jskom.Models.UnreadConference = Backbone.Model.extend({
     
     defaults: {
         conf_no: null,
-        name: null
+        name: null,
+        no_of_unread: null
     }
 });
 
