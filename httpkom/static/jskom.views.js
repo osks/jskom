@@ -321,6 +321,11 @@ jskom.Views.Reader = Backbone.View.extend({
             }
             
             // TODO: where should we do this?
+            // Idea: when it succeeds, put up a small button somewhere where one
+            // can click to mark the text as unread again.
+            // That means that we should probably not do this marking in the render() method.
+            // With the possiblity to mark as unread, it might be fine to mark them in the
+            // moveNext method?
             this.current.globalReadMarking.save(); // error handling?
         }
         
