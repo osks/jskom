@@ -73,6 +73,14 @@ jskom.Models.Text = Backbone.Model.extend({
     }
 });
 
+jskom.Models.ReadQueueItem = Backbone.Model.extend({
+    idAttribute: 'text_no'
+}),
+
+jskom.Collections.ReadQueue = Backbone.Collection.extend({
+    model: jskom.Models.ReadQueueItem,
+});
+
 jskom.Models.UnreadConference = Backbone.Model.extend({
     idAttribute: 'conf_no',
     

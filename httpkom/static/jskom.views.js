@@ -43,7 +43,6 @@ jskom.Views.App = Backbone.View.extend({
     }
 });
 
-
 jskom.Views.Message = Backbone.View.extend({
     tagName: 'div',
     className: 'alert alert-block',
@@ -120,8 +119,7 @@ jskom.Views.Login = Backbone.View.extend({
                     console.log("session.save - error");
                     self.$('button[type=submit]').removeAttr('disabled');
                     
-                    // todo: Show error message
-                    //self.$('.message').html(resp.responseText).show();
+                    // todo: error handling
                     self.$('.message').append(new jskom.Views.Message({
                         heading: 'Error!',
                         text: resp.responseText
@@ -156,7 +154,6 @@ jskom.Views.Session = Backbone.View.extend({
     render: function() {
         this.$el.empty();
         this.$el.append(this.template());
-        
         return this;
     },
     
@@ -202,21 +199,29 @@ jskom.Views.Session = Backbone.View.extend({
             success: function(collection, resp) {
                 console.log("readMarkings.fetch(" + conf_no + ") - success");
                 self.$('#session-container').empty();
-                // TODO: real views, so we can get nice click handling and stuff.
-                // perhaps a generic "TextLink" view?
-                collection.each(function(model) {
+                
+                /*collection.each(function(model) {
                     self.$('#session-container')
                         .append(new jskom.Views.TextLink(
                             { text_no: model.get('text_no') }).render().el);
+                });*/
+                
+                var readQueue = new jskom.Collections.ReadQueue();
+                collection.each(function(rm) {
+                    readQueue.add(new jskom.Models.ReadQueueItem({
+                        text_no: rm.get('text_no')
+                    }));
                 });
-                // TODO: real views
+
+                self.$('#session-container').append(new jskom.Views.Reader({
+                    collection: readQueue
+                }).render().el);
             },
             error: function(collection, resp) {
                 console.log("readMarkings.fetch(" + conf_no + ") - error");
                 if (resp.status == 401) {
                     self.authFailed();
                 } else {
-                    //self.$('.message').html(resp.responseText).show();
                     // TODO: error handling
                     self.$('.message').append(new jskom.Views.Message({
                         heading: 'Error!',
@@ -237,13 +242,19 @@ jskom.Views.Session = Backbone.View.extend({
                 
                 var view = new jskom.Views.ShowText({ model: t });
                 self.$('#session-container').empty().append(view.render().el);
+        
+                self.$el.append(new jskom.Views.MarkAsRead({
+                    model: new jskom.Models.GlobalReadMarking({
+                        text_no: t.get('text_no')
+                    })
+                }).render().el);
+
             },
             error: function(t, resp) {
                 console.log("text.fetch - error");
                 if (resp.status == 401) {
                     self.authFailed();
                 } else {
-                    //self.$('.message').html(resp.responseText).show();
                     // TODO: error handling
                     self.$('.message').append(new jskom.Views.Message({
                         heading: 'Error!',
@@ -252,6 +263,53 @@ jskom.Views.Session = Backbone.View.extend({
                 }
             }
         });
+    }
+});
+
+jskom.Views.Reader = Backbone.View.extend({
+    template: _.template(
+        ''
+    ),
+    
+    initialize: function() {
+        _.bindAll(this, 'render');
+    },
+    
+    render: function() {
+        this.$el.empty();
+        if (this.collection.isEmpty()) {
+            this.$el.append("Nothing to read.");
+        } else {
+            var qi = this.collection.shift();
+            var text = new jskom.Models.Text({ text_no: qi.get('text_no') });
+            var self = this;
+            text.fetch({
+                success: function(t, resp) {
+                    console.log("text.fetch - success");
+                    
+                    self.$el.append(
+                        new jskom.Views.ShowText({ model: t }).render().el
+                    );
+                },
+                error: function(t, resp) {
+                    console.log("text.fetch - error");
+                    if (resp.status == 401) {
+                        self.authFailed(); // FIXME
+                    } else {
+                        // TODO: error handling
+                        self.$('.message').append(new jskom.Views.Message({
+                            heading: 'Error!',
+                            text: resp.responseText
+                        }).render().el);
+                    }
+                }
+            });
+        }
+        return this;
+    },
+    
+    next: function() {
+        
     }
 });
 
@@ -464,10 +522,6 @@ jskom.Views.ShowText = Backbone.View.extend({
             var text_no =  $(this).text();
             $(this).empty().append(new jskom.Views.TextLink({ text_no: text_no }).render().el);
         });
-        
-        this.$el.append(new jskom.Views.MarkAsRead({
-            model: new jskom.Models.GlobalReadMarking({ text_no: this.model.get('text_no') })
-        }).render().el);
         return this;
     },
 });
