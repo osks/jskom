@@ -32,7 +32,7 @@ jskom.Models.Session = Backbone.Model.extend({
         var currentSessionId = jskom.Models.Session._getSessionIdFromCookie();
         if (!currentSessionId || currentSessionId == '') {
             console.log("currentSessionId: " + currentSessionId);
-            callback(null);
+            callback(new jskom.Models.Session());
         } else {
             var currentSession = new jskom.Models.Session({
                 id: currentSessionId
@@ -44,7 +44,7 @@ jskom.Models.Session = Backbone.Model.extend({
                 },
                 error: function(session, resp) {
                     console.log("currentSession.fetch - error");
-                    callback(null);
+                    callback(new jskom.Models.Session());
                 }
             });
         }

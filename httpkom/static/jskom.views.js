@@ -2,29 +2,34 @@ jskom.Views.App = Backbone.View.extend({
     el: '#jskom',
     
     template: _.template(
-        '    <div class="container-fluid">' +
-        '      <div id="container"></div>' + 
+        '    <div id="container" class="container-fluid">' +
         '      <hr>' +
         '      <footer>' + 
-        '        <p>&copy; Oskar Skoog 2012</p>' +
+        '          <p>&copy; Oskar Skoog 2012</p>' +
         '      </footer>' +
         '    </div>'
     ),
     
     initialize: function(options) {
-        _.bindAll(this, 'render', 'showView');
+        _.bindAll(this, 'render', 'showView', 'showMenuView');
         this.currentView = null;
+        this.currentMenuView = null;
     },
     
     render: function() {
         this.$el.empty();
         this.$el.append(this.template());
-        
-        if (this.currentView != null) {
-            this.$('#container').append(this.currentView.render().el);
-        }
-        
         return this;
+    },
+    
+    showMenuView: function(menuView) {
+        if (this.currentMenu !== menuView) {
+            if (this.currentMenuView != null) {
+                this.currentMenuView.remove();
+            }
+            this.currentMenuView = menuView;
+            this.$el.prepend(this.currentMenuView.render().el);
+        }
     },
     
     showView: function(view) {
@@ -33,7 +38,7 @@ jskom.Views.App = Backbone.View.extend({
                 this.currentView.remove();
             }
             this.currentView = view;
-            this.render();
+            this.$('#container').prepend(this.currentView.render().el);
         }
     }
 });
@@ -67,21 +72,20 @@ jskom.Views.Message = Backbone.View.extend({
 
 jskom.Views.Login = Backbone.View.extend({
     id: 'login',
+    className: 'row-fluid',
     
     template: _.template(
-        '<div class="row-fluid">' + 
-        '  <div class="span12">' +
+        '  <div class="span6">' +
         '    <h2>Login</h2>' + 
         '      <div class="message"></div>' + 
         '      <form class="well">' +
         '        <label>Person name</label>' +
-        '        <input type="text" class="span3" name="pers_name" />' +
+        '        <input type="text" class="span12" name="pers_name" />' +
         '        <label>Password</label>' + 
-        '        <input type="password" class="span3" name="password" />' +
+        '        <input type="password" class="span12" name="password" />' +
         '        <button type="submit" class="btn">Login</button>' +
         '     </form>' +
-        '  </div>' +
-        '</div>'
+        '  </div>'
     ),
     
     events: {
@@ -94,10 +98,6 @@ jskom.Views.Login = Backbone.View.extend({
     
     render: function() {
         this.$el.empty();
-        
-        this.$el.append(
-            new jskom.Views.Menu({ model: this.model }).render().el);
-        
         this.$el.append(this.template());
         return this;
     },
@@ -113,7 +113,7 @@ jskom.Views.Login = Backbone.View.extend({
             {
                 wait: true,
                 success: function(model, resp) {
-                    self.trigger('login');
+                    self.model.trigger('login');
                     self.remove();
                 },
                 error: function(model, resp) {
@@ -155,10 +155,6 @@ jskom.Views.Session = Backbone.View.extend({
     
     render: function() {
         this.$el.empty();
-        
-        this.$el.append(
-            new jskom.Views.Menu({ model: this.model }).render().el);
-        
         this.$el.append(this.template());
         
         return this;
@@ -317,6 +313,7 @@ jskom.Views.Menu = Backbone.View.extend({
     
     initialize: function() {
         _.bindAll(this, 'render', 'onClickHome');
+        this.model.on('change', this.render, this);
         this.model.on('destroy', this.remove, this);
     },
     

@@ -9,29 +9,37 @@ jskom.Router = Backbone.Router.extend({
     },
     
     initialize: function(options) {
-        this.app = new jskom.Views.App();
+        this.session = options.currentSession;
         this.urlRoot = options.urlRoot;
-        this._setUpSession(options.currentSession);
+        
+        this.sessionView = null;
+        this.app = new jskom.Views.App().render();
     },
     
     url: function(path) {
         return this.urlRoot + path;
     },
     
+    
+    
     login: function() {
         console.log('route - login');
         this.navigate('login', { replace: true });
         
-        var session = new jskom.Models.Session();
-        var loginView = new jskom.Views.Login({ model: session });
-        loginView.on('login', function() {
+        this.session = new jskom.Models.Session();
+        this.sessionView = null;
+        this.session.on('login', function() {
             console.log("on login");
-            this._setUpSession(session);
             this.navigate('', { replace: true });
             this.home();
         }, this);
+        this.session.on('destroy', function() {
+            console.log("on session.destroy");
+            this.login();
+        }, this);
         
-        this.app.showView(loginView);
+        this.app.showMenuView(new jskom.Views.Menu({ model: this.session }));
+        this.app.showView(new jskom.Views.Login({ model: this.session }));
     },
     
     home: function() {
@@ -64,26 +72,17 @@ jskom.Router = Backbone.Router.extend({
     
     
     _withSessionView: function(callback) {
-        if (this.sessionView) {
-            //console.log('_withSessionView - has sessionView');
-            
-            this.app.showView(this.sessionView);
-            callback.call(this.sessionView);
-        } else {
-            //console.log('_withSessionView - no sessionView');
+        if (!this.session || this.session.isNew()) {
+            //console.log('_withSessionView - session is new');
             this.login();
+        } else {
+            //console.log('_withSessionView - session is not new');
+            if (!this.sessionView) {
+                this.sessionView = new jskom.Views.Session({ model: this.session })
+                this.app.showMenuView(new jskom.Views.Menu({ model: this.session }));
+                this.app.showView(this.sessionView);
+            }
+            callback.call(this.sessionView);
         }
     },
-    
-    _setUpSession: function(session) {
-        if (session) {
-            this.sessionView = new jskom.Views.Session({ model: session });
-            session.on('destroy', function() {
-                console.log("on session.destroy");
-                this.login();
-            }, this);
-        } else {
-            this.sessionView = null;
-        }
-    }
 });
