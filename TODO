@@ -1,0 +1,10 @@
+TODO
+====
+
+* Sätta klient när man loggar in (POST /sessions/).
+
+* Prefetch-hantering som inte orsakar dubbeljobb om man hämtar nästa
+  innan prefetchen är klar.
+
+* Antal olästa per möte verkar inte uppdateras korrekt.
+

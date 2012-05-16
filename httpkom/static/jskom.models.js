@@ -68,8 +68,24 @@ jskom.Models.Text = Backbone.Model.extend({
         comment_to_list: null,
         comment_in_list: null,
         content_type: null,
-        subject: null,
-        body: null
+        subject: '',
+        body: ''
+    },
+    
+    makeCommentTo: function(otherText) {
+        this.set({
+            recipient_list: _.filter(_.clone(otherText.get('recipient_list')), function(r) {
+                // Only copy "to" recipients, and not "cc" or "bcc".
+                return r.type == 'to';
+            }),
+            comment_to_list: [
+                {
+                    type: 'comment',
+                    text_no: otherText.get('text_no')
+                }
+            ],
+            subject: otherText.get('subject')
+        });
     }
 });
 
@@ -92,12 +108,12 @@ jskom.Models.ReadQueueItem = Backbone.Model.extend({
         var self = this;
         var text = new jskom.Models.Text({ text_no: this.get('text_no') }).fetch({
             success: function(t, resp) {
-                console.log("ReadQueueItem.fetchText - success");
+                console.log("ReadQueueItem.fetchText(" + t.get('text_no') + ") - success");
                 self.text = t;
                 if (options.success) options.success(t, resp);
             },
             error: function(t, resp) {
-                console.log("ReadQueueItem.fetchText - error");
+                console.log("ReadQueueItem.fetchText(" + t.get('text_no') + ") - error");
                 self.text = null;
                 // TODO: error handling
                 // what can we really do here?
@@ -110,10 +126,10 @@ jskom.Models.ReadQueueItem = Backbone.Model.extend({
 jskom.Collections.ReadQueue = Backbone.Collection.extend({
     model: jskom.Models.ReadQueueItem,
     
-    getFirstAndPrefetchNextText: function() {
-        var cur = this.at(0);
-        if (this.length > 1) {
-            this.at(1).fetchText();
+    shiftAndPrefetchNextText: function() {
+        var cur = this.shift();
+        if (!this.isEmpty()) {
+            this.at(0).fetchText();
         }
         return cur;
     }

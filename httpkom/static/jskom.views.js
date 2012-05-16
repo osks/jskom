@@ -351,7 +351,7 @@ jskom.Views.Reader = Backbone.View.extend({
         if (this.collection.isEmpty()) {
             this.current = null;
         } else {
-            this.current = this.collection.getFirstAndPrefetchNextText();
+            this.current = this.collection.shiftAndPrefetchNextText();
         }
     },
     
@@ -360,7 +360,7 @@ jskom.Views.Reader = Backbone.View.extend({
             new jskom.Views.ShowText({ model: text }).render().el
         );
         
-        // This is nice, but a bit odd to have he code here
+        // This is a nice feature, but a bit odd to have the code for this here
         jskom.router.navigate('texts/' + text.get('text_no'));
     },
     
@@ -527,24 +527,23 @@ jskom.Views.UnreadConference = Backbone.View.extend({
 jskom.Views.CreateText = Backbone.View.extend({
     template: _.template(
         '<div class="message"></div>' +
-        '    {{ preset_recipients }}' +
         '    <form>' +
+
+        '      {{ recipient_list_template }}' +
            
-/*        '      <label>To</label>' +
-        '      <input type="text" class="span12" name="recipient" />' +*/
-        
         '      <label>Subject</label>' + 
-        '      <input type="text" class="span12" name="subject" />' +
+        '      <input type="text" class="span12" name="subject" value="{{ model.subject }}" />' +
             
         '      <label>Body</label>' +
-        '      <textarea class="span12" name="body" rows="5"></textarea>' +
+        '      <textarea class="span12" name="body" rows="5">{{ model.body }}</textarea>' +
             
         '      <button type="submit" class="btn btn-primary">Post</button>' +
         '   </form>'
     ),
     
-    presetRecipientTemplate: _.template(
-        '<div>{{ type }}: {{ recpt.conf_name }}</div>'
+    recipientListTemplate: _.template(
+        '<label>{{ type }}:</label>' +
+        '<input type="text" class="span12" name="recipient" value="{{ recpt.conf_name }}" />'
     ),
     
     events: {
@@ -557,8 +556,9 @@ jskom.Views.CreateText = Backbone.View.extend({
     
     render: function() {
         this.$el.empty().append(this.template({
-            preset_recipients: _.reduce(this.model.get('recipient_list'), function(memo, r) {
-                return memo + this.presetRecipientTemplate(r);
+            model: this.model.toJSON(),
+            recipient_list_template: _.reduce(this.model.get('recipient_list'), function(memo, r) {
+                return memo + this.recipientListTemplate(r);
             }, "", this)
         }));
         return this;
@@ -679,9 +679,8 @@ jskom.Views.ShowText = Backbone.View.extend({
     onCommentText: function(e) {
         e.preventDefault();
         $(e.target).attr('disabled', 'disabled');
-        var newText = new jskom.Models.Text({
-            recipient_list: _.clone(this.model.get('recipient_list'))
-        });
+        var newText = new jskom.Models.Text();
+        newText.makeCommentTo(this.model);
         this.$el.append(new jskom.Views.CreateText({ model: newText }).render().el);
     }
 });
