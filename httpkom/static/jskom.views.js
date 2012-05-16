@@ -5,7 +5,7 @@ jskom.Views.App = Backbone.View.extend({
         '<div id="container" class="container-fluid">' +
         '  <hr>' +
         '  <footer>' + 
-        '      <p>&copy; Oskar Skoog 2012</p>' +
+        '      <p>&copy; <a href="mailto:oskar@osd.se">Oskar Skoog</a> 2012</p>' +
         '  </footer>' +
         '</div>'
     ),
@@ -156,7 +156,7 @@ jskom.Views.Session = Backbone.View.extend({
     onCreateText: function(e) {
         this.$('#session-container')
             .empty()
-            .append(new jskom.Views.CreateText().render().el);
+            .append(new jskom.Views.CreateText({ model: new jskom.Models.Text() }).render().el);
         return false;
     },
     
@@ -527,10 +527,11 @@ jskom.Views.UnreadConference = Backbone.View.extend({
 jskom.Views.CreateText = Backbone.View.extend({
     template: _.template(
         '<div class="message"></div>' +
+        '    {{ preset_recipients }}' +
         '    <form>' +
-            
-        '      <label>Recipient</label>' +
-        '      <input type="text" class="span12" name="recipient" />' +
+           
+/*        '      <label>To</label>' +
+        '      <input type="text" class="span12" name="recipient" />' +*/
         
         '      <label>Subject</label>' + 
         '      <input type="text" class="span12" name="subject" />' +
@@ -542,6 +543,10 @@ jskom.Views.CreateText = Backbone.View.extend({
         '   </form>'
     ),
     
+    presetRecipientTemplate: _.template(
+        '<div>{{ type }}: {{ recpt.conf_name }}</div>'
+    ),
+    
     events: {
         'submit form': 'onSubmit'
     },
@@ -551,27 +556,31 @@ jskom.Views.CreateText = Backbone.View.extend({
     },
     
     render: function() {
-        this.$el.empty().append(this.template());
+        this.$el.empty().append(this.template({
+            preset_recipients: _.reduce(this.model.get('recipient_list'), function(memo, r) {
+                return memo + this.presetRecipientTemplate(r);
+            }, "", this)
+        }));
         return this;
     },
     
     onSubmit: function(e) {
         e.preventDefault();
-        var text = new jskom.Models.Text({
+        var text = new jskom.Models.Text();
+        var self = this;
+        this.model.save({
             content_type: "text/x-kom-basic",
-            recipient_list: [
+            /*recipient_list: [
                 {
                     recpt: {
                         conf_name: this.$('input[name=recipient]').val()
                     },
                     type: "to"
                 }
-            ],
+            ],*/
             subject: this.$('input[name=subject]').val(),
             body: this.$('textarea[name=body]').val()
-        });
-        var self = this;
-        text.save({}, {
+        }, {
             success: function(model, resp) {
                 console.log("text.save - success");
                 console.log(model);
@@ -589,8 +598,6 @@ jskom.Views.CreateText = Backbone.View.extend({
         });
         
         console.log(text);
-        
-        
     }
 });
 
@@ -610,21 +617,32 @@ jskom.Views.ShowText = Backbone.View.extend({
         '  subject: {{ model.subject }}' +
         '</div>' +
         '<div class="well">{{ body }}</div>' +
-        '{{ comment_ins }}'
+        '{{ comment_ins }}' +
+        
+        '<div class="text-controls">' +
+        '  <button class="comment-text btn">Write comment</button>' +
+        '</div>'
+
     ),
     
     commentToTemplate: _.template(
         '<div>{{ type }} to text <span class="text-link">{{ text_no }}</span> by {{ author.pers_name }}</div>'
     ),
+    
     recipientTemplate: _.template(
         '<div>{{ type }}: {{ recpt.conf_name }}</div>'
     ),
+    
     commentInTemplate: _.template(
         '<div>{{ type }} in text <span class="text-link">{{ text_no }}</span> by {{ author.pers_name }}</div>'
     ),
     
+    events: {
+        'click .comment-text': 'onCommentText'
+    },
+    
     initialize: function() {
-        _.bindAll(this, 'render');
+        _.bindAll(this, 'render', 'onCommentText');
     },
     
     render: function() {
@@ -657,6 +675,15 @@ jskom.Views.ShowText = Backbone.View.extend({
         });
         return this;
     },
+    
+    onCommentText: function(e) {
+        e.preventDefault();
+        $(e.target).attr('disabled', 'disabled');
+        var newText = new jskom.Models.Text({
+            recipient_list: _.clone(this.model.get('recipient_list'))
+        });
+        this.$el.append(new jskom.Views.CreateText({ model: newText }).render().el);
+    }
 });
 
 jskom.Views.MarkAsRead = Backbone.View.extend({
