@@ -96,30 +96,32 @@ jskom.Models.ReadQueueItem = Backbone.Model.extend({
         this.globalReadMarking = new jskom.Models.GlobalReadMarking({
             text_no: this.get('text_no')
         });
-        this.text = null; // for pre-fetching
+        
+        // for text fetching
+        this.textDeferred = null;
+        this.text = null; // available after the fetch is done
     },
     
-    fetchText: function(options) {
+    fetchText: function() {
         // TODO: If we have already started fetching a text and then calls this
         // method again, we should be able to attach the success/error callback to
         // the ongoing fetch, instead of starting a new fetch.
         
-        options || (options = {})
-        var self = this;
-        var text = new jskom.Models.Text({ text_no: this.get('text_no') }).fetch({
-            success: function(t, resp) {
-                console.log("ReadQueueItem.fetchText(" + t.get('text_no') + ") - success");
-                self.text = t;
-                if (options.success) options.success(t, resp);
-            },
-            error: function(t, resp) {
-                console.log("ReadQueueItem.fetchText(" + t.get('text_no') + ") - error");
-                self.text = null;
-                // TODO: error handling
-                // what can we really do here?
-                if (options.error) options.error(t, resp);
-            }
-        });
+        if (!this.textDeferred) {
+            var self = this;
+            this.text = new jskom.Models.Text({ text_no: this.get('text_no') });
+            this.textDeferred = this.text.fetch().then(
+                function(data) {
+                    console.log("ReadQueueItem.fetchText(" +
+                                self.text.get('text_no') + ") - success");
+                },
+                function(jqXHR, textStatus) {
+                    console.log("ReadQueueItem.fetchText(" +
+                                self.text.get('text_no') + ") - error");
+                }
+            );
+        }
+        return this.textDeferred;
     }
 }),
 

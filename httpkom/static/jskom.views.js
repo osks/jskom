@@ -304,44 +304,41 @@ jskom.Views.Reader = Backbone.View.extend({
         if (this.current == null) {
             this.$('.reader-container').append("Nothing to read.");
         } else {
-            var qi = this.current;
-            
-            if (qi.text) {
-                this.showText(qi.text);
-            } else {
-                var self = this;
-                qi.fetchText({
-                    success: function(text, resp) {
-                        console.log("text.fetch - success");
-                        self.showText(text);
-                    },
-                    error: function(text, resp) {
-                        console.log("text.fetch - error");
-                        if (resp.status == 401) {
-                            self.authFailed(); // FIXME
-                        } else {
-                            // TODO: error handling
-                            self.$('.message').append(new jskom.Views.Message({
-                                heading: 'Error!',
-                                text: resp.responseText
-                            }).render().el);
-                        }
+            var self = this;
+            this.current.fetchText().then(
+                function(data) {
+                    console.log("this.current.fetchText - success");
+                    self.showText(self.current.text);
+                    
+                    // TODO: where should we do this?  Idea: when it
+                    // succeeds, put up a small button somewhere where
+                    // one can click to mark the text as unread again.
+                    // That means that we should probably not do this
+                    // marking in the render() method.  With the
+                    // possiblity to mark as unread, it might be fine
+                    // to mark them in the moveNext method?
+                    self.current.globalReadMarking.save(); // error handling?
+                    
+                    if (self.collection.length < 2) {
+                        self.$('.next').hide();
+                        self.$('.confs').addClass('btn-primary');
                     }
-                });
-            }
+                },
+                function(jqXHR, textStatus) {
+                    console.log("this.current.fetchText - error");
+                    if (jqXHR.status == 401) {
+                        jskom.router.login();
+                    } else {
+                        // TODO: error handling
+                        self.$('.message').append(new jskom.Views.Message({
+                            heading: 'Error!',
+                            text: jqXHR.responseText
+                        }).render().el);
+                    }
+                }
+            );
+
             
-            // TODO: where should we do this?
-            // Idea: when it succeeds, put up a small button somewhere where one
-            // can click to mark the text as unread again.
-            // That means that we should probably not do this marking in the render() method.
-            // With the possiblity to mark as unread, it might be fine to mark them in the
-            // moveNext method?
-            this.current.globalReadMarking.save(); // error handling?
-        }
-        
-        if (this.collection.length < 2) {
-            this.$('.next').hide();
-            this.$('.confs').addClass('btn-primary');
         }
         
         return this;
@@ -566,24 +563,14 @@ jskom.Views.CreateText = Backbone.View.extend({
     
     onSubmit: function(e) {
         e.preventDefault();
-        var text = new jskom.Models.Text();
         var self = this;
         this.model.save({
             content_type: "text/x-kom-basic",
-            /*recipient_list: [
-                {
-                    recpt: {
-                        conf_name: this.$('input[name=recipient]').val()
-                    },
-                    type: "to"
-                }
-            ],*/
             subject: this.$('input[name=subject]').val(),
             body: this.$('textarea[name=body]').val()
         }, {
             success: function(model, resp) {
                 console.log("text.save - success");
-                console.log(model);
                 self.remove();
                 jskom.router.showText(model.get('text_no'));
             },
@@ -596,8 +583,6 @@ jskom.Views.CreateText = Backbone.View.extend({
                 }).render().el);
             }
         });
-        
-        console.log(text);
     }
 });
 

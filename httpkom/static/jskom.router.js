@@ -26,6 +26,9 @@ jskom.Router = Backbone.Router.extend({
     login: function() {
         console.log('route - login');
         this.navigate('login', { replace: true });
+        if (this.session) {
+            this.session.destroy(); // destroy / logout any existing session
+        }
         this.session = new jskom.Models.Session();
         this.sessionView = null;
         this._setUpSession(this.session);
