@@ -82,7 +82,7 @@ jskom.Views.Login = Backbone.View.extend({
         '      <input type="text" class="span12" name="pers_name" />' +
         '      <label>Password</label>' + 
         '      <input type="password" class="span12" name="password" />' +
-        '      <button type="submit" class="btn">Login</button>' +
+        '      <button type="submit" class="btn btn-primary">Login</button>' +
         '   </form>' +
         '</div>'
     ),
@@ -136,6 +136,7 @@ jskom.Views.Session = Backbone.View.extend({
     template: _.template(
         '<div class="row-fluid">' + 
         '  <div class="span8">' +
+        '    <button class="btn create-text">Create text</button>' +
         '    <h2 class="headline"></h2>' + 
         '    <div class="message"></div>' +
         '    <div id="session-container"></div>' +
@@ -144,16 +145,25 @@ jskom.Views.Session = Backbone.View.extend({
     ),
     
     events: {
+        'click .create-text': 'onCreateText' // temp
     },
     
     initialize: function() {
-        _.bindAll(this, 'render', 'authFailed', 'showUnreadConfs', 'showText');
+        _.bindAll(this, 'render', 'authFailed', 'showUnreadConfs', 'showText', 'onCreateText');
         this.model.on('destroy', this.remove, this);
+    },
+    
+    onCreateText: function(e) {
+        this.$('#session-container')
+            .empty()
+            .append(new jskom.Views.CreateText().render().el);
+        return false;
     },
     
     render: function() {
         this.$el.empty();
         this.$el.append(this.template());
+        
         return this;
     },
     
@@ -511,6 +521,76 @@ jskom.Views.UnreadConference = Backbone.View.extend({
     onClick: function(e) {
         e.preventDefault();
         jskom.router.showUnreadTextsInConf(this.model.get('conf_no'));
+    }
+});
+
+jskom.Views.CreateText = Backbone.View.extend({
+    template: _.template(
+        '<div class="message"></div>' +
+        '    <form>' +
+            
+        '      <label>Recipient</label>' +
+        '      <input type="text" class="span12" name="recipient" />' +
+        
+        '      <label>Subject</label>' + 
+        '      <input type="text" class="span12" name="subject" />' +
+            
+        '      <label>Body</label>' +
+        '      <textarea class="span12" name="body" rows="5"></textarea>' +
+            
+        '      <button type="submit" class="btn btn-primary">Post</button>' +
+        '   </form>'
+    ),
+    
+    events: {
+        'submit form': 'onSubmit'
+    },
+    
+    initialize: function() {
+        _.bindAll(this, 'render', 'onSubmit');
+    },
+    
+    render: function() {
+        this.$el.empty().append(this.template());
+        return this;
+    },
+    
+    onSubmit: function(e) {
+        e.preventDefault();
+        var text = new jskom.Models.Text({
+            content_type: "text/x-kom-basic",
+            recipient_list: [
+                {
+                    recpt: {
+                        conf_name: this.$('input[name=recipient]').val()
+                    },
+                    type: "to"
+                }
+            ],
+            subject: this.$('input[name=subject]').val(),
+            body: this.$('textarea[name=body]').val()
+        });
+        var self = this;
+        text.save({}, {
+            success: function(model, resp) {
+                console.log("text.save - success");
+                console.log(model);
+                self.remove();
+                jskom.router.showText(model.get('text_no'));
+            },
+            error: function(model, resp) {
+                console.log("text.save - error");
+                // TODO: real error handling
+                self.$('.message').append(new jskom.Views.Message({
+                    heading: 'Error!',
+                    text: resp.responseText
+                }).render().el);
+            }
+        });
+        
+        console.log(text);
+        
+        
     }
 });
 
