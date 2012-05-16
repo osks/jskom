@@ -352,12 +352,12 @@ def KomText_from_dict(d, lookups, session):
     kt.body = d['body']
     
     kt.recipient_list = []
-    if 'recipient_list' in d:
+    if 'recipient_list' in d and d['recipient_list'] is not None:
         for r in d['recipient_list']:
             kt.recipient_list.append(from_dict(r, kom.MIRecipient, lookups, session))
     
     kt.comment_to_list = []
-    if 'comment_to_list' in d:
+    if 'comment_to_list' in d and d['comment_to_list'] is not None:
         for ct in d['comment_to_list']:
             kt.comment_to_list.append(from_dict(ct, kom.MICommentTo, lookups, session))
     
@@ -369,7 +369,7 @@ def KomText_from_dict(d, lookups, session):
     # what the purpose is, so we leave it to KomSession.create_text to not
     # make use of kt.comment_in_list.
     kt.comment_in_list = []
-    if 'comment_in_list' in d:
+    if 'comment_in_list' in d and d['comment_in_list'] is not None:
         for ci in d['comment_in_list']:
             kt.comment_in_list.append(from_dict(ci, kom.MICommentIn, lookups, session))
     
