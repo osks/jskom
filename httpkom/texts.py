@@ -16,7 +16,6 @@ from sessions import requires_session
 @requires_session
 def texts_get(text_no):
     try:
-        app.logger.debug(text_no)
         return jsonify(to_dict(g.ksession.get_text(text_no), True, g.ksession))
     except kom.NoSuchText as ex:
         return error_response(404, kom_error=ex)
@@ -39,10 +38,7 @@ def texts_get(text_no):
 @app.route('/texts/', methods=['POST'])
 @requires_session
 def texts_create():
-    #app.logger.debug(request.json)
-    
     komtext = from_dict(request.json, KomText, True, g.ksession)
-    app.logger.debug(to_dict(komtext));
     text_no = g.ksession.create_text(komtext)
     return jsonify(text_no=text_no)
 
