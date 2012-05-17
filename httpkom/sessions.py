@@ -2,15 +2,15 @@
 
 import json
 import functools
-import uuid
 
 from flask import g, abort, request, jsonify, make_response, Response
 
 import kom
-from komsession import KomSession, KomSessionError, AmbiguousName, NameNotFound
+from komsession import KomSession, KomSessionError, AmbiguousName, NameNotFound, to_dict
 from flaskapp import app
 from errors import error_response
 from misc import empty_response
+import version
 
 
 _kom_server = 'kom.lysator.liu.se'
@@ -29,11 +29,11 @@ def requires_session(f):
     return decorated
 
 
-def _create_komsession(pers_name, password):
+def _create_komsession(pers_name, password, client_name, client_version):
     ksession = KomSession(_kom_server)
     ksession.connect()
     try:
-        ksession.login(pers_name, password)
+        ksession.login(pers_name, password, client_name, client_version)
         # todo: check for exceptions that we should return 401 for. or
         # should that be done here? we don't want to return http stuff here
     except:
@@ -41,12 +41,10 @@ def _create_komsession(pers_name, password):
         raise
     return ksession
 
-def _save_komsession(ksession):
-    session_id = str(uuid.uuid4())
+def _save_komsession(session_id, ksession):
     kom_sessions[session_id] = ksession
-    return session_id
 
-def _destroy_komsession():
+def _delete_komsession():
     if 'session_id' in request.cookies:
         session_id = request.cookies.get('session_id')
         if session_id in kom_sessions:
@@ -64,11 +62,11 @@ def _get_komsession(session_id):
     
     return None
 
-def _login(pers_name, password):
+def _login(pers_name, password, client_name=version.name, client_version=version.version):
     app.logger.debug("Logging in")
-    ksession = _create_komsession(pers_name, password)
-    session_id = _save_komsession(ksession)
-    return session_id, ksession
+    ksession = _create_komsession(pers_name, password, client_name, client_version)
+    _save_komsession(ksession.id, ksession)
+    return ksession
 
 def _logout(ksession):
     app.logger.debug("Logging out")
@@ -76,7 +74,7 @@ def _logout(ksession):
         ksession.logout()
         ksession.disconnect()
     finally:
-        _destroy_komsession()
+        _delete_komsession()
 
 
 @app.route("/sessions/", methods=['POST'])
@@ -93,7 +91,8 @@ def sessions_create():
     
       POST /sessions/ HTTP/1.1
       
-      { "pers_name": "oskars testp", "password": "test123" }
+      { "pers_name": "oskars testp", "password": "test123",
+        "client": { "name": "jskom", "version": "0.1" } }
     
     .. rubric:: Responses
     
@@ -102,7 +101,8 @@ def sessions_create():
       HTTP/1.1 200 OK
       Set-Cookie: session_id=abc123; expires=Sat, 19-May-2012 12:44:51 GMT; Max-Age=604800; Path=/
       
-      { "id": "abc123", "pers_no": 14506, "pers_name": "Oskars testperson" }
+      { "id": "abc123", "pers_no": 14506, "pers_name": "Oskars testperson",
+        "client": { "name": "jskom", "version": "0.1" } }
     
     Failed login::
     
@@ -125,13 +125,16 @@ def sessions_create():
         # already loggedin, logout first, then try to login with the
         # supplied credentials.
         _logout(old_ksession)
-        
+    
     try:
-        session_id, ksession = _login(request.json['pers_name'], request.json['password'])
-        pers_no = ksession.current_user()
-        pers_name = ksession.get_conf_name(pers_no)
-        response = jsonify(dict(id=session_id, pers_no=pers_no, pers_name=pers_name))
-        response.set_cookie('session_id', value=session_id, max_age=7*24*60*60)
+        if 'client' in request.json and request.json['client'] is not None:
+            ksession = _login(request.json['pers_name'], request.json['password'],
+                              request.json['client']['name'], request.json['client']['version'])
+        else:
+            ksession = _login(request.json['pers_name'], request.json['password'])
+        
+        response = jsonify(to_dict(ksession, True, ksession))
+        response.set_cookie('session_id', value=ksession.id, max_age=7*24*60*60)
         return response
     except (kom.InvalidPassword, kom.UndefinedPerson, kom.LoginDisallowed,
             kom.ConferenceZero) as ex:
@@ -157,7 +160,8 @@ def sessions_get(session_id):
     
       HTTP/1.1 200 OK
       
-      { "id": "abc123", "pers_no": 14506, "pers_name": "Oskars testperson" }
+      { "id": "abc123", "pers_no": 14506, "pers_name": "Oskars testperson",
+        "client": { "name": "jskom", "version": "0.1" } }
 
     Session does not exist (i.e. not logged in)::
     
@@ -174,9 +178,7 @@ def sessions_get(session_id):
     session_id = _get_session_id()
     ksession = _get_komsession(session_id)
     if ksession:
-        pers_no = ksession.current_user()
-        pers_name = ksession.get_conf_name(pers_no)
-        return jsonify(dict(id=session_id, pers_no=pers_no, pers_name=pers_name))
+        return jsonify(to_dict(ksession, True, ksession))
     else:
         return empty_response(404)
 

@@ -3,6 +3,8 @@ _.templateSettings = {
 };
 
 var jskom = {
+    version: "0.1",
+    
     Models: {},
     Collections: {},
     Views: {},

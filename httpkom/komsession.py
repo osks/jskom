@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import mimeparse
+import socket
+import uuid
 import json
+import mimeparse
 
 import kom
 import komauxitems
@@ -41,22 +43,28 @@ MICommentIn_str_to_type = { 'comment': kom.MIC_COMMENT,
 class KomSession(object):
     """Hej!"""
     def __init__(self, host, port=4894):
+        self.id = str(uuid.uuid4())
         self.host = host
         self.port = port
         self.conn = None
+        self.client_name = None
+        self.client_version = None
         
     def connect(self):
-        self.conn = thkom.ThreadedConnection(self.host, self.port, user="httpkom")
+        user = "httpkom%" + socket.getfqdn()
+        self.conn = thkom.ThreadedConnection(self.host, self.port, user=user)
     
     def disconnect(self):
         self.conn.continue_read_loop = False # stops the async thread in ThreadedConnection
         self.conn.socket.close()
         self.conn = None
     
-    def login(self, pers_name, password):
+    def login(self, pers_name, password, client_name, client_version):
+        self.client_name = client_name
+        self.client_version = client_version
         pers_no = self.lookup_name_exact(pers_name, True, False)
         kom.ReqLogin(self.conn, pers_no, password).response()
-        kom.ReqSetClientVersion(self.conn, version.name, version.version)
+        kom.ReqSetClientVersion(self.conn, self.client_name, self.client_version)
         self.conn.set_user(pers_no)
         
     def logout(self):
@@ -122,7 +130,7 @@ class KomSession(object):
         
         aux_items = []
         aux_items.append(kom.AuxItem(kom.AI_CREATING_SOFTWARE,
-                                     data="%s %s" % (version.name, version.version)))
+                                     data="%s %s" % (self.client_name, self.client_version)))
         aux_items.append(kom.AuxItem(kom.AI_CONTENT_TYPE,
                                      data=komtext.get_content_type_str()))
         
@@ -244,6 +252,8 @@ class KomText(object):
 def to_dict(obj, lookups=False, session=None):
     if isinstance(obj, list):
         return [ to_dict(el, lookups, session) for el in obj ]
+    elif isinstance(obj, KomSession):
+        return KomSession_to_dict(obj, lookups, session)
     elif isinstance(obj, KomText):
         return KomText_to_dict(obj, lookups, session)
     elif isinstance(obj, kom.MIRecipient):
@@ -275,6 +285,21 @@ def from_dict(d, cls, lookups=False, session=None):
         return MICommentIn_from_dict(d, lookups, session)
     else:
         raise NotImplementedError("from_dict is not implemented for: %s" % cls)
+
+def KomSession_to_dict(ksession, lookups, session):
+    d= dict(
+        id=ksession.id,
+        pers_no=None,
+        pers_name=None,
+        client=dict(name=ksession.client_name,
+                    version=ksession.client_version))
+    
+    if lookups:
+        pers_no = ksession.current_user()
+        d['pers_no'] = pers_no
+        d['pers_name'] = ksession.get_conf_name(pers_no)
+    
+    return d
 
 def ConfType_to_dict(conf_type, lookups, session):
     return dict(

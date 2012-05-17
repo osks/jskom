@@ -9,7 +9,11 @@ jskom.Models.Session = Backbone.Model.extend({
     defaults: {
         pers_name: null,
         password: null, // TODO: Somehow not store password in model
-        pers_no: null
+        pers_no: null,
+        client: {
+            name: "jskom",
+            version: jskom.version
+        }
     },
     
     validate: function(attrs) {

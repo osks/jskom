@@ -1,6 +1,10 @@
 TODO
 ====
 
-* Sätta klient när man loggar in (POST /sessions/).
-
 * Antal olästa per möte verkar inte uppdateras korrekt.
+
+* Icke-fluid layout.
+
+* Rensa upp i UI:t.
+
+* Dokumentera alla anrop i httpkom.

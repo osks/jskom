@@ -210,12 +210,6 @@ jskom.Views.Session = Backbone.View.extend({
                 console.log("readMarkings.fetch(" + conf_no + ") - success");
                 self.$('#session-container').empty();
                 
-                /*collection.each(function(model) {
-                    self.$('#session-container')
-                        .append(new jskom.Views.TextLink(
-                            { text_no: model.get('text_no') }).render().el);
-                });*/
-                
                 var readQueue = new jskom.Collections.ReadQueue([], { prefetchCount: 3 });
                 collection.each(function(rm) {
                     readQueue.add(new jskom.Models.ReadQueueItem({
