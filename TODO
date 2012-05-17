@@ -8,3 +8,5 @@ TODO
 * Rensa upp i UI:t.
 
 * Dokumentera alla anrop i httpkom.
+
+* Läsordningen är inte djupet-först.
