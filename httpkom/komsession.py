@@ -416,19 +416,24 @@ def MIRecipient_to_dict(mir, lookups, session):
     if not mir.type in MIRecipient_type_to_str:
         raise KeyError("Unknown MIRecipient type: %s" % mir.type)
     
-    return dict(type=MIRecipient_type_to_str[mir.type],
-                recpt=conf_to_dict(mir.recpt, lookups, session),
-                loc_no=mir.loc_no)
+    d = dict(type=MIRecipient_type_to_str[mir.type],
+             conf_no=mir.recpt,
+             loc_no=mir.loc_no)
+    
+    if lookups:
+        d['conf_name'] = session.get_conf_name(mir.recpt)
+    
+    return d
 
 def MIRecipient_from_dict(d, lookups, session):
     if d['type'] not in MIRecipient_str_to_type:
         raise KeyError("Unknown MIRecipient type str: %s" % d['type'])
     
-    if 'conf_no' in d['recpt']:
-        conf_no = d['recpt']['conf_no']
+    if 'conf_no' in d:
+        conf_no = d['conf_no']
     else:
         if lookups:
-            conf_no = session.lookup_name_exact(d['recpt']['conf_name'], True, True)
+            conf_no = session.lookup_name_exact(d['conf_name'], True, True)
         else:
             conf_no = None
     

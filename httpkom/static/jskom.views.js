@@ -2,7 +2,9 @@ jskom.Views.App = Backbone.View.extend({
     el: '#jskom',
     
     template: _.template(
-        '<div id="container" class="container-fluid">' +
+        '<div class="container">' +
+        '  <div id="app-container">' +
+        '  </div>' + 
         '  <hr>' +
         '  <footer>' + 
         '      <p>&copy; <a href="mailto:oskar@osd.se">Oskar Skoog</a> 2012</p>' +
@@ -38,7 +40,7 @@ jskom.Views.App = Backbone.View.extend({
                 this.currentView.remove();
             }
             this.currentView = view;
-            this.$('#container').prepend(this.currentView.render().el);
+            this.$('#app-container').prepend(this.currentView.render().el);
         }
     }
 });
@@ -49,19 +51,21 @@ jskom.Views.Message = Backbone.View.extend({
     
     template: _.template(
         '<a class="close" data-dismiss="alert" href="#">×</a>' +
-        '<h4 class="alert-heading">{{ heading }}</h4>' +
+        '<h4 class="alert-heading alert-{{ level }}">{{ heading }}</h4>' +
         '{{ text }}'
     ),
     
     initialize: function(options) {
         _.bindAll(this, 'render');
-        // todo: level (warning, info, error, etc)
+        this.level = options.level; // (success, info, warning, error)
         this.heading = options.heading;
         this.text = options.text;
+        this.render();
     },
     
     render: function() {
         this.$el.html(this.template({
+            level: this.level,
             heading: this.heading,
             text: this.text
         }));
@@ -71,19 +75,23 @@ jskom.Views.Message = Backbone.View.extend({
 
 jskom.Views.Login = Backbone.View.extend({
     id: 'login',
-    className: 'row-fluid',
     
     template: _.template(
-        '<div class="span6">' +
-        '  <h2>Login</h2>' + 
+        '<div class="row">' +
+        '  <div class="span4">' +
+        '    <h2>Login</h2>' +
         '    <div class="message"></div>' + 
         '    <form>' +
         '      <label>Person name</label>' +
-        '      <input type="text" class="span12" name="pers_name" />' +
+        '      <input type="text" class="span4" name="pers_name" />' +
         '      <label>Password</label>' + 
-        '      <input type="password" class="span12" name="password" />' +
-        '      <button type="submit" class="btn btn-primary">Login</button>' +
-        '   </form>' +
+        '      <input type="password" class="span4" name="password" />' +
+        
+        '      <div class="form-actions">' +
+        '        <button type="submit" class="btn btn-primary">Login</button>' +
+        '      </div>' +
+        '    </form>' +
+        '  </div>' +
         '</div>'
     ),
     
@@ -123,7 +131,7 @@ jskom.Views.Login = Backbone.View.extend({
                     self.$('.message').append(new jskom.Views.Message({
                         heading: 'Error!',
                         text: resp.responseText
-                    }).render().el);
+                    }).el);
                 }
             }
         );
@@ -134,9 +142,8 @@ jskom.Views.Session = Backbone.View.extend({
     id: 'session',
     
     template: _.template(
-        '<div class="row-fluid">' + 
+        '<div class="row">' +
         '  <div class="span8">' +
-        '    <button class="btn create-text">Create text</button>' +
         '    <h2 class="headline"></h2>' + 
         '    <div class="message"></div>' +
         '    <div id="session-container"></div>' +
@@ -145,19 +152,11 @@ jskom.Views.Session = Backbone.View.extend({
     ),
     
     events: {
-        'click .create-text': 'onCreateText' // temp
     },
     
     initialize: function() {
-        _.bindAll(this, 'render', 'authFailed', 'showUnreadConfs', 'showText', 'onCreateText');
+        _.bindAll(this, 'render', 'authFailed', 'showUnreadConfs', 'showText', 'newText');
         this.model.on('destroy', this.remove, this);
-    },
-    
-    onCreateText: function(e) {
-        this.$('#session-container')
-            .empty()
-            .append(new jskom.Views.CreateText({ model: new jskom.Models.Text() }).render().el);
-        return false;
     },
     
     render: function() {
@@ -193,7 +192,7 @@ jskom.Views.Session = Backbone.View.extend({
                     self.$('.message').append(new jskom.Views.Message({
                         heading: 'Error!',
                         text: resp.responseText
-                    }).render().el);
+                    }).el);
                 }
             }
         });
@@ -230,7 +229,7 @@ jskom.Views.Session = Backbone.View.extend({
                     self.$('.message').append(new jskom.Views.Message({
                         heading: 'Error!',
                         text: resp.responseText
-                    }).render().el);
+                    }).el);
                 }
             }
         });
@@ -240,35 +239,47 @@ jskom.Views.Session = Backbone.View.extend({
         this.$('.headline').text('Text: ' + text_no);
         
         var self = this;
-        new jskom.Models.Text({ text_no: text_no }).fetch({
-            success: function(t, resp) {
+        var text = new jskom.Models.Text({ text_no: text_no });
+        text.fetch().done(
+            function(data) {
                 console.log("text.fetch - success");
                 
-                var view = new jskom.Views.ShowText({ model: t });
-                self.$('#session-container').empty().append(view.render().el);
-            },
-            error: function(t, resp) {
+                self.$('#session-container').empty().append(
+                    new jskom.Views.ShowText({ model: text }).render().el);
+            }
+        ).fail(
+            function(jqXHR, textStatus) {
                 console.log("text.fetch - error");
-                if (resp.status == 401) {
+                
+                if (jqXHR.status == 401) {
                     self.authFailed();
                 } else {
                     // TODO: error handling
                     self.$('.message').append(new jskom.Views.Message({
                         heading: 'Error!',
-                        text: resp.responseText
-                    }).render().el);
+                        text: jqXHR.responseText
+                    }).el);
                 }
             }
-        });
-    }
+        );
+    },
+    
+    newText: function() {
+        this.$('.headline').text('New text');
+        
+        this.$('#session-container')
+            .empty()
+            .append(new jskom.Views.CreateText({ model: new jskom.Models.Text() }).render().el);
+    },
+    
 });
 
 jskom.Views.Reader = Backbone.View.extend({
     template: _.template(
         '<div class="message"></div>' +
         '<div class="reader-container"></div>' +
-        '<div class="reader-controls">' +
-        '  <button class="home btn">Back to conference list</button>' +
+        '<div class="reader-controls form-actions">' +
+        '  <button class="home btn">Back to conference list</button> ' +
         '</div>'
     ),
     
@@ -315,7 +326,7 @@ jskom.Views.Reader = Backbone.View.extend({
                         self.$('.message').append(new jskom.Views.Message({
                             heading: 'Error!',
                             text: jqXHR.responseText
-                        }).render().el);
+                        }).el);
                     }
                 }
             );
@@ -384,17 +395,25 @@ jskom.Views.Menu = Backbone.View.extend({
     template: _.template(
         '<div class="navbar navbar-fixed-top">' +
         '  <div class="navbar-inner">' +
-        '    <div id="menu-container" class="container-fluid">' +
-        '      <a class="brand" href="{{ homeUrl }}">jskom</a>' +
+        '    <div class="container" id="menu-container">' +
+        '      <a class="brand" href="{{ home_url }}">jskom</a>' +
         '    </div>' +
         '  </div>' +
         '</div>'
     ),
     
-    rightTemplate: _.template(
-        '<div id="menu-right" class="btn-group pull-right">' +
+    loggedInMenuTemplate: _.template(
+        '<ul class="nav">' +
+        '  <li class="active">' +
+        '    <a class="home" href="{{ home_url }}">Home</a>' +
+        '  </li>' +
+        '  <li>' +
+        '    <a class="new-text" href="{{ new_text_url }}">New text</a>' +
+        '  </li>' +
+        '</ul>' +
+        '<div class="btn-group pull-right" id="menu-right">' +
         '  <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">' +
-        '    <i class="icon-user"></i> {{ pers_name }}' +
+        '    <i class="icon-user"></i> {{ model.pers_name }}' +
         '    <span class="caret"></span>' +
         '  </a>' +
         '  <ul class="dropdown-menu">' +
@@ -404,36 +423,48 @@ jskom.Views.Menu = Backbone.View.extend({
     ),
     
     events: {
-        'click #menu-nav a.home': 'onClickHome',
-        'click #menu-right a.logout ': 'onClickLogout'
+        'click a.home': 'onClickHome',
+        'click a.new-text': 'onClickNewText',
+        'click a.logout ': 'onClickLogout'
     },
     
     initialize: function() {
-        _.bindAll(this, 'render', 'onClickHome');
+        _.bindAll(this, 'render', 'onClickHome', 'onClickNewText', 'onClickLogout');
         this.model.on('change', this.render, this);
         this.model.on('destroy', this.remove, this);
+        
+        // TODO: Model for the menu, so we can have active/inactive menu options
     },
     
     render: function() {
         this.$el.empty();
-        this.$el.append(this.template({ homeUrl: jskom.router.url('') }));
+        this.$el.append(this.template({ home_url: jskom.router.url('') }));
         
         if (!this.model.isNew()) { // is this a correct check?
-            this.$('#menu-container').append(this.rightTemplate(this.model.toJSON()));
+            this.$('#menu-container').append(this.loggedInMenuTemplate({
+                home_url: jskom.router.url(''),
+                new_text_url: jskom.router.url('texts/new'),
+                model: this.model.toJSON()
+            }));
         }
         
         return this;
     },
     
-    onClickHome: function(e) {
-        e.preventDefault();
+    onClickHome: function() {
         jskom.router.home();
+        return false;
+    },
+    
+    onClickNewText: function() {
+        jskom.router.newText();
+        return false;
     },
     
     onClickLogout: function(e) {
-        e.preventDefault();
         this.model.destroy();
         jskom.router.login();
+        return false;
     }
 });
 
@@ -453,15 +484,15 @@ jskom.Views.UnreadConferences = Backbone.View.extend({
     },
     
     addAll: function() {
-        if (this.collection.length > 0) {
-            var confsWithUnread = this.collection.each(this.addOne);
-        } else {
+        if (this.collection.isEmpty()) {
             this.$el.append("<li>Nothing unread.</li>");
+        } else {
+            this.collection.each(this.addOne);
         }
     },
     
     addOne: function(model) {
-        view = new jskom.Views.UnreadConference({ model: model });
+        var view = new jskom.Views.UnreadConference({ model: model });
         view.render();
         this.$el.append(view.el);
         model.on('remove', view.remove);
@@ -473,7 +504,7 @@ jskom.Views.UnreadConference = Backbone.View.extend({
     
     template: _.template(
         '<span class="name">' +
-        '  <a class="conf" href="{{ conf_url }}">{{ name }}</a>' +  // FIXME: href
+        '  <a class="conf" href="{{ conf_url }}">{{ name }}</a>' +
         '</span> ' +
         '(<span class="no_of_unread">{{ no_of_unread }}</span>)'
     ),
@@ -497,33 +528,123 @@ jskom.Views.UnreadConference = Backbone.View.extend({
     onClick: function(e) {
         e.preventDefault();
         jskom.router.showUnreadTextsInConf(this.model.get('conf_no'));
-    }
+    },
+});
+
+
+jskom.Views.RecipientList = Backbone.View.extend({
+    className: 'recipient_list',
+    
+    template: _.template(
+        '<label>Recipients</label>' +
+        '<button class="btn btn-small btn-success add-recipient">' +
+        '  Add recipient' +
+        '</button>' +
+        '<p/>' +
+        '<div class="recipients"></div>'
+    ),
+    
+    events: {
+        'click .add-recipient': 'addRecipient',
+    },
+    
+    initialize: function() {
+        _.bindAll(this, 'render', 'addRecipient', 'addAllViews', 'addOneView');
+        if (this.collection.isEmpty()) {
+            // Always start with at least one recipient
+            this.collection.add(new jskom.Models.Recipient({ type: 'to', conf_name: '' }));
+        }
+        this.collection.on('add', this.addOneView);        
+    },
+    
+    render: function() {
+        this.$el.empty().append(this.template());
+        this.addAllViews();
+        return this;
+    },
+    
+    addAllViews: function() {
+        this.collection.each(this.addOneView);
+    },
+    
+    addOneView: function(model) {
+        var view = new jskom.Views.Recipient({ model: model }).render();
+        view.on('model:remove', function() {
+            this.collection.remove(model);
+        }, this);
+        this.$('.recipients').append(view.el).append("<p/>");
+        model.on('remove', view.remove, view);
+    },
+    
+    addRecipient: function(e) {
+        e.preventDefault();
+        this.collection.add(new jskom.Models.Recipient({ type: 'to', conf_name: '' }));
+    },
+});
+
+jskom.Views.Recipient = Backbone.View.extend({
+    tagName: 'fieldset',
+    // this part is form-inline, to be able to align button and select correctly
+    className: 'recipient row form-inline',
+    
+    template: _.template(
+        '  <div class="span8">' +
+        '      <select class="input-small" name="type">' +
+        '        <option value="to" {{ to_selected }}>To</option>' +
+        '        <option value="cc" {{ cc_selected }}>CC</option>' +
+        '        <option value"bcc" {{ bcc_selected }}>BCC</option>' +
+        '      </select>' +
+        '      <input class="span5" type="text" name="conf_name" ' +
+        '             value="{{ model.conf_name }}" />' +
+        '      <button class="btn btn-mini btn-danger remove-recipient">Remove"</button>' +
+        '  </div>'
+    ),
+    
+    events: {
+        'click .remove-recipient': 'removeRecipient',
+    },
+    
+    initialize: function() {
+        _.bindAll(this, 'render', 'removeRecipient');
+    },
+    
+    render: function() {
+        var type = this.model.get('type');
+        this.$el.empty().append(this.template({
+            model: this.model.toJSON(),
+            
+            to_selected: (type == 'to' ? 'selected="selected"' : ''),
+            cc_selected: (type == 'cc' ? 'selected="selected"' : ''),
+            bcc_selected: (type == 'bcc' ? 'selected="selected"' : ''),
+        }));
+        return this;
+    },
+    
+    removeRecipient: function(e) {
+        e.preventDefault();
+        this.trigger('model:remove', this.model);
+    },
 });
 
 jskom.Views.CreateText = Backbone.View.extend({
     template: _.template(
         '<div class="message"></div>' +
         '    <form>' +
-
-        '      {{ recipient_list_template }}' +
-           
+        
         '      <label>Subject</label>' + 
-        '      <input type="text" class="span12" name="subject" value="{{ model.subject }}" />' +
+        '      <input class="span8" type="text" name="subject" value="{{ model.subject }}" />' +
             
         '      <label>Body</label>' +
-        '      <textarea class="span12" name="body" rows="5">{{ model.body }}</textarea>' +
-            
-        '      <button type="submit" class="btn btn-primary">Post</button>' +
+        '      <textarea class="span8" name="body" rows="5">{{ model.body }}</textarea>' +
+
+        '      <div class="form-actions">' + 
+        '        <input type="submit" class="btn btn-primary" value="Post" />' +
+        '      </div>' + 
         '   </form>'
     ),
     
-    recipientListTemplate: _.template(
-        '<label>{{ type }}:</label>' +
-        '<input type="text" class="span12" name="recipient" value="{{ recpt.conf_name }}" />'
-    ),
-    
     events: {
-        'submit form': 'onSubmit'
+        'submit form': 'onSubmit',
     },
     
     initialize: function() {
@@ -531,18 +652,23 @@ jskom.Views.CreateText = Backbone.View.extend({
     },
     
     render: function() {
-        this.$el.empty().append(this.template({
-            model: this.model.toJSON(),
-            recipient_list_template: _.reduce(this.model.get('recipient_list'), function(memo, r) {
-                return memo + this.recipientListTemplate(r);
-            }, "", this)
+        this.$el.empty();
+        
+        this.$el.append(this.template({
+            model: this.model.toJSON()
         }));
+        
+        this.$('form').prepend(new jskom.Views.RecipientList({
+            collection: this.model.get('recipient_list')
+        }).render().el);
+        
         return this;
     },
     
     onSubmit: function(e) {
         e.preventDefault();
         var self = this;
+
         this.model.save({
             content_type: "text/x-kom-basic",
             subject: this.$('input[name=subject]').val(),
@@ -559,7 +685,7 @@ jskom.Views.CreateText = Backbone.View.extend({
                 self.$('.message').append(new jskom.Views.Message({
                     heading: 'Error!',
                     text: resp.responseText
-                }).render().el);
+                }).el);
             }
         });
     }

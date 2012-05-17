@@ -55,6 +55,18 @@ jskom.Models.Session = Backbone.Model.extend({
     }
 });
 
+jskom.Models.Recipient = Backbone.Model.extend({
+    defaults: {
+        type: null,
+        conf_name: null,
+        conf_no: null
+    }
+});
+
+jskom.Collections.RecipientList = Backbone.Collection.extend({
+    model: jskom.Models.Recipient
+});
+
 jskom.Models.Text = Backbone.Model.extend({
     idAttribute: 'text_no',
     
@@ -68,7 +80,6 @@ jskom.Models.Text = Backbone.Model.extend({
         text_no: null,
         creation_time: null,
         author: null,
-        recipient_list: null,
         comment_to_list: null,
         comment_in_list: null,
         content_type: null,
@@ -78,15 +89,43 @@ jskom.Models.Text = Backbone.Model.extend({
     
     initialize: function(options) {
         this._fetchDeferred = null; // created when deferredFetch is called the first time.
+        this.set({ recipient_list: new jskom.Collections.RecipientList() });
     },
     
+    toJSON: function() {
+        var json = _.clone(this.attributes);
+        if (this.get('recipient_list')) {
+            json.recipient_list = this.get('recipient_list').map(function(recipient) {
+                return recipient.toJSON();
+            });
+        } else {
+            json.recipient_list = null;
+        }
+        console.log("text.toJSON:");
+        console.log(json);
+        return json;
+    },
+    
+    parse: function(resp, xhr) {
+        var recipientListJson = resp.recipient_list;
+        var recipients = _.map(recipientListJson, function(recipientJson) {
+            var r = new jskom.Models.Recipient();
+            r.set(r.parse(recipientJson), { silent: true });
+            return r;
+        });
+        // overwrite the json with the parsed collection
+        resp.recipient_list = new jskom.Collections.RecipientList(recipients);
+        return resp;
+    },
+
     deferredFetch: function() {
         if (!this._fetchDeferred) {
             var self = this;
-            this._fetchDeferred = this.fetch().then(
+            this._fetchDeferred = this.fetch().done(
                 function(data) {
                     console.log("text.deferredFetch(" + self.get('text_no') + ") - success");
-                },
+                }
+            ).fail(
                 function(jqXHR, textStatus) {
                     console.log("text.deferredFetch(" + self.get('text_no') + ") - error");
                 }

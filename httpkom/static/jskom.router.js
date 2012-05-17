@@ -2,6 +2,7 @@ jskom.Router = Backbone.Router.extend({
     routes: {
         "": "home",
         "login": "login",
+        "texts/new": "newText",
         "texts/:text_no": "showText",
         //"conferences/:conf_no": "foo",
         "conferences/:conf_no/unread": "showUnreadTextsInConf",
@@ -42,6 +43,15 @@ jskom.Router = Backbone.Router.extend({
         
         this._withSessionView(function() {
             this.showUnreadConfs();
+        });
+    },
+    
+    newText: function() {
+        console.log('route - newText');
+        this.navigate('texts/new');
+        
+        this._withSessionView(function() {
+            this.newText();
         });
     },
     
