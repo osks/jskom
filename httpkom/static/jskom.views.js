@@ -592,7 +592,7 @@ jskom.Views.Recipient = Backbone.View.extend({
         '      <select class="input-small" name="recipient_list.{{index}}.type">' +
         '        <option value="to" {{ to_selected }}>To</option>' +
         '        <option value="cc" {{ cc_selected }}>CC</option>' +
-        '        <option value"bcc" {{ bcc_selected }}>BCC</option>' +
+        '        <option value="bcc" {{ bcc_selected }}>BCC</option>' +
         '      </select>' +
         '      <input class="span5" type="text" name="recipient_list.{{index}}.conf_name" ' +
         '             value="{{ model.conf_name }}" />' +
@@ -694,10 +694,19 @@ jskom.Views.CreateText = Backbone.View.extend({
             function(jqXHR, textStatus) {
                 console.log("text.save - error");
                 // TODO: real error handling
-                self.$('.message').append(new jskom.Views.Message({
-                    heading: 'Error!',
-                    text: jqXHR.responseText
-                }).el);
+                if (jqXHR.status == 401) {
+                    self.$('.message').append(new jskom.Views.Message({
+                        level: 'error',
+                        heading: 'Unauthorized!',
+                        text: "Your session has probably ended."
+                    }).el);
+                } else {
+                    self.$('.message').append(new jskom.Views.Message({
+                        level: 'error',
+                        heading: 'Error!',
+                        text: jqXHR.responseText
+                    }).el);
+                }
             }
         );
     }
