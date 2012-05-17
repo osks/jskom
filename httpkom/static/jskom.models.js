@@ -57,7 +57,7 @@ jskom.Models.Text = Backbone.Model.extend({
     url: function() {
         var base = '/texts/';
         if (this.isNew()) return base;
-        return base + this.id;
+        return base + this.get('text_no');
     },
     
     defaults: {
@@ -70,6 +70,29 @@ jskom.Models.Text = Backbone.Model.extend({
         content_type: null,
         subject: '',
         body: ''
+    },
+    
+    initialize: function(options) {
+        this._fetchDeferred = null; // created when deferredFetch is called the first time.
+    },
+    
+    deferredFetch: function() {
+        if (!this._fetchDeferred) {
+            var self = this;
+            this._fetchDeferred = this.fetch().then(
+                function(data) {
+                    console.log("text.deferredFetch(" + self.get('text_no') + ") - success");
+                },
+                function(jqXHR, textStatus) {
+                    console.log("text.deferredFetch(" + self.get('text_no') + ") - error");
+                }
+            );
+        }
+        return this._fetchDeferred;
+    },
+    
+    markAsReadGlobal: function() {
+        return new jskom.Models.GlobalReadMarking({ text_no: this.get('text_no') }).save();
     },
     
     makeCommentTo: function(otherText) {
@@ -92,48 +115,36 @@ jskom.Models.Text = Backbone.Model.extend({
 jskom.Models.ReadQueueItem = Backbone.Model.extend({
     idAttribute: 'text_no',
     
-    initialize: function(options) {
-        this.globalReadMarking = new jskom.Models.GlobalReadMarking({
-            text_no: this.get('text_no')
-        });
-        
-        // for text fetching
-        this.textDeferred = null;
-        this.text = null; // available after the fetch is done
+    defaults: {
+        text_no: null,
+        text: null,
     },
     
-    fetchText: function() {
-        // TODO: If we have already started fetching a text and then calls this
-        // method again, we should be able to attach the success/error callback to
-        // the ongoing fetch, instead of starting a new fetch.
-        
-        if (!this.textDeferred) {
-            var self = this;
-            this.text = new jskom.Models.Text({ text_no: this.get('text_no') });
-            this.textDeferred = this.text.fetch().then(
-                function(data) {
-                    console.log("ReadQueueItem.fetchText(" +
-                                self.text.get('text_no') + ") - success");
-                },
-                function(jqXHR, textStatus) {
-                    console.log("ReadQueueItem.fetchText(" +
-                                self.text.get('text_no') + ") - error");
-                }
-            );
-        }
-        return this.textDeferred;
+    initialize: function(options) {
+        this.set({ text: new jskom.Models.Text({ text_no: this.get('text_no') }) });
     }
 }),
 
 jskom.Collections.ReadQueue = Backbone.Collection.extend({
     model: jskom.Models.ReadQueueItem,
     
-    shiftAndPrefetchNextText: function() {
-        var cur = this.shift();
-        if (!this.isEmpty()) {
-            this.at(0).fetchText();
-        }
-        return cur;
+    initialize: function(models, options) {
+        options || (options = { prefetchCount: 0 })
+        this._prefetchCount = options.prefetchCount;
+        
+        this.on('add', function(model, collection, opts) {
+            if (opts.index < this._prefetchCount) {
+                console.log("readQueue:add - prefetching text: " + model.get('text_no'));
+                model.get('text').deferredFetch();
+            }
+        }, this);
+        this.on('remove', function(model, collection, opts) {
+            if (opts.index < this._prefetchCount && this.length >= this._prefetchCount) {
+                var text = this.at(this._prefetchCount - 1).get('text');
+                console.log("readQueue:remove - prefetching text: " + text.get('text_no'));
+                text.deferredFetch();
+            }
+        }, this);
     }
 });
 

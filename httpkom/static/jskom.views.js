@@ -216,13 +216,13 @@ jskom.Views.Session = Backbone.View.extend({
                             { text_no: model.get('text_no') }).render().el);
                 });*/
                 
-                var readQueue = new jskom.Collections.ReadQueue();
+                var readQueue = new jskom.Collections.ReadQueue([], { prefetchCount: 3 });
                 collection.each(function(rm) {
                     readQueue.add(new jskom.Models.ReadQueueItem({
                         text_no: rm.get('text_no')
                     }));
                 });
-
+                
                 self.$('#session-container').append(new jskom.Views.Reader({
                     collection: readQueue
                 }).render().el);
@@ -252,13 +252,6 @@ jskom.Views.Session = Backbone.View.extend({
                 
                 var view = new jskom.Views.ShowText({ model: t });
                 self.$('#session-container').empty().append(view.render().el);
-        
-                self.$el.append(new jskom.Views.MarkAsRead({
-                    model: new jskom.Models.GlobalReadMarking({
-                        text_no: t.get('text_no')
-                    })
-                }).render().el);
-
             },
             error: function(t, resp) {
                 console.log("text.fetch - error");
@@ -281,51 +274,46 @@ jskom.Views.Reader = Backbone.View.extend({
         '<div class="message"></div>' +
         '<div class="reader-container"></div>' +
         '<div class="reader-controls">' +
-        '  <button class="confs btn">Back to conference list</button>' +
-        '  <button class="next btn btn-primary">Next unread text</button>' +
+        '  <button class="home btn">Back to conference list</button>' +
         '</div>'
+    ),
+    
+    nextButtonTemplate: _.template(
+        '<button class="next btn btn-primary">Next unread text</button>'
     ),
     
     events: {
         'click .next': 'onNext',
-        'click .confs': 'onBack'
+        'click .home': 'onHome'
     },
     
     initialize: function() {
-        _.bindAll(this, 'render', 'onNext', 'onBack', 'showText', 'moveNext');
-        this.collection.on('remove', this.render, this);
-        this.moveNext();
+        _.bindAll(this, 'render', 'onNext', 'onHome', 'showText');
     },
     
     render: function() {
         this.$el.empty();
         this.$el.append(this.template());
         
-        if (this.current == null) {
+        if (this.collection.isEmpty()) {
             this.$('.reader-container').append("Nothing to read.");
         } else {
+            var text = this.collection.first().get('text');
             var self = this;
-            this.current.fetchText().then(
+            text.deferredFetch().then(
                 function(data) {
-                    console.log("this.current.fetchText - success");
-                    self.showText(self.current.text);
+                    self.showText(text);
                     
-                    // TODO: where should we do this?  Idea: when it
+                    // TODO: where should we mark the text as read?  Idea: when it
                     // succeeds, put up a small button somewhere where
                     // one can click to mark the text as unread again.
                     // That means that we should probably not do this
                     // marking in the render() method.  With the
                     // possiblity to mark as unread, it might be fine
                     // to mark them in the moveNext method?
-                    self.current.globalReadMarking.save(); // error handling?
-                    
-                    if (self.collection.length < 2) {
-                        self.$('.next').hide();
-                        self.$('.confs').addClass('btn-primary');
-                    }
+                    //text.markAsReadGlobal(); // error handling?
                 },
                 function(jqXHR, textStatus) {
-                    console.log("this.current.fetchText - error");
                     if (jqXHR.status == 401) {
                         jskom.router.login();
                     } else {
@@ -344,30 +332,26 @@ jskom.Views.Reader = Backbone.View.extend({
         return this;
     },
     
-    moveNext: function() {
-        if (this.collection.isEmpty()) {
-            this.current = null;
-        } else {
-            this.current = this.collection.shiftAndPrefetchNextText();
-        }
-    },
-    
     showText: function(text) {
-        self.$('.reader-container').append(
+        this.$('.reader-container').append(
             new jskom.Views.ShowText({ model: text }).render().el
         );
         
+        if (this.collection.length > 1) {
+            this.$('.reader-controls').append(this.nextButtonTemplate());
+        }
+        
         // This is a nice feature, but a bit odd to have the code for this here
-        jskom.router.navigate('texts/' + text.get('text_no'));
+        //jskom.router.navigate('texts/' + text.get('text_no'));
     },
     
     onNext: function(e) {
         e.preventDefault();
-        this.moveNext();
+        this.collection.shift();
         this.render();
     },
     
-    onBack: function(e) {
+    onHome: function(e) {
         e.preventDefault();
         jskom.router.home();
     }
@@ -455,6 +439,7 @@ jskom.Views.Menu = Backbone.View.extend({
     onClickLogout: function(e) {
         e.preventDefault();
         this.model.destroy();
+        jskom.router.login();
     }
 });
 
@@ -668,41 +653,4 @@ jskom.Views.ShowText = Backbone.View.extend({
         newText.makeCommentTo(this.model);
         this.$el.append(new jskom.Views.CreateText({ model: newText }).render().el);
     }
-});
-
-jskom.Views.MarkAsRead = Backbone.View.extend({
-    tagName: 'div',
-    
-    template: _.template(
-        '<form>' +
-        '  <button class="btn" type="submit">Mark as read</button>' +
-        '</form>'
-    ),
-    
-    events: {
-        'submit form': 'onSubmit'
-    },
-    
-    initialize: function() {
-        _.bindAll(this, 'render', 'onSubmit');
-    },
-    
-    onSubmit: function(e) {
-        e.preventDefault();
-        var self = this;
-        this.model.save({}, {
-            success: function(model, resp) {
-                self.remove();
-            },
-            error: function(model, resp) {
-                // what, can things fail?
-                self.$el.append('(error: ' + resp.responseText + ')');
-            }
-        });
-    },
-    
-    render: function() {
-        this.$el.html(this.template());
-        return this;
-    },
 });

@@ -27,7 +27,7 @@ jskom.Router = Backbone.Router.extend({
         console.log('route - login');
         this.navigate('login', { replace: true });
         if (this.session) {
-            this.session.destroy(); // destroy / logout any existing session
+            this.session.destroy({ silent: true }); // destroy / logout any existing session
         }
         this.session = new jskom.Models.Session();
         this.sessionView = null;
@@ -70,10 +70,6 @@ jskom.Router = Backbone.Router.extend({
             console.log("on login");
             this.navigate('', { replace: true });
             this.home();
-        }, this);
-        session.on('destroy', function() {
-            console.log("on session.destroy");
-            this.login();
         }, this);
     },
     
