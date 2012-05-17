@@ -122,11 +122,17 @@ class KomSession(object):
     def create_text(self, komtext):
         misc_info = kom.CookedMiscInfo()
         
-        for rec in komtext.recipient_list:
-            misc_info.recipient_list.append(rec)
+        if komtext.recipient_list is not None:
+            for rec in komtext.recipient_list:
+                if rec is not None:
+                    misc_info.recipient_list.append(rec)
         
-        for ct in komtext.comment_to_list:
-            misc_info.comment_to_list.append(ct)
+        if komtext.comment_to_list is not None:
+            for ct in komtext.comment_to_list:
+                if ct is not None:
+                    misc_info.comment_to_list.append(ct)
+        
+        print misc_info.to_string()
         
         aux_items = []
         aux_items.append(kom.AuxItem(kom.AI_CREATING_SOFTWARE,
@@ -198,13 +204,22 @@ class KomText(object):
     def __init__(self, text_no=None, text=None, text_stat=None):
         self.text_no = text_no
         
-        if text_stat is not None:
+        if text_stat is None:
+            self.content_type = None
+            self.creation_time = None
+            self.author = None
+            self.recipient_list = None
+            self.comment_to_list = None
+            self.comment_in_list = None
+            self.subject = None
+            self.body = None
+        else:
             mime_type, encoding = parse_content_type(
                 self._get_content_type_from_text_stat(text_stat))
             self.content_type=mime_type_tuple_to_str(mime_type)
             
-            self.creation_time=text_stat.creation_time
-            self.author=text_stat.author
+            self.creation_time=text_stat.creation_time if text_stat else None
+            self.author=text_stat.author if text_stat else None
             self.recipient_list=text_stat.misc_info.recipient_list
             self.comment_to_list=text_stat.misc_info.comment_to_list
             self.comment_in_list=text_stat.misc_info.comment_in_list
@@ -351,19 +366,37 @@ def KomUnreadConference_to_dict(conf, lookups, session):
         )
 
 def KomText_to_dict(komtext, lookups, session):
-    return dict(
+    d = dict(
         text_no=komtext.text_no,
-        creation_time=komtext.creation_time.to_date_and_time(),
         author=pers_to_dict(komtext.author, lookups, session),
         content_type=komtext.content_type,
         subject=komtext.subject,
-        body=komtext.body,
-        recipient_list=[ to_dict(r, lookups, session)
-                         for r in komtext.recipient_list ],
-        comment_to_list=[ to_dict(ct, lookups, session)
-                          for ct in komtext.comment_to_list ],
-        comment_in_list=[ to_dict(ci, lookups, session)
-                          for ci in komtext.comment_in_list ])
+        body=komtext.body)
+    
+    if komtext.recipient_list is None:
+        d['recipient_list'] = None
+    else:
+        d['recipient_list'] = [ to_dict(r, lookups, session)
+                                for r in komtext.recipient_list ]
+    
+    if komtext.comment_to_list is None:
+        d['comment_to_list'] = None
+    else:
+        d['comment_to_list'] = [ to_dict(ct, lookups, session)
+                                 for ct in komtext.comment_to_list ]
+    
+    if komtext.comment_in_list is None:
+        d['comment_in_list'] = None
+    else:
+        d['comment_in_list'] = [ to_dict(ci, lookups, session)
+                                 for ci in komtext.comment_in_list ]
+    
+    if komtext.creation_time is None:
+        d['creation_time'] = None
+    else:
+        d['creation_time'] = komtext.creation_time.to_date_and_time()
+        
+    return d
 
 def KomText_from_dict(d, lookups, session):
     kt = KomText()
@@ -376,15 +409,19 @@ def KomText_from_dict(d, lookups, session):
     kt.subject = d['subject']
     kt.body = d['body']
     
-    kt.recipient_list = []
     if 'recipient_list' in d and d['recipient_list'] is not None:
+        kt.recipient_list = []
         for r in d['recipient_list']:
             kt.recipient_list.append(from_dict(r, kom.MIRecipient, lookups, session))
+    else:
+        kt.recipient_list = None
     
-    kt.comment_to_list = []
     if 'comment_to_list' in d and d['comment_to_list'] is not None:
+        kt.comment_to_list = []
         for ct in d['comment_to_list']:
             kt.comment_to_list.append(from_dict(ct, kom.MICommentTo, lookups, session))
+    else:
+        kt.comment_to_list = None
     
     # comment_in typically makes no sense here, but we add them anyway
     # for sake of completeness. The reason it makes little sense is
@@ -393,10 +430,12 @@ def KomText_from_dict(d, lookups, session):
     # comments to your new text. However, we don't know for sure here
     # what the purpose is, so we leave it to KomSession.create_text to not
     # make use of kt.comment_in_list.
-    kt.comment_in_list = []
     if 'comment_in_list' in d and d['comment_in_list'] is not None:
+        kt.comment_in_list = []
         for ci in d['comment_in_list']:
             kt.comment_in_list.append(from_dict(ci, kom.MICommentIn, lookups, session))
+    else:
+        kt.comment_in_list = None
     
     return kt
 
@@ -429,7 +468,7 @@ def MIRecipient_from_dict(d, lookups, session):
     if d['type'] not in MIRecipient_str_to_type:
         raise KeyError("Unknown MIRecipient type str: %s" % d['type'])
     
-    if 'conf_no' in d:
+    if 'conf_no' in d and d['conf_no'] is not None:
         conf_no = d['conf_no']
     else:
         if lookups:

@@ -554,7 +554,7 @@ jskom.Views.RecipientList = Backbone.View.extend({
             // Always start with at least one recipient
             this.collection.add(new jskom.Models.Recipient({ type: 'to', conf_name: '' }));
         }
-        this.collection.on('add', this.addOneView);        
+        this.collection.on('add', this.addOneView);
     },
     
     render: function() {
@@ -589,12 +589,12 @@ jskom.Views.Recipient = Backbone.View.extend({
     
     template: _.template(
         '  <div class="span8">' +
-        '      <select class="input-small" name="type">' +
+        '      <select class="input-small" name="recipient_list.{{index}}.type">' +
         '        <option value="to" {{ to_selected }}>To</option>' +
         '        <option value="cc" {{ cc_selected }}>CC</option>' +
         '        <option value"bcc" {{ bcc_selected }}>BCC</option>' +
         '      </select>' +
-        '      <input class="span5" type="text" name="conf_name" ' +
+        '      <input class="span5" type="text" name="recipient_list.{{index}}.conf_name" ' +
         '             value="{{ model.conf_name }}" />' +
         '      <button class="btn btn-mini btn-danger remove-recipient">Remove"</button>' +
         '  </div>'
@@ -604,13 +604,14 @@ jskom.Views.Recipient = Backbone.View.extend({
         'click .remove-recipient': 'removeRecipient',
     },
     
-    initialize: function() {
+    initialize: function(options) {
         _.bindAll(this, 'render', 'removeRecipient');
     },
     
     render: function() {
         var type = this.model.get('type');
         this.$el.empty().append(this.template({
+            index: this.model.cid,
             model: this.model.toJSON(),
             
             to_selected: (type == 'to' ? 'selected="selected"' : ''),
@@ -667,27 +668,38 @@ jskom.Views.CreateText = Backbone.View.extend({
     
     onSubmit: function(e) {
         e.preventDefault();
+        
+        var serializedForm = this.$('form').toObject({ skipEmpty: false });
+        
+        // Update the recipient list collection
+        if (serializedForm.recipient_list) {
+            _.each(serializedForm.recipient_list, function(recipient, cid) {
+                this.model.get('recipient_list').getByCid(cid).set(recipient);
+            }, this);
+            delete serializedForm.recipient_list;
+        }
+        
         var self = this;
-
-        this.model.save({
+        this.model.save(_.extend(serializedForm, {
             content_type: "text/x-kom-basic",
-            subject: this.$('input[name=subject]').val(),
-            body: this.$('textarea[name=body]').val()
-        }, {
-            success: function(model, resp) {
+        })).done(
+            function(data) {
                 console.log("text.save - success");
                 self.remove();
-                jskom.router.showText(model.get('text_no'));
-            },
-            error: function(model, resp) {
+                // FIXME: this will break a ReadQueue. Add to read queue instead of go there?
+                // But it's fine going there if we just enter the text form nothing.
+                jskom.router.showText(self.model.get('text_no'));
+            }
+        ).fail(
+            function(jqXHR, textStatus) {
                 console.log("text.save - error");
                 // TODO: real error handling
                 self.$('.message').append(new jskom.Views.Message({
                     heading: 'Error!',
-                    text: resp.responseText
+                    text: jqXHR.responseText
                 }).el);
             }
-        });
+        );
     }
 });
 
@@ -720,7 +732,7 @@ jskom.Views.ShowText = Backbone.View.extend({
     ),
     
     recipientTemplate: _.template(
-        '<div>{{ type }}: {{ recpt.conf_name }}</div>'
+        '<div>{{ type }}: {{ conf_name }}</div>'
     ),
     
     commentInTemplate: _.template(
@@ -742,8 +754,8 @@ jskom.Views.ShowText = Backbone.View.extend({
             return memo + this.commentToTemplate(ct);
         }, "", this);
         
-        var recipients = _.reduce(this.model.get('recipient_list'), function(memo, r) {
-            return memo + this.recipientTemplate(r);
+        var recipients = this.model.get('recipient_list').reduce(function(memo, r) {
+            return memo + this.recipientTemplate(r.toJSON());
         }, "", this);
         
         var comment_ins = _.reduce(this.model.get('comment_in_list'), function(memo, ci) {

@@ -101,8 +101,6 @@ jskom.Models.Text = Backbone.Model.extend({
         } else {
             json.recipient_list = null;
         }
-        console.log("text.toJSON:");
-        console.log(json);
         return json;
     },
     
@@ -139,16 +137,15 @@ jskom.Models.Text = Backbone.Model.extend({
     },
     
     makeCommentTo: function(otherText) {
+        otherText.get('recipient_list').each(function(r) {
+            // Only copy "to" recipients, not "cc" or "bcc".
+            if (r.get('type') == 'to') {
+                this.get('recipient_list').add(r.clone());
+            }
+        }, this);
         this.set({
-            recipient_list: _.filter(_.clone(otherText.get('recipient_list')), function(r) {
-                // Only copy "to" recipients, and not "cc" or "bcc".
-                return r.type == 'to';
-            }),
             comment_to_list: [
-                {
-                    type: 'comment',
-                    text_no: otherText.get('text_no')
-                }
+                { type: 'comment', text_no: otherText.get('text_no') }
             ],
             subject: otherText.get('subject')
         });

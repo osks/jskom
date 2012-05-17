@@ -42,6 +42,7 @@ def texts_create():
     #app.logger.debug(request.json)
     
     komtext = from_dict(request.json, KomText, True, g.ksession)
+    app.logger.debug(to_dict(komtext));
     text_no = g.ksession.create_text(komtext)
     return jsonify(text_no=text_no)
 

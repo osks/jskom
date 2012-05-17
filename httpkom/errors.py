@@ -36,6 +36,10 @@ def error_response(status_code, kom_error=None, error_msg=""):
 def badrequest(error):
     return empty_response(400)
 
+@app.errorhandler(500)
+def badrequest(error):
+    return empty_response(500)
+
 @app.errorhandler(404)
 def notfound(error):
     return empty_response(404)
