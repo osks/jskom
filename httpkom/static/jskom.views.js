@@ -302,10 +302,42 @@ jskom.Views.Reader = Backbone.View.extend({
     },
     
     initialize: function() {
-        _.bindAll(this, 'render', 'onNextUnread', 'showText', 'onWriteComment');
+        _.bindAll(this, 'render', 'onNextUnread', 'showText', 'onWriteComment', 'onKeyDown');
+        $(document).bind('keydown', this.onKeyDown);
+    },
+    
+    isScrolledIntoView: function(elem)
+    {
+        var docViewTop = $(window).scrollTop();
+        var docViewBottom = docViewTop + $(window).height();
+        
+        var elemTop = $(elem).offset().top;
+        var elemBottom = elemTop + $(elem).height();
+        
+        return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
+    },
+    
+    onKeyDown: function(e) {
+        //console.log(e);
+        
+        if (event.metaKey || event.ctrlKey || event.altKey) {
+            return true;
+        }
+        
+        switch (event.which) {
+        case 32: // Space
+            if (this.isScrolledIntoView(this.$('.next-unread'))) {
+                e.preventDefault();
+                this.onNextUnread(e);
+                return false;
+            }
+        }
+        
+        return true;
     },
     
     render: function() {
+        $(document).scrollTop(0);
         this.$el.empty();
         this.$el.append(this.template());
         
@@ -656,7 +688,7 @@ jskom.Views.CreateText = Backbone.View.extend({
         '      <input class="span8" type="text" name="subject" value="{{ model.subject }}" />' +
             
         '      <label>Body</label>' +
-        '      <textarea class="span8" name="body" rows="10">{{ model.body }}</textarea>' +
+        '      <textarea class="span8" name="body" rows="5">{{ model.body }}</textarea>' +
 
         '      <div class="form-actions">' + 
         '        <input type="submit" class="btn btn-primary" value="Post" />' +
