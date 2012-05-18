@@ -433,7 +433,7 @@ jskom.Views.Menu = Backbone.View.extend({
         '</ul>' +
         '<div class="btn-group pull-right" id="menu-right">' +
         '  <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">' +
-        '    <i class="icon-user"></i> {{ model.pers_name }}' +
+        '    <i class="icon-user"></i> <span class="hidden-phone">{{ model.pers_name }}</span>' +
         '    <span class="caret"></span>' +
         '  </a>' +
         '  <ul class="dropdown-menu">' +
@@ -745,7 +745,9 @@ jskom.Views.ShowText = Backbone.View.extend({
         '<div>' +
         '  subject: {{ model.subject }}' +
         '</div>' +
-        '<div class="well">{{ body }}</div>' +
+        '<hr/>' +
+        '<div class="">{{ body }}</div>' +
+        '<hr/>' +
         '{{ comment_ins }}'
     ),
     
