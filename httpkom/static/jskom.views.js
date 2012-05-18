@@ -148,7 +148,6 @@ jskom.Views.Session = Backbone.View.extend({
     template: _.template(
         '<div class="row">' +
         '  <div class="span8">' +
-        '    <h2 class="headline"></h2>' + 
         '    <div class="message"></div>' +
         '    <div id="session-container"></div>' +
         '  </div>' +
@@ -162,6 +161,7 @@ jskom.Views.Session = Backbone.View.extend({
         _.bindAll(this, 'render', 'authFailed', 'showUnreadConfs', 'showText', 'newText',
                  'showView');
         this.currentView = null;
+        this.readQueue = new jskom.Collections.ReadQueue([], { prefetchCount: 3 });
         this.model.on('destroy', this.remove, this);
     },
     
@@ -188,8 +188,6 @@ jskom.Views.Session = Backbone.View.extend({
     },
     
     showUnreadConfs: function() {
-        this.$('.headline').text('Unread conferences');
-        
         var self = this;
         new jskom.Collections.UnreadConferences().fetch({
             success: function(unreadConfs, resp) {
@@ -214,8 +212,6 @@ jskom.Views.Session = Backbone.View.extend({
     },
     
     showUnreadTextsInConf: function(conf_no) {
-        this.$('.headline').text('Unread texts');
-        
         var self = this;
         var readMarkings = new jskom.Collections.ReadMarkings([], { conf_no: conf_no });
         readMarkings.fetch({
@@ -224,15 +220,15 @@ jskom.Views.Session = Backbone.View.extend({
                 console.log("readMarkings.fetch(" + conf_no + ") - success");
                 self.$('#session-container').empty();
                 
-                var readQueue = new jskom.Collections.ReadQueue([], { prefetchCount: 3 });
+                //var readQueue = new jskom.Collections.ReadQueue([], { prefetchCount: 3 });
                 collection.each(function(rm) {
-                    readQueue.add(new jskom.Models.ReadQueueItem({
+                    self.readQueue.add(new jskom.Models.ReadQueueItem({
                         text_no: rm.get('text_no')
                     }));
                 });
                 
                 self.showView(new jskom.Views.Reader({
-                    collection: readQueue
+                    collection: self.readQueue
                 }));
             },
             error: function(collection, resp) {
@@ -254,22 +250,21 @@ jskom.Views.Session = Backbone.View.extend({
     // and continuing to the next item on the queue. Better to have
     // one readqueue per session, instead of creating a new here and there.
     showText: function(text_no) {
-        this.$('.headline').text('Text: ' + text_no);
-        
         var self = this;
         var text = new jskom.Models.Text({ text_no: text_no });
         text.fetch().done(
             function(data) {
                 console.log("text.fetch - success");
 
-                var readQueue = new jskom.Collections.ReadQueue([
-                    new jskom.Models.ReadQueueItem({ text_no: text_no })
-                ], {
-                    prefetchCount: 1
-                });
+                //var readQueue = new jskom.Collections.ReadQueue([
+                //    new jskom.Models.ReadQueueItem({ text_no: text_no })
+                //], {
+                //    prefetchCount: 1
+                //});
+                self.readQueue.unshift(new jskom.Models.ReadQueueItem({ text_no: text_no }));
                 
                 self.showView(new jskom.Views.Reader({
-                    collection: readQueue
+                    collection: self.readQueue
                 }));
             }
         ).fail(
@@ -290,7 +285,7 @@ jskom.Views.Session = Backbone.View.extend({
     },
     
     newText: function() {
-        this.$('.headline').text('New text');
+        //this.$('.headline').text('New text');
         
         this.showView(new jskom.Views.CreateText({ model: new jskom.Models.Text() }));
     },
@@ -299,54 +294,60 @@ jskom.Views.Session = Backbone.View.extend({
 
 jskom.Views.Reader = Backbone.View.extend({
     template: _.template(
+        '<h2 class="headline"></h2>' + 
         '<div class="message"></div>' +
         '<div class="reader-container"></div>' +
         '' +
         '<div class="reader-controls form-actions">' +
         '  <button class="write-comment btn">Write comment</button>' +
         '  <button class="next-unread btn btn-primary">Next unread text</button>' +
+
+        '  <div class="read-marking pull-right">' +
+        '    <button class="mark-as-read btn btn-mini btn-inverse" autocomplete="off"' +
+        '            data-loading-text="Marking as read..."' +
+        '            data-complete-text="Marked as read">' +
+        '       Mark as read' +
+        '    </button>' +
+        '  </div>' +
         '</div>'
     ),
     
     events: {
         'click .next-unread': 'onNextUnread',
         'click .write-comment': 'onWriteComment',
+        'click .mark-as-read': 'onMarkAsRead',
     },
     
     initialize: function() {
         _.bindAll(this, 'render', 'onNextUnread', 'showText', 'onWriteComment', 'onKeyDown',
-                 'remove');
-        $(document).bind('keydown', this.onKeyDown);
+                  'remove', 'onMarkAsRead');
+        $('body').bind('keydown', this.onKeyDown);
     },
     
     render: function() {
-        $(document).scrollTop(0);
         this.$el.empty();
         this.$el.append(this.template());
         
         if (this.collection.size() < 1) {
-            this.$('.next-unread')
-                .text('No unread texts')
-                .attr('disabled', 'disabled');
+            
         }
         
         if (this.collection.isEmpty()) {
-            this.$('.reader-container').append("No unread texts.");
+            this.$('.headline').text('No unread texts');
+            //this.$('.reader-container').append("No unread texts.");
+            this.$('.next-unread')
+                .text('No unread texts')
+                .attr('disabled', 'disabled');
+            this.$('.read-marking').hide();
+            
+            // TODO: change URL here as well
         } else {
             var text = this.collection.first().get('text');
+            this.$('.headline').text('Text: ' + text.get('text_no'));
             var self = this;
             text.deferredFetch().then(
                 function(data) {
                     self.showText(text);
-                    
-                    // TODO: where should we mark the text as read?  Idea: when it
-                    // succeeds, put up a small button somewhere where
-                    // one can click to mark the text as unread again.
-                    // That means that we should probably not do this
-                    // marking in the render() method.  With the
-                    // possiblity to mark as unread, it might be fine
-                    // to mark them in the moveNext method?
-                    //text.markAsReadGlobal(); // error handling?
                 },
                 function(jqXHR, textStatus) {
                     if (jqXHR.status == 401) {
@@ -354,7 +355,7 @@ jskom.Views.Reader = Backbone.View.extend({
                     } else {
                         // TODO: error handling
                         self.$('.message').append(new jskom.Views.Message({
-                            heading: 'Error!',
+                            heading: 'Failed to load text!',
                             text: jqXHR.responseText
                         }).el);
                     }
@@ -367,7 +368,7 @@ jskom.Views.Reader = Backbone.View.extend({
     
     remove: function() {
         console.log("unbind");
-        $(document).unbind('keydown', this.onKeyDown); // unbind
+        $('body').unbind('keydown', this.onKeyDown); // unbind
         this.$el.remove();
         return this;
     },
@@ -384,9 +385,12 @@ jskom.Views.Reader = Backbone.View.extend({
     },
     
     onKeyDown: function(e) {
-        //console.log(e);
+        if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) {
+            return true;
+        }
         
-        if (event.metaKey || event.ctrlKey || event.altKey) {
+        // Check that we're not in an input field or similarly
+        if (event.target.nodeName.toLowerCase() != 'body') {
             return true;
         }
         
@@ -396,7 +400,12 @@ jskom.Views.Reader = Backbone.View.extend({
                 e.preventDefault();
                 this.onNextUnread(e);
                 return false;
+            } else {
+                return true;
             }
+        case 75: // k (lower case)
+            this.$('.write-comment').click();
+            return false;
         }
         
         return true;
@@ -405,12 +414,53 @@ jskom.Views.Reader = Backbone.View.extend({
     showText: function(text) {
         this.$('.reader-container').append(
             new jskom.Views.ShowText({ model: text }).render().el
-        );
+        ); 
+        $(document).scrollTop(0);
+        
+        // Trigger mark as read
+        this.$('.mark-as-read').click();
         
         // This would be a nice feature, but a bit odd to have the code for this here
         // and it makes it impossible to reload the page and end up in the same state.
         // Perhaps we can incorporate the reader's state into the session?
-        //jskom.router.navigate('texts/' + text.get('text_no'));
+        jskom.router.navigate('texts/' + text.get('text_no'));
+    },
+    
+    onMarkAsRead: function(e) {
+        // this is ugly and a good reason to separate the Reader view into two views;
+        // one for the ReadQueue collection, and one for the ReadQueueItem.
+        var currentText = this.collection.first().get('text');
+        
+        this.$('.mark-as-read').button('loading');
+        
+        var self = this;
+        currentText.markAsReadGlobal().done(
+            function(data) {
+                console.log("markAsReadGlobal - success");
+                self.$('.mark-as-read')
+                    .button('complete')
+                    .removeClass('btn-inverse')
+                    .addClass('btn-success');
+            }
+        ).fail(
+            function(jqXHR, textStatus) {
+                console.log("markAsReadGlobal - error");
+                
+                self.$('.mark-as-read')
+                    .button('reset')
+                    .removeAttr('disabled');
+                
+                if (jqXHR.status == 401) {
+                    jskom.router.login();
+                } else {
+                    // TODO: error handling
+                    self.$('.message').append(new jskom.Views.Message({
+                        heading: 'Failed to mark text as read!',
+                        text: jqXHR.responseText
+                    }).el);
+                }
+            }
+        );
     },
     
     onWriteComment: function(e) {
@@ -541,7 +591,13 @@ jskom.Views.Menu = Backbone.View.extend({
 });
 
 jskom.Views.UnreadConferences = Backbone.View.extend({
-    tagName: 'ul',
+    className: 'unread-conferences',
+    
+    template: _.template(
+        '<h2 class="headline">Unread conferences</h2>' + 
+        '<div class="message"></div>' +
+        '<ul></ul>'
+    ),
     
     initialize: function(options) {
         _.bindAll(this, 'render', 'addAll', 'addOne');
@@ -550,14 +606,14 @@ jskom.Views.UnreadConferences = Backbone.View.extend({
     },
     
     render: function() {
-        this.$el.empty();
+        this.$el.empty().append(this.template());
         this.addAll();
         return this;
     },
     
     addAll: function() {
         if (this.collection.isEmpty()) {
-            this.$el.append("<li>Nothing unread.</li>");
+            this.$('ul').append("<li>Nothing unread.</li>");
         } else {
             this.collection.each(this.addOne);
         }
@@ -566,7 +622,7 @@ jskom.Views.UnreadConferences = Backbone.View.extend({
     addOne: function(model) {
         var view = new jskom.Views.UnreadConference({ model: model });
         view.render();
-        this.$el.append(view.el);
+        this.$('ul').append(view.el);
         model.on('remove', view.remove);
     }
 });
@@ -708,7 +764,7 @@ jskom.Views.CreateText = Backbone.View.extend({
         '      <input class="span8" type="text" name="subject" value="{{ model.subject }}" />' +
             
         '      <label>Body</label>' +
-        '      <textarea class="span8" name="body" rows="5">{{ model.body }}</textarea>' +
+        '      <textarea class="span8" name="body" rows="5" autofocus>{{ model.body }}</textarea>' +
 
         '      <div class="form-actions">' + 
         '        <input type="submit" class="btn btn-primary" value="Post" />' +

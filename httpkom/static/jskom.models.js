@@ -136,6 +136,10 @@ jskom.Models.Text = Backbone.Model.extend({
         return new jskom.Models.GlobalReadMarking({ text_no: this.get('text_no') }).save();
     },
     
+    markAsUnreadGlobal: function() {
+        return new jskom.Models.GlobalReadMarking({ text_no: this.get('text_no') }).destroy();
+    },
+    
     makeCommentTo: function(otherText) {
         otherText.get('recipient_list').each(function(r) {
             // Only copy "to" recipients, not "cc" or "bcc".

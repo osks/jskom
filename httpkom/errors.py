@@ -37,8 +37,8 @@ def badrequest(error):
     return empty_response(400)
 
 @app.errorhandler(500)
-def badrequest(error):
-    return empty_response(500)
+def internalservererror(error):
+    return error_response(500, error_msg=str(error))
 
 @app.errorhandler(404)
 def notfound(error):
