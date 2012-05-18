@@ -159,7 +159,9 @@ jskom.Views.Session = Backbone.View.extend({
     },
     
     initialize: function() {
-        _.bindAll(this, 'render', 'authFailed', 'showUnreadConfs', 'showText', 'newText');
+        _.bindAll(this, 'render', 'authFailed', 'showUnreadConfs', 'showText', 'newText',
+                 'showView');
+        this.currentView = null;
         this.model.on('destroy', this.remove, this);
     },
     
@@ -168,6 +170,16 @@ jskom.Views.Session = Backbone.View.extend({
         this.$el.append(this.template());
         
         return this;
+    },
+    
+    showView: function(view) {
+        if (this.currentView !== view) {
+            if (this.currentView != null) {
+                this.currentView.remove();
+            }
+            this.currentView = view;
+            this.$('#session-container').prepend(this.currentView.render().el);
+        }
     },
     
     authFailed: function() {
@@ -182,10 +194,9 @@ jskom.Views.Session = Backbone.View.extend({
         new jskom.Collections.UnreadConferences().fetch({
             success: function(unreadConfs, resp) {
                 console.log("unreadConferences.fetch - success");
-                var view = new jskom.Views.UnreadConferences({
+                self.showView(new jskom.Views.UnreadConferences({
                     collection: unreadConfs
-                });
-                self.$('#session-container').empty().append(view.render().el);
+                }));
             },
             error: function(unreadConfs, resp) {
                 console.log("unreadConferences.fetch - error");
@@ -220,9 +231,9 @@ jskom.Views.Session = Backbone.View.extend({
                     }));
                 });
                 
-                self.$('#session-container').append(new jskom.Views.Reader({
+                self.showView(new jskom.Views.Reader({
                     collection: readQueue
-                }).render().el);
+                }));
             },
             error: function(collection, resp) {
                 console.log("readMarkings.fetch(" + conf_no + ") - error");
@@ -239,6 +250,9 @@ jskom.Views.Session = Backbone.View.extend({
         });
     },
     
+    // TODO: Change ShowText into putting a text onto the readqueue
+    // and continuing to the next item on the queue. Better to have
+    // one readqueue per session, instead of creating a new here and there.
     showText: function(text_no) {
         this.$('.headline').text('Text: ' + text_no);
         
@@ -254,9 +268,9 @@ jskom.Views.Session = Backbone.View.extend({
                     prefetchCount: 1
                 });
                 
-                self.$('#session-container').append(new jskom.Views.Reader({
+                self.showView(new jskom.Views.Reader({
                     collection: readQueue
-                }).render().el);
+                }));
             }
         ).fail(
             function(jqXHR, textStatus) {
@@ -278,9 +292,7 @@ jskom.Views.Session = Backbone.View.extend({
     newText: function() {
         this.$('.headline').text('New text');
         
-        this.$('#session-container')
-            .empty()
-            .append(new jskom.Views.CreateText({ model: new jskom.Models.Text() }).render().el);
+        this.showView(new jskom.Views.CreateText({ model: new jskom.Models.Text() }));
     },
     
 });
@@ -302,44 +314,21 @@ jskom.Views.Reader = Backbone.View.extend({
     },
     
     initialize: function() {
-        _.bindAll(this, 'render', 'onNextUnread', 'showText', 'onWriteComment', 'onKeyDown');
+        _.bindAll(this, 'render', 'onNextUnread', 'showText', 'onWriteComment', 'onKeyDown',
+                 'remove');
         $(document).bind('keydown', this.onKeyDown);
-    },
-    
-    isScrolledIntoView: function(elem)
-    {
-        var docViewTop = $(window).scrollTop();
-        var docViewBottom = docViewTop + $(window).height();
-        
-        var elemTop = $(elem).offset().top;
-        var elemBottom = elemTop + $(elem).height();
-        
-        return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
-    },
-    
-    onKeyDown: function(e) {
-        //console.log(e);
-        
-        if (event.metaKey || event.ctrlKey || event.altKey) {
-            return true;
-        }
-        
-        switch (event.which) {
-        case 32: // Space
-            if (this.isScrolledIntoView(this.$('.next-unread'))) {
-                e.preventDefault();
-                this.onNextUnread(e);
-                return false;
-            }
-        }
-        
-        return true;
     },
     
     render: function() {
         $(document).scrollTop(0);
         this.$el.empty();
         this.$el.append(this.template());
+        
+        if (this.collection.size() < 1) {
+            this.$('.next-unread')
+                .text('No unread texts')
+                .attr('disabled', 'disabled');
+        }
         
         if (this.collection.isEmpty()) {
             this.$('.reader-container').append("No unread texts.");
@@ -376,16 +365,47 @@ jskom.Views.Reader = Backbone.View.extend({
         return this;
     },
     
+    remove: function() {
+        console.log("unbind");
+        $(document).unbind('keydown', this.onKeyDown); // unbind
+        this.$el.remove();
+        return this;
+    },
+    
+    isScrolledIntoView: function(elem)
+    {
+        var docViewTop = $(window).scrollTop();
+        var docViewBottom = docViewTop + $(window).height();
+        
+        var elemTop = $(elem).offset().top;
+        var elemBottom = elemTop + $(elem).height();
+        
+        return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
+    },
+    
+    onKeyDown: function(e) {
+        //console.log(e);
+        
+        if (event.metaKey || event.ctrlKey || event.altKey) {
+            return true;
+        }
+        
+        switch (event.which) {
+        case 32: // Space
+            if (this.isScrolledIntoView(this.$('.next-unread'))) {
+                e.preventDefault();
+                this.onNextUnread(e);
+                return false;
+            }
+        }
+        
+        return true;
+    },
+    
     showText: function(text) {
         this.$('.reader-container').append(
             new jskom.Views.ShowText({ model: text }).render().el
         );
-        
-        if (this.collection.size() < 2) {
-            this.$('.next-unread')
-                .text('No unread texts')
-                .attr('disabled', 'disabled');
-        }
         
         // This would be a nice feature, but a bit odd to have the code for this here
         // and it makes it impossible to reload the page and end up in the same state.
