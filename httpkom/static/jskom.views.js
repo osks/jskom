@@ -57,7 +57,11 @@ jskom.Views.Message = Backbone.View.extend({
     
     initialize: function(options) {
         _.bindAll(this, 'render');
-        this.level = options.level; // (success, info, warning, error)
+        if (!options.level) {
+            this.level = 'error';
+        } else {
+            this.level = options.level; // (success, info, warning, error)
+        }
         this.heading = options.heading;
         this.text = options.text;
         this.render();
@@ -243,9 +247,16 @@ jskom.Views.Session = Backbone.View.extend({
         text.fetch().done(
             function(data) {
                 console.log("text.fetch - success");
+
+                var readQueue = new jskom.Collections.ReadQueue([
+                    new jskom.Models.ReadQueueItem({ text_no: text_no })
+                ], {
+                    prefetchCount: 1
+                });
                 
-                self.$('#session-container').empty().append(
-                    new jskom.Views.ShowText({ model: text }).render().el);
+                self.$('#session-container').append(new jskom.Views.Reader({
+                    collection: readQueue
+                }).render().el);
             }
         ).fail(
             function(jqXHR, textStatus) {
@@ -278,22 +289,20 @@ jskom.Views.Reader = Backbone.View.extend({
     template: _.template(
         '<div class="message"></div>' +
         '<div class="reader-container"></div>' +
+        '' +
         '<div class="reader-controls form-actions">' +
-        '  <button class="home btn">Back to conference list</button> ' +
+        '  <button class="write-comment btn">Write comment</button>' +
+        '  <button class="next-unread btn btn-primary">Next unread text</button>' +
         '</div>'
     ),
     
-    nextButtonTemplate: _.template(
-        '<button class="next btn btn-primary">Next unread text</button>'
-    ),
-    
     events: {
-        'click .next': 'onNext',
-        'click .home': 'onHome'
+        'click .next-unread': 'onNextUnread',
+        'click .write-comment': 'onWriteComment',
     },
     
     initialize: function() {
-        _.bindAll(this, 'render', 'onNext', 'onHome', 'showText');
+        _.bindAll(this, 'render', 'onNextUnread', 'showText', 'onWriteComment');
     },
     
     render: function() {
@@ -301,7 +310,7 @@ jskom.Views.Reader = Backbone.View.extend({
         this.$el.append(this.template());
         
         if (this.collection.isEmpty()) {
-            this.$('.reader-container').append("Nothing to read.");
+            this.$('.reader-container').append("No unread texts.");
         } else {
             var text = this.collection.first().get('text');
             var self = this;
@@ -330,8 +339,6 @@ jskom.Views.Reader = Backbone.View.extend({
                     }
                 }
             );
-
-            
         }
         
         return this;
@@ -342,24 +349,37 @@ jskom.Views.Reader = Backbone.View.extend({
             new jskom.Views.ShowText({ model: text }).render().el
         );
         
-        if (this.collection.length > 1) {
-            this.$('.reader-controls').append(this.nextButtonTemplate());
+        if (this.collection.size() < 2) {
+            this.$('.next-unread')
+                .text('No unread texts')
+                .attr('disabled', 'disabled');
         }
         
-        // This is a nice feature, but a bit odd to have the code for this here
+        // This would be a nice feature, but a bit odd to have the code for this here
+        // and it makes it impossible to reload the page and end up in the same state.
+        // Perhaps we can incorporate the reader's state into the session?
         //jskom.router.navigate('texts/' + text.get('text_no'));
     },
     
-    onNext: function(e) {
+    onWriteComment: function(e) {
+        e.preventDefault();
+        $(e.target).attr('disabled', 'disabled');
+        
+        // this is ugly and a good reason to separate the Reader view into two views;
+        // one for the ReadQueue collection, and one for the ReadQueueItem.
+        var currentText = this.collection.first().get('text');
+        var newText = new jskom.Models.Text();
+        newText.makeCommentTo(currentText);
+        this.$('.reader-container')
+            .append("<h3>New comment</h3>")
+            .append(new jskom.Views.CreateText({ model: newText }).render().el);
+    },
+    
+    onNextUnread: function(e) {
         e.preventDefault();
         this.collection.shift();
         this.render();
     },
-    
-    onHome: function(e) {
-        e.preventDefault();
-        jskom.router.home();
-    }
 });
 
 jskom.Views.TextLink = Backbone.View.extend({
@@ -636,7 +656,7 @@ jskom.Views.CreateText = Backbone.View.extend({
         '      <input class="span8" type="text" name="subject" value="{{ model.subject }}" />' +
             
         '      <label>Body</label>' +
-        '      <textarea class="span8" name="body" rows="5">{{ model.body }}</textarea>' +
+        '      <textarea class="span8" name="body" rows="10">{{ model.body }}</textarea>' +
 
         '      <div class="form-actions">' + 
         '        <input type="submit" class="btn btn-primary" value="Post" />' +
@@ -696,13 +716,11 @@ jskom.Views.CreateText = Backbone.View.extend({
                 // TODO: real error handling
                 if (jqXHR.status == 401) {
                     self.$('.message').append(new jskom.Views.Message({
-                        level: 'error',
                         heading: 'Unauthorized!',
                         text: "Your session has probably ended."
                     }).el);
                 } else {
                     self.$('.message').append(new jskom.Views.Message({
-                        level: 'error',
                         heading: 'Error!',
                         text: jqXHR.responseText
                     }).el);
@@ -728,12 +746,7 @@ jskom.Views.ShowText = Backbone.View.extend({
         '  subject: {{ model.subject }}' +
         '</div>' +
         '<div class="well">{{ body }}</div>' +
-        '{{ comment_ins }}' +
-        
-        '<div class="text-controls">' +
-        '  <button class="comment-text btn">Write comment</button>' +
-        '</div>'
-
+        '{{ comment_ins }}'
     ),
     
     commentToTemplate: _.template(
@@ -748,12 +761,8 @@ jskom.Views.ShowText = Backbone.View.extend({
         '<div>{{ type }} in text <span class="text-link">{{ text_no }}</span> by {{ author.pers_name }}</div>'
     ),
     
-    events: {
-        'click .comment-text': 'onCommentText'
-    },
-    
     initialize: function() {
-        _.bindAll(this, 'render', 'onCommentText');
+        _.bindAll(this, 'render');
     },
     
     render: function() {
@@ -786,12 +795,4 @@ jskom.Views.ShowText = Backbone.View.extend({
         });
         return this;
     },
-    
-    onCommentText: function(e) {
-        e.preventDefault();
-        $(e.target).attr('disabled', 'disabled');
-        var newText = new jskom.Models.Text();
-        newText.makeCommentTo(this.model);
-        this.$el.append(new jskom.Views.CreateText({ model: newText }).render().el);
-    }
 });

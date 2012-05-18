@@ -67,7 +67,12 @@ class ThreadedConnection(kom.CachedUserConnection):
 
     def read_loop(self):
         while self.continue_read_loop:
-            self.parse_server_message()
+            try:
+                self.parse_server_message()
+            except kom.ReceiveError:
+                return
+            except socket.error:
+                return
 
     # Parse response
     def parse_response(self):
