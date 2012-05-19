@@ -1,7 +1,7 @@
 
 jskom.Models.Session = Backbone.Model.extend({
     url: function() {
-        var base = '/sessions/';
+        var base = jskom.server + '/sessions/';
         if (this.isNew()) return base;
         return base + encodeURIComponent(this.id);;
     },
@@ -71,7 +71,7 @@ jskom.Models.Text = Backbone.Model.extend({
     idAttribute: 'text_no',
     
     url: function() {
-        var base = '/texts/';
+        var base = jskom.server + '/texts/';
         if (this.isNew()) return base;
         return base + this.get('text_no');
     },
@@ -205,7 +205,7 @@ jskom.Models.UnreadConference = Backbone.Model.extend({
 jskom.Collections.UnreadConferences = Backbone.Collection.extend({
     model: jskom.Models.UnreadConference,
     
-    url: '/conferences/unread/',
+    url: jskom.server + '/conferences/unread/',
     
     // Because httpkom doesn't return an array of models by default we need
     // to point Backbone.js at the correct property
@@ -240,7 +240,8 @@ jskom.Models.GlobalReadMarking = Backbone.Model.extend({
     },
     
     url: function() {
-        return '/texts/' + encodeURIComponent(this.get('text_no')) + '/read-marking';
+        return jskom.server + '/texts/' +
+            encodeURIComponent(this.get('text_no')) + '/read-marking';
     },
 });
 
@@ -248,7 +249,8 @@ jskom.Collections.ReadMarkings = Backbone.Collection.extend({
     model: jskom.Models.LocalReadMarking,
     
     url: function() {
-        return '/conferences/' + encodeURIComponent(this.conf_no) + '/read-markings/';
+        return jskom.server + '/conferences/' +
+            encodeURIComponent(this.conf_no) + '/read-markings/';
     },
     
     initialize: function(models, options) {

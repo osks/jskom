@@ -4,6 +4,7 @@ _.templateSettings = {
 
 var jskom = {
     version: "0.1",
+    server: "http://localhost:5001",
     
     Models: {},
     Collections: {},
@@ -17,7 +18,7 @@ var jskom = {
         //    console.log("vent: " + eventName);
         //});
         
-        var jskomUrlRoot = '/jskom/';
+        var jskomUrlRoot = '/';
         jskom.Models.Session.fetchCurrentSession(function(currentSession) {
             jskom.router = new jskom.Router({
                 currentSession: currentSession,
