@@ -373,8 +373,7 @@ jskom.Views.Reader = Backbone.View.extend({
         return this;
     },
     
-    isScrolledIntoView: function(elem)
-    {
+    isScrolledIntoView: function(elem) {
         var docViewTop = $(window).scrollTop();
         var docViewBottom = docViewTop + $(window).height();
         
