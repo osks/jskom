@@ -30,6 +30,9 @@
     <script src="{{ url_for('static', filename='backbone.js') }}"></script>
     
     <script src="{{ url_for('static', filename='jskom.js') }}"></script>
+    <script type="text/javascript">
+      jskom.httpkom = "{{ httpkom_server }}";
+    </script>
     <script src="{{ url_for('static', filename='jskom.models.js') }}"></script>
     <script src="{{ url_for('static', filename='jskom.views.js') }}"></script>
     <script src="{{ url_for('static', filename='jskom.router.js') }}"></script>
