@@ -1,0 +1,2 @@
+recursive-include jskom/templates *
+recursive-include jskom/static *
