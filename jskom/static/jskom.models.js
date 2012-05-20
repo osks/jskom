@@ -92,6 +92,12 @@ jskom.Models.Text = Backbone.Model.extend({
         this.set({ recipient_list: new jskom.Collections.RecipientList() });
     },
     
+    getSafeBody: function() {
+        var safeBody = Handlebars.Utils.escapeExpression(this.get('body'));
+        safeBody = safeBody.replace(/\r?\n|\r/g, "<br>");
+        return new Handlebars.SafeString(safeBody);
+    },
+    
     toJSON: function() {
         var json = _.clone(this.attributes);
         if (this.get('recipient_list')) {

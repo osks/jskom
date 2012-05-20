@@ -763,7 +763,7 @@ jskom.Views.CreateText = Backbone.View.extend({
         '      <input class="span8" type="text" name="subject" value="{{ model.subject }}" />' +
             
         '      <label>Body</label>' +
-        '      <textarea class="span8" name="body" rows="5" autofocus>{{ model.body }}</textarea>' +
+        '      <textarea class="span8" name="body" rows="5" autofocus></textarea>' +
 
         '      <div class="form-actions">' + 
         '        <input type="submit" class="btn btn-primary" value="Post" />' +
@@ -853,7 +853,7 @@ jskom.Views.ShowText = Backbone.View.extend({
         '  subject: {{ model.subject }}' +
         '</div>' +
         '<hr/>' +
-        '<div class="">{{ body }}</div>' +
+        '<div>{{ body }}</div>' +
         '<hr/>' +
         '{{{ comment_ins }}}'
     ),
@@ -892,7 +892,7 @@ jskom.Views.ShowText = Backbone.View.extend({
         this.$el.empty();
         this.$el.append(this.template({
             model: this.model.toJSON(),
-            body: this.model.get('body').replace(/\r?\n|\r/g, "<br>"),
+            body: this.model.getSafeBody(),
             comment_tos: comment_tos,
             recipients: recipients,
             comment_ins: comment_ins
