@@ -1,7 +1,7 @@
 jskom.Views.App = Backbone.View.extend({
     el: '#jskom',
     
-    template: _.template(
+    template: Handlebars.compile(
         '<div class="container">' +
         '  <div id="app-container">' +
         '  </div>' + 
@@ -49,7 +49,7 @@ jskom.Views.Message = Backbone.View.extend({
     tagName: 'div',
     className: 'alert alert-block',
     
-    template: _.template(
+    template: Handlebars.compile(
         '<a class="close" data-dismiss="alert" href="#">×</a>' +
         '<h4 class="alert-heading alert-{{ level }}">{{ heading }}</h4>' +
         '{{ text }}'
@@ -80,7 +80,7 @@ jskom.Views.Message = Backbone.View.extend({
 jskom.Views.Login = Backbone.View.extend({
     id: 'login',
     
-    template: _.template(
+    template: Handlebars.compile(
         '<div class="row">' +
         '  <div class="span4">' +
         '    <h2>Login</h2>' +
@@ -145,7 +145,7 @@ jskom.Views.Login = Backbone.View.extend({
 jskom.Views.Session = Backbone.View.extend({
     id: 'session',
     
-    template: _.template(
+    template: Handlebars.compile(
         '<div class="row">' +
         '  <div class="span8">' +
         '    <div class="message"></div>' +
@@ -293,7 +293,7 @@ jskom.Views.Session = Backbone.View.extend({
 });
 
 jskom.Views.Reader = Backbone.View.extend({
-    template: _.template(
+    template: Handlebars.compile(
         '<h2 class="headline"></h2>' + 
         '<div class="message"></div>' +
         '<div class="reader-container"></div>' +
@@ -513,7 +513,7 @@ jskom.Views.Menu = Backbone.View.extend({
     tagName: 'div',
     id: 'menu',
     
-    template: _.template(
+    template: Handlebars.compile(
         '<div class="navbar navbar-fixed-top">' +
         '  <div class="navbar-inner">' +
         '    <div class="container" id="menu-container">' +
@@ -523,7 +523,7 @@ jskom.Views.Menu = Backbone.View.extend({
         '</div>'
     ),
     
-    loggedInMenuTemplate: _.template(
+    loggedInMenuTemplate: Handlebars.compile(
         '<ul class="nav">' +
         '  <li class="active">' +
         '    <a class="home" href="{{ home_url }}">Home</a>' +
@@ -592,7 +592,7 @@ jskom.Views.Menu = Backbone.View.extend({
 jskom.Views.UnreadConferences = Backbone.View.extend({
     className: 'unread-conferences',
     
-    template: _.template(
+    template: Handlebars.compile(
         '<h2 class="headline">Unread conferences</h2>' + 
         '<div class="message"></div>' +
         '<ul></ul>'
@@ -629,7 +629,7 @@ jskom.Views.UnreadConferences = Backbone.View.extend({
 jskom.Views.UnreadConference = Backbone.View.extend({
     tagName: 'li',
     
-    template: _.template(
+    template: Handlebars.compile(
         '<span class="name">' +
         '  <a class="conf" href="{{ conf_url }}">{{ name }}</a>' +
         '</span> ' +
@@ -662,7 +662,7 @@ jskom.Views.UnreadConference = Backbone.View.extend({
 jskom.Views.RecipientList = Backbone.View.extend({
     className: 'recipient_list',
     
-    template: _.template(
+    template: Handlebars.compile(
         '<label>Recipients</label>' +
         '<button class="btn btn-small btn-success add-recipient">' +
         '  Add recipient' +
@@ -714,7 +714,7 @@ jskom.Views.Recipient = Backbone.View.extend({
     // this part is form-inline, to be able to align button and select correctly
     className: 'recipient row form-inline',
     
-    template: _.template(
+    template: Handlebars.compile(
         '  <div class="span8">' +
         '      <select class="input-small" name="recipient_list.{{index}}.type">' +
         '        <option value="to" {{ to_selected }}>To</option>' +
@@ -723,7 +723,7 @@ jskom.Views.Recipient = Backbone.View.extend({
         '      </select>' +
         '      <input class="span5" type="text" name="recipient_list.{{index}}.conf_name" ' +
         '             value="{{ model.conf_name }}" />' +
-        '      <button class="btn btn-mini btn-danger remove-recipient">Remove"</button>' +
+        '      <button class="btn btn-mini btn-danger remove-recipient">Remove</button>' +
         '  </div>'
     ),
     
@@ -755,7 +755,7 @@ jskom.Views.Recipient = Backbone.View.extend({
 });
 
 jskom.Views.CreateText = Backbone.View.extend({
-    template: _.template(
+    template: Handlebars.compile(
         '<div class="message"></div>' +
         '    <form>' +
         
@@ -840,14 +840,14 @@ jskom.Views.CreateText = Backbone.View.extend({
 jskom.Views.ShowText = Backbone.View.extend({
     className: 'text',
     
-    template: _.template(
+    template: Handlebars.compile(
         '<div>' +
         '  <span class="text-link">{{ model.text_no }}</span>' +
         '  / {{ model.creation_time }} / {{ model.author.pers_name }}' +
         '</div>' +
             
-        '{{ comment_tos }}' +
-        '{{ recipients }}' +
+        '{{{ comment_tos }}}' +
+        '{{{ recipients }}}' +
         
         '<div>' +
         '  subject: {{ model.subject }}' +
@@ -855,18 +855,18 @@ jskom.Views.ShowText = Backbone.View.extend({
         '<hr/>' +
         '<div class="">{{ body }}</div>' +
         '<hr/>' +
-        '{{ comment_ins }}'
+        '{{{ comment_ins }}}'
     ),
     
-    commentToTemplate: _.template(
+    commentToTemplate: Handlebars.compile(
         '<div>{{ type }} to text <span class="text-link">{{ text_no }}</span> by {{ author.pers_name }}</div>'
     ),
     
-    recipientTemplate: _.template(
+    recipientTemplate: Handlebars.compile(
         '<div>{{ type }}: {{ conf_name }}</div>'
     ),
     
-    commentInTemplate: _.template(
+    commentInTemplate: Handlebars.compile(
         '<div>{{ type }} in text <span class="text-link">{{ text_no }}</span> by {{ author.pers_name }}</div>'
     ),
     
