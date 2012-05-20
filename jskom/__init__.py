@@ -10,7 +10,7 @@ default_settings = {
 
 
 app = Flask(__name__)
-app.config.from_object('httpkom.default_settings')
+app.config.from_object('jskom.default_settings')
 app.config.from_envvar('JSKOM_SETTINGS')
 
 
