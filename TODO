@@ -1,6 +1,8 @@
 TODO
 ====
 
+* Byta till handlebars templates, för bättre hantering av escapen:ing och loopar i templates.
+
 * Antal olästa per möte verkar inte uppdateras korrekt.
 
 * Rensa upp i UI:t.
