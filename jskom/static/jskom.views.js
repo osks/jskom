@@ -384,16 +384,16 @@ jskom.Views.Reader = Backbone.View.extend({
     },
     
     onKeyDown: function(e) {
-        if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) {
+        if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) {
             return true;
         }
         
         // Check that we're not in an input field or similarly
-        if (event.target.nodeName.toLowerCase() != 'body') {
+        if (e.target.nodeName.toLowerCase() != 'body') {
             return true;
         }
         
-        switch (event.which) {
+        switch (e.which) {
         case 32: // Space
             if (this.isScrolledIntoView(this.$('.next-unread'))) {
                 e.preventDefault();
