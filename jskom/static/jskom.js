@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Oskar Skoog. Released under GPL.
+
 _.templateSettings = {
   interpolate : /\{\{(.+?)\}\}/g
 };

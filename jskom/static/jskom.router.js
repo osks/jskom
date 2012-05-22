@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Oskar Skoog. Released under GPL.
+
 jskom.Router = Backbone.Router.extend({
     routes: {
         "": "home",
