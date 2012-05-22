@@ -9,7 +9,9 @@ jskom.Views.App = Backbone.View.extend({
         '  </div>' + 
         '  <hr>' +
         '  <footer>' + 
-        '      <p>&copy; <a href="mailto:oskar@osd.se">Oskar Skoog</a> 2012</p>' +
+        '      <p>' +
+        '        <a href="https://github.com/osks/jskom">jskom</a> ' +
+        '        &copy; <a href="mailto:oskar@osd.se">Oskar Skoog</a> 2012</p>' +
         '  </footer>' +
         '</div>'
     ),
