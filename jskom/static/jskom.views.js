@@ -1,5 +1,7 @@
 // Copyright (C) 2012 Oskar Skoog. Released under GPL.
 
+"use strict";
+
 jskom.Views.App = Backbone.View.extend({
     el: '#jskom',
     

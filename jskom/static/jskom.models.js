@@ -1,5 +1,7 @@
 // Copyright (C) 2012 Oskar Skoog. Released under GPL.
 
+"use strict";
+
 jskom.Models.Session = Backbone.Model.extend({
     url: function() {
         var base = '/sessions/';
