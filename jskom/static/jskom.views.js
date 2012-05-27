@@ -265,7 +265,18 @@ jskom.Views.Session = Backbone.View.extend({
                 //], {
                 //    prefetchCount: 1
                 //});
-                self.readQueue.unshift(new jskom.Models.ReadQueueItem({ text_no: text_no }));
+                console.log("unshift onto read queue (" + self.readQueue.length +
+                            " other items on queue): " + text_no);
+                
+                var existingQueueItem = self.readQueue.get(text_no);
+                if (existingQueueItem) {
+                    console.log("text " + text_no +
+                                " already found on read queue, moving to front.");
+                    self.readQueue.remove(existingQueueItem);
+                    self.readQueue.unshift(existingQueueItem);
+                } else {
+                    self.readQueue.unshift(new jskom.Models.ReadQueueItem({ text_no: text_no }));
+                }
                 
                 self.showView(new jskom.Views.Reader({
                     collection: self.readQueue
