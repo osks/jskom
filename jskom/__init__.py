@@ -1,17 +1,24 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2012 Oskar Skoog. Released under GPL.
 
+import os
+
 from flask import Flask, render_template
 
 
 class default_settings:
+    DEBUG = False
+    
     # httpkom server, without trailing slash (example: 'http://localhost:5001')
     HTTPKOM_SERVER = 'http://localhost:5001'
 
 
 app = Flask(__name__)
 app.config.from_object(default_settings)
-app.config.from_envvar('JSKOM_SETTINGS')
+if 'JSKOM_SETTINGS' in os.environ:
+    app.config.from_envvar('JSKOM_SETTINGS')
+else:
+    app.logger.info("No environment variable JSKOM_SETTINGS found, using default settings.")
 
 
 @app.route("/", defaults={ 'path': '' })
