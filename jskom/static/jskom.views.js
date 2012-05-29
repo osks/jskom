@@ -381,18 +381,22 @@ jskom.Views.Reader = Backbone.View.extend({
             return true;
         }
         
+        var ret = true;
         switch (e.which) {
         case 32: // Space
-            if (this.isScrolledIntoView(this.$('.action-next-unread'))) {
-                e.preventDefault();
-                this.$('.action-next-unread').click();
-                return false;
+            if (this.model.size() > 0) {
+                if (this.isScrolledIntoView(this.$('.action-next-unread'))) {
+                    e.preventDefault();
+                    this.$('.action-next-unread').click();
+                    ret = false;
+                }
             } else {
-                return true;
+                jskom.router.home();
+                ret = false;
             }
         }
         
-        return true;
+        return ret;
     },
     
     showText: function(text) {
@@ -552,14 +556,44 @@ jskom.Views.UnreadConferences = Backbone.View.extend({
     ),
     
     initialize: function(options) {
-        _.bindAll(this, 'render', 'addAll', 'addOne');
+        _.bindAll(this, 'render', 'addAll', 'addOne', 'onKeyDown', 'remove');
         // This is so we can modify the list without having to redraw the entire list
         this.collection.on('add', this.addOne);
+        $('body').bind('keydown', this.onKeyDown);
     },
     
     render: function() {
         this.$el.empty().append(this.template());
         this.addAll();
+        return this;
+    },
+    
+    onKeyDown: function(e) {
+        if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) {
+            return true;
+        }
+        
+        // Check that we're not in an input field or similarly
+        if (e.target.nodeName.toLowerCase() != 'body') {
+            return true;
+        }
+        
+        var ret = true;
+        switch (e.which) {
+        case 32: // Space
+            if (this.collection.size() > 0) {
+                jskom.router.showUnreadTextsInConf(this.collection.first().get('conf_no'));
+                ret = false;
+            }
+        }
+        
+        return ret;
+    },
+    
+    remove: function() {
+        console.log("unbind");
+        $('body').unbind('keydown', this.onKeyDown); // unbind
+        this.$el.remove();
         return this;
     },
     
@@ -909,13 +943,24 @@ jskom.Views.ShowText = Backbone.View.extend({
             return true;
         }
         
+        var ret = true;
         switch (e.which) {
         case 75: // k (lower case)
-            this.$('.write-comment').click();
-            return false;
+            if (this._previousKeyDown && this._previousKeyDown.which == 219) {
+                // å k
+                var commentTos = this.model.get('comment_to_list');
+                if (commentTos && commentTos.length > 0) {
+                    this.trigger('text:show', commentTos[0].text_no);
+                }
+            } else {
+                this.$('.write-comment').click();
+                ret = false;
+            }
         }
         
-        return true;
+        
+        this._previousKeyDown = e;
+        return ret;
     },
     
     onWriteComment: function(event) {
