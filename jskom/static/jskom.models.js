@@ -165,44 +165,47 @@ jskom.Models.Text = Backbone.Model.extend({
     }
 });
 
+jskom.Collections.SortedTextList = Backbone.Collection.extend({
+    model: jskom.Models.Text,
+    
+    // Sorted by text number
+    comparator: function(text) {
+        return text.get('text_no');
+    }
+});
+
 // ReadQueue is not a collection, because you cannot use it as a collection.
 jskom.Models.ReadQueue = Backbone.Model.extend({
     initialize: function(options) {
         options || (options = {})
-        // TODO: prefetch handling
         
-        // Should be treated as a set of text numbers.
-        if (options.unreadTextNos) {
-            this._unreadTextNos = _.uniq(options.unreadTextNos);
-        } else {
-            this._unreadTextNos = [];
-        }
-        
+        this._prefetchCount = (options.prefetchCount || 0);
         this._currentText = null;
         this._currentThreadStack = [];
+        
+        this._unreadTexts = new jskom.Collections.SortedTextList();
+        
+        if (options.unreadTextNos) {
+            this.addUnreadTextNos(options.unreadTextNos);
+        }
     },
     
-    addUnreadTextNos: function(text_nos) {
-        this._unreadTextNos = _.union(this.unreadTexts, text_nos);
-        this.trigger('add', this);
-    },
-    
-    removeUnreadTextNo: function(text_no) {
-        this._unreadTextNos = _.without(this._unreadTextNos, text_no);
-        this.trigger('remove', this);
-    },
-    
-    first: function() {
+    addUnreadTextNos: function(unreadTextNos) {
+        var unreadTexts = _.map(unreadTextNos, function(text_no) {
+            return new jskom.Models.Text({ text_no: text_no });
+        });
+        this._unreadTexts.add(unreadTexts);
+        
         if (this._currentText == null && this.size() > 0) {
             this.moveNext();
         }
-        
+        this.trigger('add', this);
+    },
+    
+    first: function() {
         return this._currentText;
     },
     
-    // TODO: Can we make this a deferred that can be called multiple times until
-    // we've fetched the new text? And after we've fetched the new text,
-    // calling it should create a new deferred.
     moveNext: function() {
         // Algorithm:
         // 
@@ -220,61 +223,73 @@ jskom.Models.ReadQueue = Backbone.Model.extend({
         // For the new text, push all unread comments onto the stack, in
         // reverse order.
         
-        var nextTextNo = null;
+        var nextText = null;
         if (this._currentThreadStack.length > 0) {
             // We still have texts to read in this thread
-            nextTextNo = this._currentThreadStack.pop();
-            console.log("readQueue:moveNext() - pop:ed " + nextTextNo + " from stack.")
+            nextText = this._currentThreadStack.pop();
+            console.log("readQueue:moveNext() - pop:ed " +
+                        nextText.get('text_no') + " from stack.")
         } else {
             // No more texts in this thread, find new thread
             
-            if (this._unreadTextNos.length > 0) {
-                // We have unread texts, find new thread start
-                nextTextNo = _.min(this._unreadTextNos);
-                console.log("readQueue:moveNext() - found new thread in " + nextTextNo);
+            if (this._unreadTexts.size() > 0) {
+                // We have unread texts, find new thread start by taking the
+                // lowest text number.
+                // Since this._unreadTexts is sorted, we just shift.
+                nextText = this._unreadTexts.shift();
+                console.log("readQueue:moveNext() - found new thread in " +
+                            nextText.get('text_no'));
             } else {
                 // No unread texts
-                nextTextNo = null;
+                nextText = null;
                 console.log("readQueue:moveNext() - no unread texts.")
             }
         }
         
-        if (nextTextNo != null) {
-            this.removeUnreadTextNo(nextTextNo);
-            var newText = new jskom.Models.Text({ text_no: nextTextNo });
-            
-            // TODO: Check that we don't call moveNext() without waiting for the
-            // current text to be fetched.
-            
-            // TODO: Push Text models onto the thread stack, instead
-            // of text numbers.  That way it would at least be quite
-            // easy to implement prefetching of texts in the current
-            // thread.
-            
+        if (nextText == null) {
+            // Nothing to read, set currentText to null
+            this._currentText = null;
+            this.trigger('change', this);
+        } else {
             // Start fetching the new current text, and when we have
             // fetched the text: Push all comments onto the stack, in
             // reverse order
             var self = this;
-            newText.deferredFetch().done(function() {
-                var comments = _.clone(newText.get('comment_in_list'));
-                if (comments) {
-                    var commentTextNos = _.pluck(comments, 'text_no');
-                    commentTextNos.reverse();
-                        _.each(commentTextNos, function(commentTextNo) {
-                            self._currentThreadStack.push(commentTextNo);
-                        });
-                }
-                
+            nextText.deferredFetch().done(function() {
                 // Don't trigger the change event until we've fetched the text
                 // That way we know that we won't call moveNext() again until
                 // the new text has been fetched.
-                self._currentText = newText;
+                self._currentText = nextText;
                 self.trigger('change', self);
+                
+                var comments = _.clone(nextText.get('comment_in_list'));
+                if (comments) {
+                    var commentTextNos = _.pluck(comments, 'text_no');
+                    commentTextNos.reverse();
+                    _.each(commentTextNos, function(commentTextNo) {
+                        self._currentThreadStack.push(new jskom.Models.Text({
+                            text_no: commentTextNo
+                        }));
+                    });
+                }
+                
+                // Simple prefetch of texts on the thread stack, we
+                // wait for the fetch so we can consider the new
+                // text's comments. ("last" because we pop from the end of the array)
+                _.each(_.last(self._currentThreadStack, self._prefetchCount), function(text) {
+                    console.log("readQueue:moveNext() - prefetching comment "
+                                + text.get('text_no'));
+                    text.deferredFetch();
+                });
             });
-        } else {
-            // Nothing to read, set currentText to null
-            this._currentText = null;
-            this.trigger('change', this);
+
+            // Simple prefetch of the texts with low text numbers
+            // ("thread starts"), no need to wait for fetching of the
+            // new text.
+            _.each(this._unreadTexts.first(this._prefetchCount), function(text) {
+                console.log("readQueue:moveNext() - prefetching " + text.get('text_no'));
+                text.deferredFetch();
+            });
         }
     },
     
@@ -283,8 +298,9 @@ jskom.Models.ReadQueue = Backbone.Model.extend({
     },
     
     size: function() {
-        // should we include currentText or not?
-        return this._unreadTextNos.length; // does not include currentText
+        // should we include currentText or not? currently not. it's assumed to be
+        // read.
+        return this._unreadTexts.length + this._currentThreadStack.length;
     }
 });
 
