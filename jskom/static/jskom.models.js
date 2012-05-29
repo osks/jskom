@@ -227,6 +227,7 @@ jskom.Models.ReadQueue = Backbone.Model.extend({
         if (this._currentThreadStack.length > 0) {
             // We still have texts to read in this thread
             nextText = this._currentThreadStack.pop();
+            this._unreadTexts.remove(nextText);
             console.log("readQueue:moveNext() - pop:ed " +
                         nextText.get('text_no') + " from stack.")
         } else {
@@ -282,7 +283,7 @@ jskom.Models.ReadQueue = Backbone.Model.extend({
                     text.deferredFetch();
                 });
             });
-
+            
             // Simple prefetch of the texts with low text numbers
             // ("thread starts"), no need to wait for fetching of the
             // new text.
@@ -300,7 +301,7 @@ jskom.Models.ReadQueue = Backbone.Model.extend({
     size: function() {
         // should we include currentText or not? currently not. it's assumed to be
         // read.
-        return this._unreadTexts.length + this._currentThreadStack.length;
+        return this._unreadTexts.length;
     }
 });
 

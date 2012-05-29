@@ -811,6 +811,7 @@ jskom.Views.ShowText = Backbone.View.extend({
     className: 'text',
     
     template: Handlebars.compile(
+        '<div class="message"></div>' +
         '<h4>' +
         '  <span class="text-link">{{ model.text_no }}</span>' +
         '  / {{ model.creation_time }} / {{ model.author.pers_name }}' +
