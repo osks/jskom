@@ -390,9 +390,6 @@ jskom.Views.Reader = Backbone.View.extend({
             } else {
                 return true;
             }
-        case 75: // k (lower case)
-            this.$('.write-comment').click();
-            return false;
         }
         
         return true;
@@ -866,7 +863,8 @@ jskom.Views.ShowText = Backbone.View.extend({
     
     initialize: function(options) {
         options || (options = {})
-        _.bindAll(this, 'render', 'onWriteComment', 'onMarkAsRead');
+        _.bindAll(this, 'render', 'onWriteComment', 'onMarkAsRead', 'onKeyDown', 'remove');
+        $('body').bind('keydown', this.onKeyDown);
         
         if (options.markAsReadOnRender) {
             this.markAsReadOnRender = true;
@@ -898,6 +896,25 @@ jskom.Views.ShowText = Backbone.View.extend({
         }
         
         return this;
+    },
+    
+    onKeyDown: function(e) {
+        if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) {
+            return true;
+        }
+        
+        // Check that we're not in an input field or similarly
+        if (e.target.nodeName.toLowerCase() != 'body') {
+            return true;
+        }
+        
+        switch (e.which) {
+        case 75: // k (lower case)
+            this.$('.write-comment').click();
+            return false;
+        }
+        
+        return true;
     },
     
     onWriteComment: function(event) {
@@ -957,4 +974,10 @@ jskom.Views.ShowText = Backbone.View.extend({
         );
     },
     
+    remove: function() {
+        console.log("unbind");
+        $('body').unbind('keydown', this.onKeyDown); // unbind
+        this.$el.remove();
+        return this;
+    },
 });
