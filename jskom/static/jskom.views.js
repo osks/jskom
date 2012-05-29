@@ -728,9 +728,8 @@ jskom.Views.CreateText = Backbone.View.extend({
          
         '  <label>Body</label>' +
         '  <textarea class="span8" name="body" rows="5" ' +
-        '            {{#if isComment}}autofocus{{/if}}>' +
-        '  </textarea>' +
-         
+        '            {{#if isComment}}autofocus{{/if}}></textarea>' +
+        
         '  <div class="form-actions">' + 
         '    <button class="btn action-cancel">Cancel</button>' +
 
