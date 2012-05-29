@@ -52,13 +52,12 @@ jskom.Views.App = Backbone.View.extend({
 });
 
 jskom.Views.Message = Backbone.View.extend({
-    tagName: 'div',
-    className: 'alert alert-block',
-    
     template: Handlebars.compile(
+        '<div class="alert alert-block alert-{{level}}">' +
         '<a class="close" data-dismiss="alert" href="#">×</a>' +
-        '<h4 class="alert-heading alert-{{ level }}">{{ heading }}</h4>' +
-        '{{ text }}'
+        '<h4 class="alert-heading">{{ heading }}</h4>' +
+        '{{ text }}' +
+        '</div>'
     ),
     
     initialize: function(options) {
@@ -167,7 +166,7 @@ jskom.Views.Session = Backbone.View.extend({
         _.bindAll(this, 'render', 'authFailed', 'showUnreadConfs', 'showText', 'newText',
                  'showView');
         this.currentView = null;
-        this.readQueue = new jskom.Collections.ReadQueue([], { prefetchCount: 3 });
+        this.readQueue = new jskom.Models.ReadQueue({ prefetchCount: 3 });
         this.model.on('destroy', this.remove, this);
     },
     
@@ -226,16 +225,8 @@ jskom.Views.Session = Backbone.View.extend({
                 console.log("readMarkings.fetch(" + conf_no + ") - success");
                 self.$('#session-container').empty();
                 
-                //var readQueue = new jskom.Collections.ReadQueue([], { prefetchCount: 3 });
-                collection.each(function(rm) {
-                    self.readQueue.add(new jskom.Models.ReadQueueItem({
-                        text_no: rm.get('text_no')
-                    }));
-                });
-                
-                self.showView(new jskom.Views.Reader({
-                    collection: self.readQueue
-                }));
+                self.readQueue.addUnreadTextNos(readMarkings.pluck('text_no'));
+                self.showView(new jskom.Views.Reader({ model: self.readQueue }));
             },
             error: function(collection, resp) {
                 console.log("readMarkings.fetch(" + conf_no + ") - error");
@@ -252,37 +243,14 @@ jskom.Views.Session = Backbone.View.extend({
         });
     },
     
-    // TODO: Change ShowText into putting a text onto the readqueue
-    // and continuing to the next item on the queue. Better to have
-    // one readqueue per session, instead of creating a new here and there.
     showText: function(text_no) {
         var self = this;
         var text = new jskom.Models.Text({ text_no: text_no });
         text.fetch().done(
             function(data) {
                 console.log("text.fetch - success");
-
-                //var readQueue = new jskom.Collections.ReadQueue([
-                //    new jskom.Models.ReadQueueItem({ text_no: text_no })
-                //], {
-                //    prefetchCount: 1
-                //});
-                console.log("unshift onto read queue (" + self.readQueue.length +
-                            " other items on queue): " + text_no);
                 
-                var existingQueueItem = self.readQueue.get(text_no);
-                if (existingQueueItem) {
-                    console.log("text " + text_no +
-                                " already found on read queue, moving to front.");
-                    self.readQueue.remove(existingQueueItem);
-                    self.readQueue.unshift(existingQueueItem);
-                } else {
-                    self.readQueue.unshift(new jskom.Models.ReadQueueItem({ text_no: text_no }));
-                }
-                
-                self.showView(new jskom.Views.Reader({
-                    collection: self.readQueue
-                }));
+                self.showView(new jskom.Views.ShowText({ model: text }));
             }
         ).fail(
             function(jqXHR, textStatus) {
@@ -303,15 +271,20 @@ jskom.Views.Session = Backbone.View.extend({
     
     newText: function() {
         //this.$('.headline').text('New text');
-        
-        this.showView(new jskom.Views.CreateText({ model: new jskom.Models.Text() }));
+        var createTextView = new jskom.Views.CreateText({ model: new jskom.Models.Text() });
+        createTextView.on('text:created', function(text_no) {
+            createTextView.remove();
+            jskom.router.showText(text_no);
+        });
+        this.showView(createTextView);
     },
     
 });
 
 jskom.Views.Reader = Backbone.View.extend({
     template: Handlebars.compile(
-        '<h2 class="headline"></h2>' + 
+        '<h3>{{ unreadCount }} unread texts in this conference</h3>' +
+        '<br />' +
         '<div class="message"></div>' +
         '<div class="reader-container"></div>' +
         '' +
@@ -338,29 +311,22 @@ jskom.Views.Reader = Backbone.View.extend({
     initialize: function() {
         _.bindAll(this, 'render', 'onNextUnread', 'showText', 'onWriteComment', 'onKeyDown',
                   'remove', 'onMarkAsRead');
+        this.model.on('change', this.render, this);
         $('body').bind('keydown', this.onKeyDown);
     },
     
     render: function() {
         this.$el.empty();
-        this.$el.append(this.template());
+        this.$el.append(this.template({ unreadCount: this.model.size() }));
         
-        if (this.collection.size() < 1) {
-            
-        }
-        
-        if (this.collection.isEmpty()) {
-            this.$('.headline').text('No unread texts');
-            //this.$('.reader-container').append("No unread texts.");
+        var text = this.model.first();
+        if (text == null) {
+            this.$('h3').text('No unread texts');
             this.$('.next-unread')
                 .text('No unread texts')
                 .attr('disabled', 'disabled');
             this.$('.read-marking').hide();
-            
-            // TODO: change URL here as well
         } else {
-            var text = this.collection.first().get('text');
-            this.$('.headline').text('Text: ' + text.get('text_no'));
             var self = this;
             text.deferredFetch().then(
                 function(data) {
@@ -400,21 +366,21 @@ jskom.Views.Reader = Backbone.View.extend({
         return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
     },
     
-    onKeyDown: function(e) {
-        if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) {
+    onKeyDown: function(event) {
+        if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) {
             return true;
         }
         
         // Check that we're not in an input field or similarly
-        if (e.target.nodeName.toLowerCase() != 'body') {
+        if (event.target.nodeName.toLowerCase() != 'body') {
             return true;
         }
         
-        switch (e.which) {
+        switch (event.which) {
         case 32: // Space
             if (this.isScrolledIntoView(this.$('.next-unread'))) {
-                e.preventDefault();
-                this.onNextUnread(e);
+                event.preventDefault();
+                this.onNextUnread(event);
                 return false;
             } else {
                 return true;
@@ -428,24 +394,46 @@ jskom.Views.Reader = Backbone.View.extend({
     },
     
     showText: function(text) {
+        var self = this;
+        var textView = new jskom.Views.ShowText({ model: text });
+        textView.on('text:show', function(text_no) {
+            var text = new jskom.Models.Text({ text_no: text_no });
+            text.deferredFetch().done(
+                function(data) {
+                    console.log("text.fetch - success");
+                    
+                    textView.remove();
+                    self.showText(text);
+                }
+            ).fail(
+                function(jqXHR, textStatus) {
+                    console.log("text.fetch - error");
+                    
+                    if (jqXHR.status == 401) {
+                        jskom.router.login();
+                    } else {
+                        self.$('.message').append(new jskom.Views.Message({
+                            heading: 'Error!',
+                            text: jqXHR.responseText
+                        }).el);
+                    }
+                }
+            );
+        });
+        
         this.$('.reader-container').append(
-            new jskom.Views.ShowText({ model: text }).render().el
+            textView.render().el
         ); 
         $(document).scrollTop(0);
         
         // Trigger mark as read
         this.$('.mark-as-read').click();
-        
-        // This would be a nice feature, but a bit odd to have the code for this here
-        // and it makes it impossible to reload the page and end up in the same state.
-        // Perhaps we can incorporate the reader's state into the session?
-        jskom.router.navigate('texts/' + text.get('text_no'));
     },
     
     onMarkAsRead: function(e) {
         // this is ugly and a good reason to separate the Reader view into two views;
         // one for the ReadQueue collection, and one for the ReadQueueItem.
-        var currentText = this.collection.first().get('text');
+        var currentText = this.model.first();
         
         this.$('.mark-as-read').button('loading');
         
@@ -485,18 +473,28 @@ jskom.Views.Reader = Backbone.View.extend({
         
         // this is ugly and a good reason to separate the Reader view into two views;
         // one for the ReadQueue collection, and one for the ReadQueueItem.
-        var currentText = this.collection.first().get('text');
+        var currentText = this.model.first();
         var newText = new jskom.Models.Text();
         newText.makeCommentTo(currentText);
+        var createTextView = new jskom.Views.CreateText({ model: newText });
+        createTextView.on('text:created', function(text_no) {
+            createTextView.remove();
+            this.$('.message').append(new jskom.Views.Message({
+                level: 'success',
+                heading: 'Text ' + text_no + ' saved.',
+                //text: jqXHR.responseText
+            }).el);
+            $(document).scrollTop(0);
+        }, this);
         this.$('.reader-container')
-            .append("<h3>New comment</h3>")
-            .append(new jskom.Views.CreateText({ model: newText }).render().el);
+            //.append("<h3>New comment</h3>")
+            .append(createTextView.render().el);
     },
     
     onNextUnread: function(e) {
         e.preventDefault();
-        this.collection.shift();
-        this.render();
+        this.model.moveNext();
+        //this.render(); // should be done on triggered event on the model, not called directly.
     },
 });
 
@@ -522,7 +520,8 @@ jskom.Views.TextLink = Backbone.View.extend({
     
     onClick: function(e) {
         e.preventDefault();
-        jskom.router.showText(this.text_no);
+        //jskom.router.showText(this.text_no);
+        this.trigger('text:show', this.text_no);
     }
 });
 
@@ -829,10 +828,7 @@ jskom.Views.CreateText = Backbone.View.extend({
         })).done(
             function(data) {
                 console.log("text.save - success");
-                self.remove();
-                // FIXME: this will break a ReadQueue. Add to read queue instead of go there?
-                // But it's fine going there if we just enter the text form nothing.
-                jskom.router.showText(self.model.get('text_no'));
+                self.trigger('text:created', self.model.get('text_no'));
             }
         ).fail(
             function(jqXHR, textStatus) {
@@ -858,10 +854,10 @@ jskom.Views.ShowText = Backbone.View.extend({
     className: 'text',
     
     template: Handlebars.compile(
-        '<div>' +
+        '<h4>' +
         '  <span class="text-link">{{ model.text_no }}</span>' +
         '  / {{ model.creation_time }} / {{ model.author.pers_name }}' +
-        '</div>' +
+        '</h4>' +
             
         '{{{ comment_tos }}}' +
         '{{{ recipients }}}' +
@@ -915,9 +911,14 @@ jskom.Views.ShowText = Backbone.View.extend({
             comment_ins: comment_ins
         }));
         
+        var self = this;
         this.$(".text-link").each(function() {
             var text_no =  $(this).text();
-            $(this).empty().append(new jskom.Views.TextLink({ text_no: text_no }).render().el);
+            var textLink = new jskom.Views.TextLink({ text_no: text_no });
+            textLink.on('text:show', function(text_no) {
+                self.trigger('text:show', text_no);
+            });
+            $(this).empty().append(textLink.render().el);
         });
         return this;
     },
