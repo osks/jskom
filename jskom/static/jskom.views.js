@@ -134,7 +134,7 @@ jskom.Views.Login = Backbone.View.extend({
                     self.remove();
                 },
                 error: function(model, resp) {
-                    console.log("session.save - error");
+                    jskom.Log.debug("session.save - error");
                     self.$('button[type=submit]').removeAttr('disabled');
                     
                     // todo: error handling
@@ -196,13 +196,13 @@ jskom.Views.Session = Backbone.View.extend({
         var self = this;
         new jskom.Collections.UnreadConferences().fetch({
             success: function(unreadConfs, resp) {
-                console.log("unreadConferences.fetch - success");
+                jskom.Log.debug("unreadConferences.fetch - success");
                 self.showView(new jskom.Views.UnreadConferences({
                     collection: unreadConfs
                 }));
             },
             error: function(unreadConfs, resp) {
-                console.log("unreadConferences.fetch - error");
+                jskom.Log.debug("unreadConferences.fetch - error");
                 if (resp.status == 401) {
                     self.authFailed();
                 } else {
@@ -222,7 +222,7 @@ jskom.Views.Session = Backbone.View.extend({
         readMarkings.fetch({
             data: { unread: true },
             success: function(collection, resp) {
-                console.log("readMarkings.fetch(" + conf_no + ") - success");
+                jskom.Log.debug("readMarkings.fetch(" + conf_no + ") - success");
                 self.$('#session-container').empty();
                 
                 var readQueue = new jskom.Models.ReadQueue({ prefetchCount: 1 });
@@ -230,7 +230,7 @@ jskom.Views.Session = Backbone.View.extend({
                 self.showView(new jskom.Views.Reader({ model: readQueue }));
             },
             error: function(collection, resp) {
-                console.log("readMarkings.fetch(" + conf_no + ") - error");
+                jskom.Log.debug("readMarkings.fetch(" + conf_no + ") - error");
                 if (resp.status == 401) {
                     self.authFailed();
                 } else {
@@ -249,13 +249,13 @@ jskom.Views.Session = Backbone.View.extend({
         var text = new jskom.Models.Text({ text_no: text_no });
         text.fetch().done(
             function(data) {
-                console.log("text.fetch - success");
+                jskom.Log.debug("text.fetch - success");
                 
                 self.showView(new jskom.Views.ShowText({ model: text }));
             }
         ).fail(
             function(jqXHR, textStatus) {
-                console.log("text.fetch - error");
+                jskom.Log.debug("text.fetch - error");
                 
                 if (jqXHR.status == 401) {
                     self.authFailed();
@@ -350,7 +350,7 @@ jskom.Views.Reader = Backbone.View.extend({
     },
 
     remove: function() {
-        console.log("unbind");
+        //jskom.Log.debug("unbind");
         $('body').unbind('keydown', this.onKeyDown); // unbind
         this.$el.remove();
         return this;
@@ -591,7 +591,7 @@ jskom.Views.UnreadConferences = Backbone.View.extend({
     },
     
     remove: function() {
-        console.log("unbind");
+        jskom.Log.debug("unbind");
         $('body').unbind('keydown', this.onKeyDown); // unbind
         this.$el.remove();
         return this;
@@ -818,12 +818,12 @@ jskom.Views.CreateText = Backbone.View.extend({
             content_type: "text/x-kom-basic",
         })).done(
             function(data) {
-                console.log("text.save - success");
+                jskom.Log.debug("text.save - success");
                 self.remove();
             }
         ).fail(
             function(jqXHR, textStatus) {
-                console.log("text.save - error");
+                jskom.Log.debug("text.save - error");
                 // TODO: real error handling
                 if (jqXHR.status == 401) {
                     self.$('.message').append(new jskom.Views.Message({
@@ -993,7 +993,7 @@ jskom.Views.ShowText = Backbone.View.extend({
         var self = this;
         this.model.markAsReadGlobal().done(
             function(data) {
-                console.log("markAsReadGlobal - success");
+                jskom.Log.debug("markAsReadGlobal - success");
                 self.$('.mark-as-read')
                     .button('complete')
                     .removeClass('btn-inverse')
@@ -1001,7 +1001,7 @@ jskom.Views.ShowText = Backbone.View.extend({
             }
         ).fail(
             function(jqXHR, textStatus) {
-                console.log("markAsReadGlobal - error");
+                jskom.Log.debug("markAsReadGlobal - error");
                 
                 self.$('.mark-as-read')
                     .button('reset')
@@ -1021,7 +1021,7 @@ jskom.Views.ShowText = Backbone.View.extend({
     },
     
     remove: function() {
-        console.log("unbind");
+        //jskom.Log.debug("unbind");
         $('body').unbind('keydown', this.onKeyDown); // unbind
         this.$el.remove();
         return this;

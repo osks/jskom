@@ -29,7 +29,7 @@ jskom.Router = Backbone.Router.extend({
     
     
     login: function() {
-        console.log('route - login');
+        jskom.Log.debug('route - login');
         this.navigate('login', { replace: true });
         if (this.session) {
             this.session.destroy({ silent: true }); // destroy / logout any existing session
@@ -42,7 +42,7 @@ jskom.Router = Backbone.Router.extend({
     },
     
     home: function() {
-        console.log('route - home');
+        jskom.Log.debug('route - home');
         this.navigate('');
         
         this._withSessionView(function() {
@@ -51,7 +51,7 @@ jskom.Router = Backbone.Router.extend({
     },
     
     newText: function() {
-        console.log('route - newText');
+        jskom.Log.debug('route - newText');
         this.navigate('texts/new');
         
         this._withSessionView(function() {
@@ -60,7 +60,7 @@ jskom.Router = Backbone.Router.extend({
     },
     
     showText: function(text_no) {
-        console.log('route - showText(' + text_no + ')');
+        jskom.Log.debug('route - showText(' + text_no + ')');
         this.navigate('texts/' + text_no);
         
         this._withSessionView(function() {
@@ -69,7 +69,7 @@ jskom.Router = Backbone.Router.extend({
     },
     
     showUnreadTextsInConf: function(conf_no) {
-        console.log('route - showUnreadInConf(' + conf_no + ')');
+        jskom.Log.debug('route - showUnreadInConf(' + conf_no + ')');
         this.navigate("conferences/" + conf_no + "/unread");
         
         this._withSessionView(function() {
@@ -81,7 +81,7 @@ jskom.Router = Backbone.Router.extend({
     
     _setUpSession: function(session) {
         session.on('login', function() {
-            console.log("on login");
+            jskom.Log.debug("on login");
             this.navigate('', { replace: true });
             this.home();
         }, this);
@@ -89,10 +89,10 @@ jskom.Router = Backbone.Router.extend({
     
     _withSessionView: function(callback) {
         if (!this.session || this.session.isNew()) {
-            //console.log('_withSessionView - session is new');
+            //jskom.Log.debug('_withSessionView - session is new');
             this.login();
         } else {
-            //console.log('_withSessionView - session is not new');
+            //jskom.Log.debug('_withSessionView - session is not new');
             if (!this.sessionView) {
                 this.sessionView = new jskom.Views.Session({ model: this.session })
                 this.app.showMenuView(new jskom.Views.Menu({ model: this.session }));

@@ -12,6 +12,15 @@ var jskom = {
     Collections: {},
     Views: {},
     
+    // TODO: Look at http://benalman.com/projects/javascript-debug-console-log/
+    Log: {
+        debug: function() {
+            if (console && console.log) {
+                console.log.apply(console, arguments);
+            }
+        }
+    },
+    
     init: function() {
         $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
             options.url = jskom.httpkom + options.url;
@@ -29,7 +38,7 @@ var jskom = {
         
         // debug
         //jskom.vent.on('all', function(eventName) {
-        //    console.log("vent: " + eventName);
+        //    jskom.Log.debug("vent: " + eventName);
         //});
         
         var jskomUrlRoot = '/';

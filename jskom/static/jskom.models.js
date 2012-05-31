@@ -31,14 +31,14 @@ jskom.Models.Session = Backbone.Model.extend({
     
     _getSessionIdFromCookie: function() {
         var session_id = $.cookie('session_id')
-        console.log("getSessionIdFromCookie: " + session_id)
+        jskom.Log.debug("getSessionIdFromCookie: " + session_id)
         return session_id;
     },
     
     fetchCurrentSession: function(callback) {
         var currentSessionId = jskom.Models.Session._getSessionIdFromCookie();
         if (!currentSessionId || currentSessionId == '') {
-            console.log("currentSessionId: " + currentSessionId);
+            jskom.Log.debug("currentSessionId: " + currentSessionId);
             callback(new jskom.Models.Session());
         } else {
             var currentSession = new jskom.Models.Session({
@@ -46,11 +46,11 @@ jskom.Models.Session = Backbone.Model.extend({
             });
             currentSession.fetch({
                 success: function(session, resp) {
-                    console.log("currentSession.fetch - success");
+                    jskom.Log.debug("currentSession.fetch - success");
                     callback(session);
                 },
                 error: function(session, resp) {
-                    console.log("currentSession.fetch - error");
+                    jskom.Log.debug("currentSession.fetch - error");
                     callback(new jskom.Models.Session());
                 }
             });
@@ -130,11 +130,11 @@ jskom.Models.Text = Backbone.Model.extend({
             var self = this;
             this._fetchDeferred = this.fetch().done(
                 function(data) {
-                    console.log("text.deferredFetch(" + self.get('text_no') + ") - success");
+                    jskom.Log.debug("text.deferredFetch(" + self.get('text_no') + ") - success");
                 }
             ).fail(
                 function(jqXHR, textStatus) {
-                    console.log("text.deferredFetch(" + self.get('text_no') + ") - error");
+                    jskom.Log.debug("text.deferredFetch(" + self.get('text_no') + ") - error");
                 }
             );
         }
@@ -228,7 +228,7 @@ jskom.Models.ReadQueue = Backbone.Model.extend({
             // We still have texts to read in this thread
             nextText = this._currentThreadStack.pop();
             this._unreadTexts.remove(nextText);
-            console.log("readQueue:moveNext() - pop:ed " +
+            jskom.Log.debug("readQueue:moveNext() - pop:ed " +
                         nextText.get('text_no') + " from stack.")
         } else {
             // No more texts in this thread, find new thread
@@ -238,12 +238,12 @@ jskom.Models.ReadQueue = Backbone.Model.extend({
                 // lowest text number.
                 // Since this._unreadTexts is sorted, we just shift.
                 nextText = this._unreadTexts.shift();
-                console.log("readQueue:moveNext() - found new thread in " +
+                jskom.Log.debug("readQueue:moveNext() - found new thread in " +
                             nextText.get('text_no'));
             } else {
                 // No unread texts
                 nextText = null;
-                console.log("readQueue:moveNext() - no unread texts.")
+                jskom.Log.debug("readQueue:moveNext() - no unread texts.")
             }
         }
         
@@ -278,7 +278,7 @@ jskom.Models.ReadQueue = Backbone.Model.extend({
                 // wait for the fetch so we can consider the new
                 // text's comments. ("last" because we pop from the end of the array)
                 _.each(_.last(self._currentThreadStack, self._prefetchCount), function(text) {
-                    console.log("readQueue:moveNext() - prefetching comment "
+                    jskom.Log.debug("readQueue:moveNext() - prefetching comment "
                                 + text.get('text_no'));
                     text.deferredFetch();
                 });
@@ -288,7 +288,7 @@ jskom.Models.ReadQueue = Backbone.Model.extend({
             // ("thread starts"), no need to wait for fetching of the
             // new text.
             _.each(this._unreadTexts.first(this._prefetchCount), function(text) {
-                console.log("readQueue:moveNext() - prefetching " + text.get('text_no'));
+                jskom.Log.debug("readQueue:moveNext() - prefetching " + text.get('text_no'));
                 text.deferredFetch();
             });
         }
