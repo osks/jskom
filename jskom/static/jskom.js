@@ -15,7 +15,7 @@ var jskom = {
     // TODO: Look at http://benalman.com/projects/javascript-debug-console-log/
     Log: {
         debug: function() {
-            if (console && console.log) {
+            if (window.console && console.log) {
                 console.log.apply(console, arguments);
             }
         }
@@ -28,18 +28,7 @@ var jskom = {
             options.xhrFields = {
                 withCredentials: true
             };
-            // If we have a csrf token send it through with the next request
-            //if(typeof that.get('_csrf') !== 'undefined') {
-            //    jqXHR.setRequestHeader('X-CSRF-Token', that.get('_csrf'));
-            //}
         });
-        
-        //jskom.vent = _.extend({}, Backbone.Events); // event aggregator
-        
-        // debug
-        //jskom.vent.on('all', function(eventName) {
-        //    jskom.Log.debug("vent: " + eventName);
-        //});
         
         var jskomUrlRoot = '/';
         jskom.Models.Session.fetchCurrentSession(function(currentSession) {
