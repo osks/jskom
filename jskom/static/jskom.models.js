@@ -96,9 +96,25 @@ jskom.Models.Text = Backbone.Model.extend({
     },
     
     getSafeBody: function() {
-        var safeBody = Handlebars.Utils.escapeExpression(this.get('body'));
-        safeBody = safeBody.replace(/\r?\n|\r/g, "<br>");
-        return new Handlebars.SafeString(safeBody);
+        var mime_type = Mimeparse.parseMimeType(this.get('content_type'));
+        var type = mime_type[0];
+        
+        if (type == 'text') {
+            var safeBody = Handlebars.Utils.escapeExpression(this.get('body'));
+            safeBody = safeBody.replace(/\r?\n|\r/g, "<br>");
+            return new Handlebars.SafeString(safeBody);
+        } else if (type == 'image') {
+            var name = "";
+            if (mime_type[2]['name']) {
+                name = mime_type[2]['name'];
+            }
+            
+            var imageUrl = jskom.httpkom + this.url() + '/body';
+            var imageBody = '<img src="' + imageUrl + '" title="'+ name +'" />';
+            return new Handlebars.SafeString(imageBody);
+        } else {
+            return "<unknown content-type: " + this.get('content_type') + ">";
+        }
     },
     
     toJSON: function() {

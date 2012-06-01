@@ -251,7 +251,14 @@ jskom.Views.Session = Backbone.View.extend({
             function(data) {
                 jskom.Log.debug("text.fetch - success");
                 
-                self.showView(new jskom.Views.ShowText({ model: text }));
+                var textView = new jskom.Views.ShowText({ model: text })
+                
+                // Handle when someone clicks on a text link
+                textView.on('text:show', function(text_no) {
+                    self.showText(text_no);
+                });
+                
+                self.showView(textView);
             }
         ).fail(
             function(jqXHR, textStatus) {
