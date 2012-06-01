@@ -12,7 +12,6 @@ var jskom = {
     Collections: {},
     Views: {},
     
-    // TODO: Look at http://benalman.com/projects/javascript-debug-console-log/
     Log: {
         debug: function() {
             if (window.console && console.log) {
