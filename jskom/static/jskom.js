@@ -23,7 +23,7 @@ var jskom = {
     init: function() {
         $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
             options.url = jskom.httpkom + options.url;
-
+            
             options.xhrFields = {
                 withCredentials: true
             };
@@ -37,9 +37,35 @@ var jskom = {
             });
             Backbone.history.start({ pushState: true, root: jskomUrlRoot });
         });
+    },
+    
+    checkBrowser: function() {
+        var supported = true;
+        var ul = $("<ul></ul>");
+        if (!$.support.ajax) {
+            supported = false;
+            $(ul).append("<li>Ajax</li>");
+        }
+        if (!$.support.cors) {
+            supported = false;
+            $(ul).append("<li>CORS</li>");
+        }
+        
+        if (!supported) {
+            $('body').empty().append("<div></div>");
+            $('body div')
+                .append('<h3>Your browser is too old for jskom</h3>')
+                .append('Missing support for:')
+                .append(ul);
+            return false;
+        } else {
+            return true;
+        }
     }
 };
 
 $(function() {
-    jskom.init();
+    if (jskom.checkBrowser()) {
+        jskom.init();
+    }
 });
