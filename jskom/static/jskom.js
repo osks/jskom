@@ -24,14 +24,6 @@ var jskom = {
     },
     
     init: function() {
-        $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
-            options.url = jskom.Settings.HttpkomServer + options.url;
-            
-            options.xhrFields = {
-                withCredentials: true
-            };
-        });
-        
         var jskomUrlRoot = '/';
         jskom.Models.Session.fetchCurrentSession(function(currentSession) {
             jskom.router = new jskom.Router({
@@ -71,4 +63,36 @@ $(function() {
     if (jskom.checkBrowser()) {
         jskom.init();
     }
+});
+
+
+$.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
+    options.url = jskom.Settings.HttpkomServer + options.url;
+    
+    options.xhrFields = {
+        withCredentials: true
+    };
+});
+
+
+Handlebars.registerHelper('url_for', function() {
+    // Example: {{url_for "texts/" text_no}} or {{url_for "texts" "/" "more" "/" text_no}}
+    
+    // Remove the last argument, because it's the options object.
+    var params = _.first(arguments, arguments.length-1)
+    var path = _.reduce(params, function(memo, str){ return memo + str; }, "");
+    //jskom.Log.debug("url_for: " + path);
+    return jskom.router.url(path);
+});
+
+Handlebars.registerHelper('text_link', function(text_no, options) {
+    // Example: {{text_link text_no}} or {{text_link text_no text="hej"}}
+    
+    var url = jskom.router.url('texts/' + text_no);
+    var text = (options.hash['text'] || text_no);
+    
+    return new Handlebars.SafeString(
+        '<a class="text-link" href="' + Handlebars.Utils.escapeExpression(url) +
+            '" data-text-no="' + Handlebars.Utils.escapeExpression(text_no) + '">' + 
+            Handlebars.Utils.escapeExpression(text) + '</a>');
 });

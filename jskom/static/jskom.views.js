@@ -855,7 +855,7 @@ jskom.Views.ShowText = Backbone.View.extend({
     template: Handlebars.compile(
         '<div class="message"></div>' +
         '<h4>' +
-        '  <span class="text-link">{{ model.text_no }}</span>' +
+        '  {{text_link model.text_no}} ' +
         '  / {{ model.creation_time }} / {{ model.author.pers_name }}' +
         '</h4>' +
         
@@ -863,8 +863,8 @@ jskom.Views.ShowText = Backbone.View.extend({
         
         '  {{#each model.comment_to_list}} ' +
         '    <div>' +
-        '      {{ this.type }} to text <span class="text-link">{{ this.text_no }}</span>' +
-        '       by {{ this.author.pers_name }}' +
+        '      {{ this.type }} to text {{text_link text_no}} ' +
+        '      by {{ this.author.pers_name }}' +
         '    </div>' +
         '  {{/each}}' +
 
@@ -879,7 +879,7 @@ jskom.Views.ShowText = Backbone.View.extend({
 
         '  {{#each model.comment_in_list}}' +
         '    <div>' +
-        '      {{ this.type }} in text <span class="text-link">{{ this.text_no }}</span>' +
+        '      {{ this.type }} in text {{text_link text_no}} ' +
         '      by {{ this.author.pers_name }}' +
         '    </div>' +
         '  {{/each}}' +
@@ -902,11 +902,13 @@ jskom.Views.ShowText = Backbone.View.extend({
     events: {
         'click .write-comment': 'onWriteComment',
         'click .mark-as-read': 'onMarkAsRead',
+        'click a.text-link': 'onClickTextLink',
     },
     
     initialize: function(options) {
         options || (options = {})
-        _.bindAll(this, 'render', 'onWriteComment', 'onMarkAsRead', 'onKeyDown', 'remove');
+        _.bindAll(this, 'render', 'onWriteComment', 'onMarkAsRead', 'onKeyDown', 'remove',
+                 'onClickTextLink');
         $('body').bind('keydown', this.onKeyDown);
         
         if (options.markAsReadOnRender) {
@@ -923,22 +925,17 @@ jskom.Views.ShowText = Backbone.View.extend({
             body: this.model.getSafeBody(),
         }));
         
-        var self = this;
-        this.$(".text-link").each(function() {
-            var text_no =  $(this).text();
-            var textLink = new jskom.Views.TextLink({ text_no: text_no });
-            textLink.on('text:show', function(text_no) {
-                self.trigger('text:show', text_no);
-            });
-            $(this).empty().append(textLink.render().el);
-        });
-        
         if (this.markAsReadOnRender) {
             // Trigger mark as read
             this.$('.mark-as-read').click();
         }
         
         return this;
+    },
+    
+    onClickTextLink: function(e) {
+        this.trigger('text:show', $(e.target).data('text-no'));
+        return false;
     },
     
     onKeyDown: function(e) {
