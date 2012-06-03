@@ -2,7 +2,9 @@
 
 "use strict";
 
-jskom.Router = Backbone.Router.extend({
+(function($, _, Backbone, Handlebars, Routers, Models, Collections, Views, Log, Settings) {
+
+Routers.AppRouter = Backbone.Router.extend({
     routes: {
         "": "home",
         "login": "login",
@@ -19,7 +21,7 @@ jskom.Router = Backbone.Router.extend({
         this.urlRoot = options.urlRoot;
         
         this.sessionView = null;
-        this.app = new jskom.Views.App().render();
+        this.app = new Views.App().render();
     },
     
     url: function(path) {
@@ -29,20 +31,20 @@ jskom.Router = Backbone.Router.extend({
     
     
     login: function() {
-        jskom.Log.debug('route - login');
+        Log.debug('route - login');
         this.navigate('login', { replace: true });
         if (this.session) {
             this.session.destroy({ silent: true }); // destroy / logout any existing session
         }
-        this.session = new jskom.Models.Session({ prefetchCount: 2 });
+        this.session = new Models.Session({ prefetchCount: 2 });
         this.sessionView = null;
         this._setUpSession(this.session);
-        this.app.showMenuView(new jskom.Views.Menu({ model: this.session }));
-        this.app.showView(new jskom.Views.Login({ model: this.session }));
+        this.app.showMenuView(new Views.Menu({ model: this.session }));
+        this.app.showView(new Views.Login({ model: this.session }));
     },
     
     home: function() {
-        jskom.Log.debug('route - home');
+        Log.debug('route - home');
         this.navigate('');
         
         this._withSessionView(function() {
@@ -51,7 +53,7 @@ jskom.Router = Backbone.Router.extend({
     },
     
     newText: function() {
-        jskom.Log.debug('route - newText');
+        Log.debug('route - newText');
         this.navigate('texts/new');
         
         this._withSessionView(function() {
@@ -60,7 +62,7 @@ jskom.Router = Backbone.Router.extend({
     },
     
     showText: function(text_no) {
-        jskom.Log.debug('route - showText(' + text_no + ')');
+        Log.debug('route - showText(' + text_no + ')');
         this.navigate('texts/' + text_no);
         
         this._withSessionView(function() {
@@ -69,7 +71,7 @@ jskom.Router = Backbone.Router.extend({
     },
     
     showUnreadTextsInConf: function(conf_no) {
-        jskom.Log.debug('route - showUnreadInConf(' + conf_no + ')');
+        Log.debug('route - showUnreadInConf(' + conf_no + ')');
         this.navigate("conferences/" + conf_no + "/unread");
         
         this._withSessionView(function() {
@@ -81,7 +83,7 @@ jskom.Router = Backbone.Router.extend({
     
     _setUpSession: function(session) {
         session.on('login', function() {
-            jskom.Log.debug("on login");
+            Log.debug("on login");
             this.navigate('', { replace: true });
             this.home();
         }, this);
@@ -89,16 +91,19 @@ jskom.Router = Backbone.Router.extend({
     
     _withSessionView: function(callback) {
         if (!this.session || this.session.isNew()) {
-            //jskom.Log.debug('_withSessionView - session is new');
+            //Log.debug('_withSessionView - session is new');
             this.login();
         } else {
-            //jskom.Log.debug('_withSessionView - session is not new');
+            //Log.debug('_withSessionView - session is not new');
             if (!this.sessionView) {
-                this.sessionView = new jskom.Views.Session({ model: this.session })
-                this.app.showMenuView(new jskom.Views.Menu({ model: this.session }));
+                this.sessionView = new Views.Session({ model: this.session })
+                this.app.showMenuView(new Views.Menu({ model: this.session }));
                 this.app.showView(this.sessionView);
             }
             callback.call(this.sessionView);
         }
     },
 });
+
+})(jQuery, _, Backbone, Handlebars, jskom.Routers, jskom.Models, jskom.Collections,
+   jskom.Views, jskom.Log, jskom.Settings);

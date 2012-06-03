@@ -2,7 +2,9 @@
 
 "use strict";
 
-jskom.Views.App = Backbone.View.extend({
+(function($, _, Backbone, Handlebars, Models, Collections, Views, Log) {
+
+Views.App = Backbone.View.extend({
     el: '#jskom',
     
     template: Handlebars.compile(
@@ -51,7 +53,7 @@ jskom.Views.App = Backbone.View.extend({
     }
 });
 
-jskom.Views.Message = Backbone.View.extend({
+Views.Message = Backbone.View.extend({
     template: Handlebars.compile(
         '<div class="alert alert-block alert-{{level}}">' +
         '<a class="close" data-dismiss="alert" href="#">×</a>' +
@@ -83,7 +85,7 @@ jskom.Views.Message = Backbone.View.extend({
     }
 });
 
-jskom.Views.Login = Backbone.View.extend({
+Views.Login = Backbone.View.extend({
     id: 'login',
     
     template: Handlebars.compile(
@@ -134,11 +136,11 @@ jskom.Views.Login = Backbone.View.extend({
                     self.remove();
                 },
                 error: function(model, resp) {
-                    jskom.Log.debug("session.save - error");
+                    Log.debug("session.save - error");
                     self.$('button[type=submit]').removeAttr('disabled');
                     
                     // todo: error handling
-                    self.$('.message').append(new jskom.Views.Message({
+                    self.$('.message').append(new Views.Message({
                         heading: 'Error!',
                         text: resp.responseText
                     }).el);
@@ -148,7 +150,7 @@ jskom.Views.Login = Backbone.View.extend({
     }
 });
 
-jskom.Views.Session = Backbone.View.extend({
+Views.Session = Backbone.View.extend({
     id: 'session',
     
     template: Handlebars.compile(
@@ -196,20 +198,20 @@ jskom.Views.Session = Backbone.View.extend({
     
     showUnreadConfs: function() {
         var self = this;
-        new jskom.Collections.UnreadConferences().fetch({
+        new Collections.UnreadConferences().fetch({
             success: function(unreadConfs, resp) {
-                jskom.Log.debug("unreadConferences.fetch - success");
-                self.showView(new jskom.Views.UnreadConferences({
+                Log.debug("unreadConferences.fetch - success");
+                self.showView(new Views.UnreadConferences({
                     collection: unreadConfs
                 }));
             },
             error: function(unreadConfs, resp) {
-                jskom.Log.debug("unreadConferences.fetch - error");
+                Log.debug("unreadConferences.fetch - error");
                 if (resp.status == 401) {
                     self.authFailed();
                 } else {
                     // TODO: error handling
-                    self.$('.message').append(new jskom.Views.Message({
+                    self.$('.message').append(new Views.Message({
                         heading: 'Error!',
                         text: resp.responseText
                     }).el);
@@ -220,24 +222,24 @@ jskom.Views.Session = Backbone.View.extend({
     
     showUnreadTextsInConf: function(conf_no) {
         var self = this;
-        var readMarkings = new jskom.Collections.ReadMarkings([], { conf_no: conf_no });
+        var readMarkings = new Collections.ReadMarkings([], { conf_no: conf_no });
         readMarkings.fetch({
             data: { unread: true },
             success: function(collection, resp) {
-                jskom.Log.debug("readMarkings.fetch(" + conf_no + ") - success");
+                Log.debug("readMarkings.fetch(" + conf_no + ") - success");
                 self.$('#session-container').empty();
                 
-                var readQueue = new jskom.Models.ReadQueue();
+                var readQueue = new Models.ReadQueue();
                 readQueue.addUnreadTextNos(readMarkings.pluck('text_no'));
-                self.showView(new jskom.Views.Reader({ model: readQueue }));
+                self.showView(new Views.Reader({ model: readQueue }));
             },
             error: function(collection, resp) {
-                jskom.Log.debug("readMarkings.fetch(" + conf_no + ") - error");
+                Log.debug("readMarkings.fetch(" + conf_no + ") - error");
                 if (resp.status == 401) {
                     self.authFailed();
                 } else {
                     // TODO: error handling
-                    self.$('.message').append(new jskom.Views.Message({
+                    self.$('.message').append(new Views.Message({
                         heading: 'Error!',
                         text: resp.responseText
                     }).el);
@@ -248,24 +250,24 @@ jskom.Views.Session = Backbone.View.extend({
     
     showText: function(text_no) {
         var self = this;
-        var text = new jskom.Models.Text({ text_no: text_no });
+        var text = new Models.Text({ text_no: text_no });
         text.fetch().done(
             function(data) {
-                jskom.Log.debug("text.fetch - success");
+                Log.debug("text.fetch - success");
                 
                 jskom.router.navigate('texts/' + text_no);
-                var textView = new jskom.Views.ShowText({ model: text });
+                var textView = new Views.ShowText({ model: text });
                 self.showView(textView);
             }
         ).fail(
             function(jqXHR, textStatus) {
-                jskom.Log.debug("text.fetch - error");
+                Log.debug("text.fetch - error");
                 
                 if (jqXHR.status == 401) {
                     self.authFailed();
                 } else {
                     // TODO: error handling
-                    self.$('.message').append(new jskom.Views.Message({
+                    self.$('.message').append(new Views.Message({
                         heading: 'Error!',
                         text: jqXHR.responseText
                     }).el);
@@ -276,15 +278,15 @@ jskom.Views.Session = Backbone.View.extend({
     
     newText: function() {
         var self = this;
-        var newText = new jskom.Models.Text();
+        var newText = new Models.Text();
         newText.on('sync', function() {
             self.showText(newText.get('text_no'));
-            this.$('.message').append(new jskom.Views.Message({
+            this.$('.message').append(new Views.Message({
                 level: 'success',
                 heading: 'Text ' + newText.get('text_no') + ' created.'
             }).el);
         }, this);
-        var createTextView = new jskom.Views.CreateText({ model: newText });
+        var createTextView = new Views.CreateText({ model: newText });
         createTextView.on('cancel', function() {
             createTextView.remove();
             jskom.router.home();
@@ -298,7 +300,7 @@ jskom.Views.Session = Backbone.View.extend({
     },
 });
 
-jskom.Views.Reader = Backbone.View.extend({
+Views.Reader = Backbone.View.extend({
     template: Handlebars.compile(
         '<h3>{{ unreadCount }} unread texts in this conference</h3>' +
         '<br />' +
@@ -360,7 +362,7 @@ jskom.Views.Reader = Backbone.View.extend({
     },
 
     remove: function() {
-        //jskom.Log.debug("unbind");
+        //Log.debug("unbind");
         $('body').unbind('keydown', this.onKeyDown); // unbind
         this.$el.remove();
         return this;
@@ -413,7 +415,7 @@ jskom.Views.Reader = Backbone.View.extend({
         var self = this;
         text.deferredFetch().done(
             function(data) {
-                var textView = new jskom.Views.ShowText({
+                var textView = new Views.ShowText({
                     model: text,
                     markAsReadOnRender: true
                 });
@@ -427,7 +429,7 @@ jskom.Views.Reader = Backbone.View.extend({
                     jskom.router.login();
                 } else {
                     // TODO: error handling
-                    self.$('.message').append(new jskom.Views.Message({
+                    self.$('.message').append(new Views.Message({
                         heading: 'Failed to load text!',
                         text: jqXHR.responseText
                     }).el);
@@ -443,13 +445,13 @@ jskom.Views.Reader = Backbone.View.extend({
     },
     
     onClickTextLink: function(e) {
-        var textToShow = new jskom.Models.Text({ text_no: $(e.target).data('text-no') });
+        var textToShow = new Models.Text({ text_no: $(e.target).data('text-no') });
         this.showText(textToShow);
         return false;
     },
 });
 
-jskom.Views.Menu = Backbone.View.extend({
+Views.Menu = Backbone.View.extend({
     tagName: 'div',
     id: 'menu',
     
@@ -529,7 +531,7 @@ jskom.Views.Menu = Backbone.View.extend({
     }
 });
 
-jskom.Views.UnreadConferences = Backbone.View.extend({
+Views.UnreadConferences = Backbone.View.extend({
     className: 'unread-conferences',
     
     template: Handlebars.compile(
@@ -574,7 +576,7 @@ jskom.Views.UnreadConferences = Backbone.View.extend({
     },
     
     remove: function() {
-        jskom.Log.debug("unbind");
+        Log.debug("unbind");
         $('body').unbind('keydown', this.onKeyDown); // unbind
         this.$el.remove();
         return this;
@@ -589,14 +591,14 @@ jskom.Views.UnreadConferences = Backbone.View.extend({
     },
     
     addOne: function(model) {
-        var view = new jskom.Views.UnreadConference({ model: model });
+        var view = new Views.UnreadConference({ model: model });
         view.render();
         this.$('ul').append(view.el);
         model.on('remove', view.remove);
     }
 });
 
-jskom.Views.UnreadConference = Backbone.View.extend({
+Views.UnreadConference = Backbone.View.extend({
     tagName: 'li',
     
     template: Handlebars.compile(
@@ -629,7 +631,7 @@ jskom.Views.UnreadConference = Backbone.View.extend({
 });
 
 
-jskom.Views.RecipientList = Backbone.View.extend({
+Views.RecipientList = Backbone.View.extend({
     className: 'recipient_list',
     
     template: Handlebars.compile(
@@ -650,7 +652,7 @@ jskom.Views.RecipientList = Backbone.View.extend({
         _.bindAll(this, 'render', 'addRecipient', 'addAllViews', 'addOneView');
         if (this.collection.isEmpty()) {
             // Always start with at least one recipient
-            this.collection.add(new jskom.Models.Recipient({ type: 'to', conf_name: '' }));
+            this.collection.add(new Models.Recipient({ type: 'to', conf_name: '' }));
         }
         this.collection.on('add', this.addOneView);
     },
@@ -666,7 +668,7 @@ jskom.Views.RecipientList = Backbone.View.extend({
     },
     
     addOneView: function(model) {
-        var view = new jskom.Views.Recipient({ model: model }).render();
+        var view = new Views.Recipient({ model: model }).render();
         view.on('model:remove', function() {
             this.collection.remove(model);
         }, this);
@@ -676,11 +678,11 @@ jskom.Views.RecipientList = Backbone.View.extend({
     
     addRecipient: function(e) {
         e.preventDefault();
-        this.collection.add(new jskom.Models.Recipient({ type: 'to', conf_name: '' }));
+        this.collection.add(new Models.Recipient({ type: 'to', conf_name: '' }));
     },
 });
 
-jskom.Views.Recipient = Backbone.View.extend({
+Views.Recipient = Backbone.View.extend({
     tagName: 'fieldset',
     // this part is form-inline, to be able to align button and select correctly
     className: 'recipient row form-inline',
@@ -727,7 +729,7 @@ jskom.Views.Recipient = Backbone.View.extend({
     },
 });
 
-jskom.Views.CreateText = Backbone.View.extend({
+Views.CreateText = Backbone.View.extend({
     template: Handlebars.compile(
         '{{#if isComment}}' +
         '  <h3>New comment</h3>' +
@@ -771,7 +773,7 @@ jskom.Views.CreateText = Backbone.View.extend({
             isComment: (this.model.get('comment_to_list') ? true : false)
         }));
         
-        this.$('form').prepend(new jskom.Views.RecipientList({
+        this.$('form').prepend(new Views.RecipientList({
             collection: this.model.get('recipient_list')
         }).render().el);
         
@@ -801,20 +803,20 @@ jskom.Views.CreateText = Backbone.View.extend({
             content_type: "text/x-kom-basic",
         })).done(
             function(data) {
-                jskom.Log.debug("text.save - success");
+                Log.debug("text.save - success");
                 self.remove();
             }
         ).fail(
             function(jqXHR, textStatus) {
-                jskom.Log.debug("text.save - error");
+                Log.debug("text.save - error");
                 // TODO: real error handling
                 if (jqXHR.status == 401) {
-                    self.$('.message').append(new jskom.Views.Message({
+                    self.$('.message').append(new Views.Message({
                         heading: 'Unauthorized!',
                         text: "Your session has probably ended."
                     }).el);
                 } else {
-                    self.$('.message').append(new jskom.Views.Message({
+                    self.$('.message').append(new Views.Message({
                         heading: 'Error!',
                         text: jqXHR.responseText
                     }).el);
@@ -824,7 +826,7 @@ jskom.Views.CreateText = Backbone.View.extend({
     },
 });
 
-jskom.Views.ShowText = Backbone.View.extend({
+Views.ShowText = Backbone.View.extend({
     className: 'text',
     
     template: Handlebars.compile(
@@ -930,17 +932,17 @@ jskom.Views.ShowText = Backbone.View.extend({
         event.preventDefault();
         $(event.target).attr('disabled', 'disabled');
         
-        var newText = new jskom.Models.Text();
+        var newText = new Models.Text();
         newText.makeCommentTo(this.model);
         newText.on('sync', function() {
-            this.$('.message').append(new jskom.Views.Message({
+            this.$('.message').append(new Views.Message({
                 level: 'success',
                 heading: 'Text ' + newText.get('text_no') + ' created.'
             }).el);
             $(event.target).removeAttr('disabled');
         }, this);
         
-        var createTextView = new jskom.Views.CreateText({ model: newText });
+        var createTextView = new Views.CreateText({ model: newText });
         createTextView.on('cancel', function() {
             createTextView.remove();
             $(event.target).removeAttr('disabled');
@@ -956,7 +958,7 @@ jskom.Views.ShowText = Backbone.View.extend({
         var self = this;
         this.model.markAsReadGlobal().done(
             function(data) {
-                jskom.Log.debug("markAsReadGlobal - success");
+                Log.debug("markAsReadGlobal - success");
                 self.$('.mark-as-read')
                     .button('complete')
                     .removeClass('btn-inverse')
@@ -964,7 +966,7 @@ jskom.Views.ShowText = Backbone.View.extend({
             }
         ).fail(
             function(jqXHR, textStatus) {
-                jskom.Log.debug("markAsReadGlobal - error");
+                Log.debug("markAsReadGlobal - error");
                 
                 self.$('.mark-as-read')
                     .button('reset')
@@ -974,7 +976,7 @@ jskom.Views.ShowText = Backbone.View.extend({
                     jskom.router.login();
                 } else {
                     // TODO: error handling
-                    self.$('.message').append(new jskom.Views.Message({
+                    self.$('.message').append(new Views.Message({
                         heading: 'Failed to mark text as read!',
                         text: jqXHR.responseText
                     }).el);
@@ -984,9 +986,12 @@ jskom.Views.ShowText = Backbone.View.extend({
     },
     
     remove: function() {
-        //jskom.Log.debug("unbind");
+        //Log.debug("unbind");
         $('body').unbind('keydown', this.onKeyDown); // unbind
         this.$el.remove();
         return this;
     },
 });
+
+})(jQuery, _, Backbone, Handlebars, jskom.Models, jskom.Collections,
+   jskom.Views, jskom.Log);

@@ -2,7 +2,9 @@
 
 "use strict";
 
-jskom.Models.Session = Backbone.Model.extend({
+(function($, _, Backbone, Handlebars, Models, Collections, Log, Settings) {
+
+Models.Session = Backbone.Model.extend({
     url: function() {
         var base = '/sessions/';
         if (this.isNew()) return base;
@@ -31,34 +33,34 @@ jskom.Models.Session = Backbone.Model.extend({
     
     _getSessionIdFromCookie: function() {
         var session_id = $.cookie('session_id')
-        jskom.Log.debug("getSessionIdFromCookie: " + session_id)
+        Log.debug("getSessionIdFromCookie: " + session_id)
         return session_id;
     },
     
     fetchCurrentSession: function(callback) {
-        var currentSessionId = jskom.Models.Session._getSessionIdFromCookie();
+        var currentSessionId = Models.Session._getSessionIdFromCookie();
         if (!currentSessionId || currentSessionId == '') {
-            jskom.Log.debug("currentSessionId: " + currentSessionId);
-            callback(new jskom.Models.Session());
+            Log.debug("currentSessionId: " + currentSessionId);
+            callback(new Models.Session());
         } else {
-            var currentSession = new jskom.Models.Session({
+            var currentSession = new Models.Session({
                 id: currentSessionId
             });
             currentSession.fetch({
                 success: function(session, resp) {
-                    jskom.Log.debug("currentSession.fetch - success");
+                    Log.debug("currentSession.fetch - success");
                     callback(session);
                 },
                 error: function(session, resp) {
-                    jskom.Log.debug("currentSession.fetch - error");
-                    callback(new jskom.Models.Session());
+                    Log.debug("currentSession.fetch - error");
+                    callback(new Models.Session());
                 }
             });
         }
     }
 });
 
-jskom.Models.Recipient = Backbone.Model.extend({
+Models.Recipient = Backbone.Model.extend({
     defaults: {
         type: null,
         conf_name: null,
@@ -66,11 +68,11 @@ jskom.Models.Recipient = Backbone.Model.extend({
     }
 });
 
-jskom.Collections.RecipientList = Backbone.Collection.extend({
-    model: jskom.Models.Recipient
+Collections.RecipientList = Backbone.Collection.extend({
+    model: Models.Recipient
 });
 
-jskom.Models.Text = Backbone.Model.extend({
+Models.Text = Backbone.Model.extend({
     idAttribute: 'text_no',
     
     url: function() {
@@ -92,7 +94,7 @@ jskom.Models.Text = Backbone.Model.extend({
     
     initialize: function(options) {
         this._fetchDeferred = null; // created when deferredFetch is called the first time.
-        this.set({ recipient_list: new jskom.Collections.RecipientList() });
+        this.set({ recipient_list: new Collections.RecipientList() });
     },
     
     getSafeBody: function() {
@@ -109,7 +111,7 @@ jskom.Models.Text = Backbone.Model.extend({
                 name = mime_type[2]['name'];
             }
             
-            var imageUrl = jskom.httpkom + this.url() + '/body';
+            var imageUrl = Settings.HttpkomServer + this.url() + '/body';
             var imageBody = '<img src="' + imageUrl + '" title="'+ name +'" />';
             return new Handlebars.SafeString(imageBody);
         } else {
@@ -132,12 +134,12 @@ jskom.Models.Text = Backbone.Model.extend({
     parse: function(resp, xhr) {
         var recipientListJson = resp.recipient_list;
         var recipients = _.map(recipientListJson, function(recipientJson) {
-            var r = new jskom.Models.Recipient();
+            var r = new Models.Recipient();
             r.set(r.parse(recipientJson), { silent: true });
             return r;
         });
         // overwrite the json with the parsed collection
-        resp.recipient_list = new jskom.Collections.RecipientList(recipients);
+        resp.recipient_list = new Collections.RecipientList(recipients);
         return resp;
     },
 
@@ -146,11 +148,11 @@ jskom.Models.Text = Backbone.Model.extend({
             var self = this;
             this._fetchDeferred = this.fetch().done(
                 function(data) {
-                    jskom.Log.debug("text.deferredFetch(" + self.get('text_no') + ") - success");
+                    Log.debug("text.deferredFetch(" + self.get('text_no') + ") - success");
                 }
             ).fail(
                 function(jqXHR, textStatus) {
-                    jskom.Log.debug("text.deferredFetch(" + self.get('text_no') + ") - error");
+                    Log.debug("text.deferredFetch(" + self.get('text_no') + ") - error");
                 }
             );
         }
@@ -158,11 +160,11 @@ jskom.Models.Text = Backbone.Model.extend({
     },
     
     markAsReadGlobal: function() {
-        return new jskom.Models.GlobalReadMarking({ text_no: this.get('text_no') }).save();
+        return new Models.GlobalReadMarking({ text_no: this.get('text_no') }).save();
     },
     
     markAsUnreadGlobal: function() {
-        return new jskom.Models.GlobalReadMarking({ text_no: this.get('text_no') }).destroy();
+        return new Models.GlobalReadMarking({ text_no: this.get('text_no') }).destroy();
     },
     
     makeCommentTo: function(otherText) {
@@ -181,8 +183,8 @@ jskom.Models.Text = Backbone.Model.extend({
     }
 });
 
-jskom.Collections.SortedTextList = Backbone.Collection.extend({
-    model: jskom.Models.Text,
+Collections.SortedTextList = Backbone.Collection.extend({
+    model: Models.Text,
     
     // Sorted by text number
     comparator: function(text) {
@@ -191,15 +193,15 @@ jskom.Collections.SortedTextList = Backbone.Collection.extend({
 });
 
 // ReadQueue is not a collection, because you cannot use it as a collection.
-jskom.Models.ReadQueue = Backbone.Model.extend({
+Models.ReadQueue = Backbone.Model.extend({
     initialize: function(options) {
         options || (options = {})
         
-        this._prefetchCount = (options.prefetchCount || jskom.Settings.PrefetchCount);
+        this._prefetchCount = (options.prefetchCount || Settings.PrefetchCount);
         this._currentText = null;
         this._currentThreadStack = [];
         
-        this._unreadTexts = new jskom.Collections.SortedTextList();
+        this._unreadTexts = new Collections.SortedTextList();
         
         if (options.unreadTextNos) {
             this.addUnreadTextNos(options.unreadTextNos);
@@ -208,7 +210,7 @@ jskom.Models.ReadQueue = Backbone.Model.extend({
     
     addUnreadTextNos: function(unreadTextNos) {
         var unreadTexts = _.map(unreadTextNos, function(text_no) {
-            return new jskom.Models.Text({ text_no: text_no });
+            return new Models.Text({ text_no: text_no });
         });
         this._unreadTexts.add(unreadTexts);
         
@@ -244,7 +246,7 @@ jskom.Models.ReadQueue = Backbone.Model.extend({
             // We still have texts to read in this thread
             nextText = this._currentThreadStack.pop();
             this._unreadTexts.remove(nextText);
-            jskom.Log.debug("readQueue:moveNext() - pop:ed " +
+            Log.debug("readQueue:moveNext() - pop:ed " +
                         nextText.get('text_no') + " from stack.")
         } else {
             // No more texts in this thread, find new thread
@@ -254,12 +256,12 @@ jskom.Models.ReadQueue = Backbone.Model.extend({
                 // lowest text number.
                 // Since this._unreadTexts is sorted, we just shift.
                 nextText = this._unreadTexts.shift();
-                jskom.Log.debug("readQueue:moveNext() - found new thread in " +
+                Log.debug("readQueue:moveNext() - found new thread in " +
                             nextText.get('text_no'));
             } else {
                 // No unread texts
                 nextText = null;
-                jskom.Log.debug("readQueue:moveNext() - no unread texts.")
+                Log.debug("readQueue:moveNext() - no unread texts.")
             }
         }
         
@@ -284,7 +286,7 @@ jskom.Models.ReadQueue = Backbone.Model.extend({
                     var commentTextNos = _.pluck(comments, 'text_no');
                     commentTextNos.reverse();
                     _.each(commentTextNos, function(commentTextNo) {
-                        self._currentThreadStack.push(new jskom.Models.Text({
+                        self._currentThreadStack.push(new Models.Text({
                             text_no: commentTextNo
                         }));
                     });
@@ -294,7 +296,7 @@ jskom.Models.ReadQueue = Backbone.Model.extend({
                 // wait for the fetch so we can consider the new
                 // text's comments. ("last" because we pop from the end of the array)
                 _.each(_.last(self._currentThreadStack, self._prefetchCount), function(text) {
-                    jskom.Log.debug("readQueue:moveNext() - prefetching comment "
+                    Log.debug("readQueue:moveNext() - prefetching comment "
                                 + text.get('text_no'));
                     text.deferredFetch();
                 });
@@ -304,7 +306,7 @@ jskom.Models.ReadQueue = Backbone.Model.extend({
             // ("thread starts"), no need to wait for fetching of the
             // new text.
             _.each(this._unreadTexts.first(this._prefetchCount), function(text) {
-                jskom.Log.debug("readQueue:moveNext() - prefetching " + text.get('text_no'));
+                Log.debug("readQueue:moveNext() - prefetching " + text.get('text_no'));
                 text.deferredFetch();
             });
         }
@@ -321,7 +323,7 @@ jskom.Models.ReadQueue = Backbone.Model.extend({
     }
 });
 
-jskom.Models.UnreadConference = Backbone.Model.extend({
+Models.UnreadConference = Backbone.Model.extend({
     idAttribute: 'conf_no',
     
     defaults: {
@@ -331,8 +333,8 @@ jskom.Models.UnreadConference = Backbone.Model.extend({
     }
 });
 
-jskom.Collections.UnreadConferences = Backbone.Collection.extend({
-    model: jskom.Models.UnreadConference,
+Collections.UnreadConferences = Backbone.Collection.extend({
+    model: Models.UnreadConference,
     
     url: '/conferences/unread/',
     
@@ -344,7 +346,7 @@ jskom.Collections.UnreadConferences = Backbone.Collection.extend({
 });
 
 
-jskom.Models.LocalReadMarking = Backbone.Model.extend({
+Models.LocalReadMarking = Backbone.Model.extend({
     idAttribute: 'text_no',
     
     defaults: {
@@ -360,7 +362,7 @@ jskom.Models.LocalReadMarking = Backbone.Model.extend({
     },
 });
 
-jskom.Models.GlobalReadMarking = Backbone.Model.extend({
+Models.GlobalReadMarking = Backbone.Model.extend({
     idAttribute: 'text_no',
     
     defaults: {
@@ -374,8 +376,8 @@ jskom.Models.GlobalReadMarking = Backbone.Model.extend({
     },
 });
 
-jskom.Collections.ReadMarkings = Backbone.Collection.extend({
-    model: jskom.Models.LocalReadMarking,
+Collections.ReadMarkings = Backbone.Collection.extend({
+    model: Models.LocalReadMarking,
     
     url: function() {
         return '/conferences/' +
@@ -392,3 +394,5 @@ jskom.Collections.ReadMarkings = Backbone.Collection.extend({
         return resp.rms;
     },
 });
+
+})(jQuery, _, Backbone, Handlebars, jskom.Models, jskom.Collections, jskom.Log, jskom.Settings);
