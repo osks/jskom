@@ -161,12 +161,13 @@ jskom.Views.Session = Backbone.View.extend({
     ),
     
     events: {
+        'click a.text-link': 'onClickTextLink',
     },
     
     initialize: function(options) {
         options || (options = {})
         _.bindAll(this, 'render', 'authFailed', 'showUnreadConfs', 'showText', 'newText',
-                 'showView');
+                  'showView', 'onClickTextLink');
         this.currentView = null;
         this.model.on('destroy', this.remove, this);
     },
@@ -252,13 +253,8 @@ jskom.Views.Session = Backbone.View.extend({
             function(data) {
                 jskom.Log.debug("text.fetch - success");
                 
-                var textView = new jskom.Views.ShowText({ model: text })
-                
-                // Handle when someone clicks on a text link
-                textView.on('text:show', function(text_no) {
-                    self.showText(text_no);
-                });
-                
+                jskom.router.navigate('texts/' + text_no);
+                var textView = new jskom.Views.ShowText({ model: text });
                 self.showView(textView);
             }
         ).fail(
@@ -279,9 +275,10 @@ jskom.Views.Session = Backbone.View.extend({
     },
     
     newText: function() {
+        var self = this;
         var newText = new jskom.Models.Text();
         newText.on('sync', function() {
-            jskom.router.showText(newText.get('text_no'));
+            self.showText(newText.get('text_no'));
             this.$('.message').append(new jskom.Views.Message({
                 level: 'success',
                 heading: 'Text ' + newText.get('text_no') + ' created.'
@@ -295,6 +292,10 @@ jskom.Views.Session = Backbone.View.extend({
         this.showView(createTextView);
     },
     
+    onClickTextLink: function(e) {
+        this.showText($(e.target).data('text-no'));
+        return false;
+    },
 });
 
 jskom.Views.Reader = Backbone.View.extend({
@@ -321,11 +322,12 @@ jskom.Views.Reader = Backbone.View.extend({
     events: {
         'click .action-back-to-confs': 'onBackToConfs',
         'click .action-next-unread': 'onReadNext',
+        'click a.text-link': 'onClickTextLink',
     },
     
     initialize: function() {
         _.bindAll(this, 'render', 'onReadNext', 'showText', 'onKeyDown', 'showView',
-                  'remove', 'onBackToConfs');
+                  'remove', 'onBackToConfs', 'onClickTextLink');
         this.currentView = null;
         $('body').bind('keydown', this.onKeyDown);
         this.model.on('change', this.render, this);
@@ -415,13 +417,6 @@ jskom.Views.Reader = Backbone.View.extend({
                     model: text,
                     markAsReadOnRender: true
                 });
-                
-                // Handle when someone clicks on a text link
-                textView.on('text:show', function(text_no) {
-                    var textToShow = new jskom.Models.Text({ text_no: text_no });
-                    self.showText(textToShow);
-                });
-                
                 self.showView(textView);
                 self.$('.action-next-unread').removeAttr('disabled');
                 $(document).scrollTop(0);
@@ -446,32 +441,12 @@ jskom.Views.Reader = Backbone.View.extend({
         this.$('.action-next-unread').attr('disabled', 'disabled');
         this.model.moveNext();
     },
-});
-
-jskom.Views.TextLink = Backbone.View.extend({
-    tagName: 'a',
-    className: 'textLink',
     
-    events: {
-        'click': 'onClick'
+    onClickTextLink: function(e) {
+        var textToShow = new jskom.Models.Text({ text_no: $(e.target).data('text-no') });
+        this.showText(textToShow);
+        return false;
     },
-    
-    initialize: function(options) {
-        _.bindAll(this, 'render', 'onClick');
-        this.text_no = options.text_no;
-    },
-    
-    render: function() {
-        this.$el
-            .text(this.text_no)
-            .attr('href', jskom.router.url('texts/' + this.text_no));
-        return this;
-    },
-    
-    onClick: function(e) {
-        e.preventDefault();
-        this.trigger('text:show', this.text_no);
-    }
 });
 
 jskom.Views.Menu = Backbone.View.extend({
@@ -902,13 +877,11 @@ jskom.Views.ShowText = Backbone.View.extend({
     events: {
         'click .write-comment': 'onWriteComment',
         'click .mark-as-read': 'onMarkAsRead',
-        'click a.text-link': 'onClickTextLink',
     },
     
     initialize: function(options) {
         options || (options = {})
-        _.bindAll(this, 'render', 'onWriteComment', 'onMarkAsRead', 'onKeyDown', 'remove',
-                 'onClickTextLink');
+        _.bindAll(this, 'render', 'onWriteComment', 'onMarkAsRead', 'onKeyDown', 'remove');
         $('body').bind('keydown', this.onKeyDown);
         
         if (options.markAsReadOnRender) {
@@ -933,11 +906,6 @@ jskom.Views.ShowText = Backbone.View.extend({
         return this;
     },
     
-    onClickTextLink: function(e) {
-        this.trigger('text:show', $(e.target).data('text-no'));
-        return false;
-    },
-    
     onKeyDown: function(e) {
         if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) {
             return true;
@@ -951,21 +919,11 @@ jskom.Views.ShowText = Backbone.View.extend({
         var ret = true;
         switch (e.which) {
         case 75: // k (lower case)
-            if (this._previousKeyDown && this._previousKeyDown.which == 219) {
-                // å k
-                var commentTos = this.model.get('comment_to_list');
-                if (commentTos && commentTos.length > 0) {
-                    this.trigger('text:show', commentTos[0].text_no);
-                }
-            } else {
-                this.$('.write-comment').click();
-                ret = false;
-            }
+            this.$('.write-comment').click();
+            return false;
         }
         
-        
-        this._previousKeyDown = e;
-        return ret;
+        return true;
     },
     
     onWriteComment: function(event) {
