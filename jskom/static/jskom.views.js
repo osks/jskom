@@ -163,7 +163,8 @@ jskom.Views.Session = Backbone.View.extend({
     events: {
     },
     
-    initialize: function() {
+    initialize: function(options) {
+        options || (options = {})
         _.bindAll(this, 'render', 'authFailed', 'showUnreadConfs', 'showText', 'newText',
                  'showView');
         this.currentView = null;
@@ -225,7 +226,7 @@ jskom.Views.Session = Backbone.View.extend({
                 jskom.Log.debug("readMarkings.fetch(" + conf_no + ") - success");
                 self.$('#session-container').empty();
                 
-                var readQueue = new jskom.Models.ReadQueue({ prefetchCount: 1 });
+                var readQueue = new jskom.Models.ReadQueue();
                 readQueue.addUnreadTextNos(readMarkings.pluck('text_no'));
                 self.showView(new jskom.Views.Reader({ model: readQueue }));
             },

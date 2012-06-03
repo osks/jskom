@@ -34,7 +34,7 @@ jskom.Router = Backbone.Router.extend({
         if (this.session) {
             this.session.destroy({ silent: true }); // destroy / logout any existing session
         }
-        this.session = new jskom.Models.Session();
+        this.session = new jskom.Models.Session({ prefetchCount: 2 });
         this.sessionView = null;
         this._setUpSession(this.session);
         this.app.showMenuView(new jskom.Views.Menu({ model: this.session }));

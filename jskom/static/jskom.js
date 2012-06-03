@@ -6,7 +6,10 @@ var jskom = {
     version: "0.1",
     
     // httpkom server URL without trailing slash (example: 'http://localhost:5001')
-    httpkom: "",
+    Settings: {
+        HttpkomServer: "",
+        PrefetchCount: 2
+    },
     
     Models: {},
     Collections: {},
@@ -22,7 +25,7 @@ var jskom = {
     
     init: function() {
         $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
-            options.url = jskom.httpkom + options.url;
+            options.url = jskom.Settings.HttpkomServer + options.url;
             
             options.xhrFields = {
                 withCredentials: true

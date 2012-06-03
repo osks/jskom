@@ -195,7 +195,7 @@ jskom.Models.ReadQueue = Backbone.Model.extend({
     initialize: function(options) {
         options || (options = {})
         
-        this._prefetchCount = (options.prefetchCount || 0);
+        this._prefetchCount = (options.prefetchCount || jskom.Settings.PrefetchCount);
         this._currentText = null;
         this._currentThreadStack = [];
         
