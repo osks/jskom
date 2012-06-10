@@ -4,55 +4,64 @@
 
 (function($, _, Backbone, Handlebars, Models, Collections, Views, Log) {
 
-  Views.App = Backbone.View.extend({
-    el: '#jskom',
-    
-    template: Handlebars.compile(
-      '<div class="container">' +
-        '  <div id="app-container">' +
-        '  </div>' + 
-        '  <hr>' +
-        '  <footer>' + 
-        '      <p>' +
-        '        <a href="https://github.com/osks/jskom">jskom</a> ' +
-        '        &copy; <a href="mailto:oskar@osd.se">Oskar Skoog</a> 2012</p>' +
-        '  </footer>' +
-        '</div>'
-    ),
-    
+  Views.Layout = Backbone.View.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'showView', 'showMenuView');
-      this.currentView = null;
-      this.currentMenuView = null;
+      options = options || {};
+      this.views = this.views || {};
+      _.bindAll(this, 'render', 'setView', 'removeView');
     },
     
     render: function() {
-      this.$el.empty();
-      this.$el.append(this.template());
+      this.$el.html(this.template());
       return this;
     },
     
-    showMenuView: function(menuView) {
-      if (this.currentMenu !== menuView) {
-        if (this.currentMenuView != null) {
-          this.currentMenuView.remove();
+    setView: function(name, view) {
+      if (this.views[name] !== view) {
+        // remove the old view, if it's not the same as the new.
+        if (this.views[name] != null) {
+          this.removeView(name);
         }
-        this.currentMenuView = menuView;
-        this.$el.prepend(this.currentMenuView.render().el);
+        
+        this.views[name] = view;
+        this.$(name).empty().append(view.el);
       }
+      
+      return view; // for easy chaining: layout.setView("foo", new View()).render();
     },
     
-    showView: function(view) {
-      if (this.currentView !== view) {
-        if (this.currentView != null) {
-          this.currentView.remove();
-        }
-        this.currentView = view;
-        this.$('#app-container').prepend(this.currentView.render().el);
+    removeView: function(name) {
+      if (this.views[name] != null) {
+        var oldView = this.views[name];
+        oldView.remove();
+        delete this.views[name];
       }
     }
   });
-
+  
+  Views.AppLayout = Views.Layout.extend({
+    el: '#jskom',
+    
+    template: Handlebars.compile(
+      '<div class="menu"></div>' +
+      '<div class="container">' +
+      '  <div class="main"></div>' + 
+      '  <hr>' +
+      '  <footer>' + 
+      '      <p>' +
+      '        <a href="https://github.com/osks/jskom">jskom</a> ' +
+      '        &copy; <a href="mailto:oskar@osd.se">Oskar Skoog</a> 2012</p>' +
+      '  </footer>' +
+      '</div>'
+    ),
+    
+    // Optional part, if you want to declare views
+    /*
+    views: {
+      '.footer': new Views.Footer().render(),
+    }*/
+  });
+  
   Views.Message = Backbone.View.extend({
     template: Handlebars.compile(
       '<div class="alert alert-block alert-{{level}}">' +

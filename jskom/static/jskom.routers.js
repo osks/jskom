@@ -21,7 +21,7 @@
       this.urlRoot = options.urlRoot;
       
       this.sessionView = null;
-      this.app = new Views.App().render();
+      this.appLayout = new Views.AppLayout().render();
     },
     
     url: function(path) {
@@ -39,8 +39,8 @@
       this.session = new Models.Session({ prefetchCount: 2 });
       this.sessionView = null;
       this._setUpSession(this.session);
-      this.app.showMenuView(new Views.Menu({ model: this.session }));
-      this.app.showView(new Views.Login({ model: this.session }));
+      this.appLayout.setView(".menu", new Views.Menu({ model: this.session })).render();
+      this.appLayout.setView(".main", new Views.Login({ model: this.session })).render();
     },
     
     home: function() {
@@ -97,8 +97,8 @@
         //Log.debug('_withSessionView - session is not new');
         if (!this.sessionView) {
           this.sessionView = new Views.Session({ model: this.session })
-          this.app.showMenuView(new Views.Menu({ model: this.session }));
-          this.app.showView(this.sessionView);
+          this.appLayout.setView(".menu", new Views.Menu({ model: this.session })).render();
+          this.appLayout.setView(".main", this.sessionView).render();
         }
         callback.call(this.sessionView);
       }

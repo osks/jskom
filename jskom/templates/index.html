@@ -19,6 +19,11 @@
     
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" />
     
+    <title>jskom</title>
+  </head>
+  <body>
+    <div id="jskom"></div>
+    
     <script src="{{ url_for('static', filename='lib/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/jquery.cookie.js') }}"></script>
     
@@ -41,10 +46,6 @@
     <script src="{{ url_for('static', filename='jskom.views.js') }}"></script>
     <script src="{{ url_for('static', filename='jskom.routers.js') }}"></script>
     
-    <title>jskom</title>
-  </head>
-  <body>
-    <div id="jskom"></div>
     <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.js') }}"></script>
   </body>
 </html>
