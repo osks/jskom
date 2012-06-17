@@ -17,7 +17,7 @@
       pers_no: null,
       client: {
         name: "jskom",
-        version: jskom.version
+        version: ojskom.version
       }
     },
     
@@ -394,4 +394,5 @@
     },
   });
 
-})(jQuery, _, Backbone, Handlebars, jskom.Models, jskom.Collections, jskom.Log, jskom.Settings);
+})(jQuery, _, Backbone, Handlebars,
+   ojskom.Models, ojskom.Collections, ojskom.Log, ojskom.Settings);

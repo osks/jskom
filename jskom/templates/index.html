@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="jskom">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -21,8 +21,84 @@
     
     <title>jskom</title>
   </head>
-  <body>
-    <div id="jskom"></div>
+  <body ng-controller="SessionCtrl">
+    {% raw %}
+    
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container" id="menu-container">
+          <a class="brand" href="/">jskom</a>
+          
+          <div ng-show="state == 'loggedIn'" ng-cloak>
+            <ul class="nav">
+              <li class="active">
+                <a class="home" href="/">Home</a>
+              </li>
+              <li>
+                <a class="new-text" href="{{ new_text_url }}">New text</a>
+              </li>
+            </ul>
+            <div class="btn-group pull-right" id="menu-right">
+              <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                <i class="icon-user"></i>
+                <span class="hidden-phone">{{ session.pers_name }}</span>
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li><a ng-click="logout()" href="#">Logout</a></li>
+              </ul>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+    
+    <div class="container">
+      
+      <ng-switch on="state" ng-cloak>
+        <div ng-switch-default>
+          loading...
+        </div>
+        
+        <div ng-switch-when="loggedIn">
+          <div ng-view></div>
+        </div>
+        
+        <div ng-switch-when="notLoggedIn">
+          
+          <div class="row">
+            <div class="span4">
+              <h2>Login</h2>
+              <div class="message"></div> 
+              <form>
+                <label>Person name</label>
+                <input type="text" class="span4" name="pers_name" ng-model="session.pers_name" />
+                <label>Password</label> 
+                <input type="password" class="span4" name="password" ng-model="session.password" />
+                
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary" ng-click="login()">Login</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        
+        </div>
+      
+      </ng-switch>
+      
+      <hr />
+      <footer>
+        <p>
+          <a href="https://github.com/osks/jskom">jskom</a>
+          &copy; <a href="mailto:oskar@osd.se">Oskar Skoog</a> 2012
+        </p>
+      </footer>
+    </div>
+    
+    {% endraw %}
+    
     
     <script src="{{ url_for('static', filename='lib/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/jquery.cookie.js') }}"></script>
@@ -34,17 +110,17 @@
     <script src="{{ url_for('static', filename='lib/mimeparse.js') }}"></script>
 
     <script src="{{ url_for('static', filename='lib/underscore.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/backbone.js') }}"></script>
     
-    <script src="{{ url_for('static', filename='lib/handlebars.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/angular-1.0.0.js') }}"></script>
     
     <script src="{{ url_for('static', filename='jskom.js') }}"></script>
     <script type="text/javascript">
       jskom.Settings.HttpkomServer = "{{ httpkom_server }}";
     </script>
-    <script src="{{ url_for('static', filename='jskom.models.js') }}"></script>
-    <script src="{{ url_for('static', filename='jskom.views.js') }}"></script>
-    <script src="{{ url_for('static', filename='jskom.routers.js') }}"></script>
+    <script src="{{ url_for('static', filename='jskom.services.js') }}"></script>
+    <script src="{{ url_for('static', filename='jskom.controllers.js') }}"></script>
+    <script src="{{ url_for('static', filename='jskom.auth.js') }}"></script>
+    <script src="{{ url_for('static', filename='jskom.filters.js') }}"></script>
     
     <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.js') }}"></script>
   </body>

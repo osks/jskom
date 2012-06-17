@@ -264,7 +264,7 @@
         function(data) {
           Log.debug("text.fetch - success");
           
-          jskom.router.navigate('texts/' + text_no);
+          ojskom.router.navigate('texts/' + text_no);
           var textView = new Views.ShowText({ model: text });
           self.showView(textView);
         }
@@ -298,7 +298,7 @@
       var createTextView = new Views.CreateText({ model: newText });
       createTextView.on('cancel', function() {
         createTextView.remove();
-        jskom.router.home();
+        ojskom.router.home();
       });
       this.showView(createTextView);
     },
@@ -389,7 +389,7 @@
     
     onBackToConfs: function(e) {
       e.preventDefault();
-      jskom.router.home();
+      ojskom.router.home();
     },
     
     onKeyDown: function(e) {
@@ -412,7 +412,7 @@
             ret = false;
           }
         } else {
-          jskom.router.home();
+          ojskom.router.home();
           ret = false;
         }
       }
@@ -435,7 +435,7 @@
       ).fail(
         function(jqXHR, textStatus) {
           if (jqXHR.status == 401) {
-            jskom.router.login();
+            ojskom.router.login();
           } else {
             // TODO: error handling
             self.$('.message').append(new Views.Message({
@@ -510,12 +510,12 @@
     
     render: function() {
       this.$el.empty();
-      this.$el.append(this.template({ home_url: jskom.router.url('') }));
+      this.$el.append(this.template({ home_url: ojskom.router.url('') }));
       
       if (!this.model.isNew()) { // is this a correct check?
         this.$('#menu-container').append(this.loggedInMenuTemplate({
-          home_url: jskom.router.url(''),
-          new_text_url: jskom.router.url('texts/new'),
+          home_url: ojskom.router.url(''),
+          new_text_url: ojskom.router.url('texts/new'),
           model: this.model.toJSON()
         }));
       }
@@ -524,18 +524,18 @@
     },
     
     onClickHome: function() {
-      jskom.router.home();
+      ojskom.router.home();
       return false;
     },
     
     onClickNewText: function() {
-      jskom.router.newText();
+      ojskom.router.newText();
       return false;
     },
     
     onClickLogout: function(e) {
       this.model.destroy();
-      jskom.router.login();
+      ojskom.router.login();
       return false;
     }
   });
@@ -576,7 +576,7 @@
       switch (e.which) {
       case 32: // Space
         if (this.collection.size() > 0) {
-          jskom.router.showUnreadTextsInConf(this.collection.first().get('conf_no'));
+          ojskom.router.showUnreadTextsInConf(this.collection.first().get('conf_no'));
           ret = false;
         }
       }
@@ -628,14 +628,14 @@
     
     render: function() {
       var modelJson = this.model.toJSON();
-      modelJson.conf_url = jskom.router.url('conferences/' + modelJson.conf_no + '/unread');
+      modelJson.conf_url = ojskom.router.url('conferences/' + modelJson.conf_no + '/unread');
       this.$el.html(this.template(modelJson));
       return this;
     },
     
     onClick: function(e) {
       e.preventDefault();
-      jskom.router.showUnreadTextsInConf(this.model.get('conf_no'));
+      ojskom.router.showUnreadTextsInConf(this.model.get('conf_no'));
     },
   });
 
@@ -982,7 +982,7 @@
             .removeAttr('disabled');
           
           if (jqXHR.status == 401) {
-            jskom.router.login();
+            ojskom.router.login();
           } else {
             // TODO: error handling
             self.$('.message').append(new Views.Message({
@@ -1002,5 +1002,5 @@
     },
   });
 
-})(jQuery, _, Backbone, Handlebars, jskom.Models, jskom.Collections,
-   jskom.Views, jskom.Log);
+})(jQuery, _, Backbone, Handlebars, ojskom.Models, ojskom.Collections,
+   ojskom.Views, ojskom.Log);

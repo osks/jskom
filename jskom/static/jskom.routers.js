@@ -105,5 +105,5 @@
     },
   });
 
-})(jQuery, _, Backbone, Handlebars, jskom.Routers, jskom.Models, jskom.Collections,
-   jskom.Views, jskom.Log, jskom.Settings);
+})(jQuery, _, Backbone, Handlebars, ojskom.Routers, ojskom.Models, ojskom.Collections,
+   ojskom.Views, ojskom.Log, ojskom.Settings);
