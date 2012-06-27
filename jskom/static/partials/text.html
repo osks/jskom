@@ -5,13 +5,18 @@
     
     <div ng-show="text" ng-cloak>
       
-      <h4>{{ text.text_no }} / {{ text.creation_time }} / {{ text.author.pers_name }}</h4>
+      <h4>
+        <jskom:a text-no="{{ text.text_no }}">{{ text.text_no }}</jskom:a>
+        / {{ text.creation_time }} / {{ text.author.pers_name }}
+      </h4>
       
       <div>
         <div class="text"> 
           
           <div ng-repeat="ct in text.comment_to_list">
-            {{ ct.type }} to text {{ ct.text_no }} by {{ ct.author.pers_name }}
+            {{ ct.type }} to text
+            <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
+            by {{ ct.author.pers_name }}
           </div>
           
           <div ng-repeat="r in text.recipient_list">
@@ -24,7 +29,9 @@
           <hr/>
           
           <div ng-repeat="ci in text.comment_in_list">
-            {{ ci.type }} in text {{ ci.text_no }} by {{ ci.author.pers_name }}
+            {{ ci.type }} in text
+            <jskom:a text-no="{{ ci.text_no }}">{{ ci.text_no }}</jskom:a>
+            by {{ ci.author.pers_name }}
           </div>
           
         </div>

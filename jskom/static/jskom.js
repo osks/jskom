@@ -102,7 +102,8 @@
 
 
 
-angular.module('jskom', ['jskom.auth', 'jskom.services', 'jskom.controllers']).
+angular.module('jskom', ['jskom.auth', 'jskom.services', 'jskom.controllers',
+                         'jskom.filters', 'jskom.directives']).
   config(['$routeProvider', function($routeProvider) {
     $routeProvider.
       when('/', {
