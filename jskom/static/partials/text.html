@@ -12,7 +12,6 @@
       
       <div>
         <div class="text"> 
-          
           <div ng-repeat="ct in text.comment_to_list">
             {{ ct.type }} to text
             <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
@@ -25,7 +24,16 @@
           
           <div>subject: {{ text.subject }}</div>
           <hr/>
-          <div>{{ text.body }}</div><!-- TODO! better body text!-->
+          <!-- TODO: fix stuff below, cannot use filters -->
+          <!--
+          <ng-switch on="text.content_type" ng-hide>
+            <div ng-switch-on="text/x-kom-basic" ng-bind-html="text.body|formatTextBody"></div>
+            <div ng-switch-on="image/jpeg">image</div>
+          </ng-switch>
+          -->
+          
+          <jskom:text-body model="text"></jskom:text-body>
+          
           <hr/>
           
           <div ng-repeat="ci in text.comment_in_list">
