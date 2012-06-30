@@ -69,17 +69,54 @@ angular.module('jskom.controllers', ['jskom.auth']).
         });
     }
   ]).
+  controller('NewTextCtrl', [
+    '$scope', 'textsService', '$log', '$location',
+    function($scope, textsService, $log, $location) {
+      $scope.recipientTypes = [
+        { name: 'To', type: 'to' },
+        { name: 'CC', type: 'cc' },
+        { name: 'BCC', type: 'bcc' }
+      ];
+      
+      $scope.text = {
+        recipient_list: [{ type: 'to', conf_name: '' }],
+        content_type: 'text/x-kom-basic',
+        subject: '',
+        body: ''
+      };
+      
+      $scope.newRecipient = function() {
+        return { type: 'to', conf_name: '' };
+      };
+      
+      $scope.createText = function() {
+        textsService.createText($scope.text).
+          success(function(data) {
+            $log.log("CreateTextCtrl - createText() - success");
+            $location.path('/texts/' + data.text_no);
+            // TODO
+          }).
+          error(function(data, status) {
+            $log.log("CreateTextCtrl - createText() - error");
+            $log.log(data);
+            // todo: error handling.
+          });
+        
+      };
+    }
+  ]).
   controller('ShowTextCtrl', [
-    '$scope', '$routeParams', 'textsService',
-    function($scope, $routeParams, textsService) {
+    '$scope', '$routeParams', 'textsService', '$log',
+    function($scope, $routeParams, textsService, $log) {
       textsService.getText($routeParams.textNo).
         success(function(data) {
-          jskom.Log.debug("ShowTextCtrl - getText() - success");
+          $log.log("ShowTextCtrl - getText() - success");
           $scope.text = data;
-        }).error(function(data, status) {
-          jskom.Log.debug("ShowTextCtrl - getText() - error");
+        }).
+        error(function(data, status) {
+          $log.log("ShowTextCtrl - getText() - error");
           // todo: error handling.
-          jskom.Log.debug(data);
+          $log.log(data);
         });
     }
   ]).
