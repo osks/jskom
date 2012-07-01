@@ -118,7 +118,8 @@ angular.module('jskom.controllers', ['jskom.auth']).
         textsService.createText($scope.text).
           success(function(data) {
             $log.log("CreateTextCtrl - createText() - success");
-            messagesService.showMessage('success', 'Text ' + data.text_no + ' was created.');
+            messagesService.showMessage('success', 'Successfully created text.',
+                                        'Text number ' + data.text_no + ' was created.');
             //$location.path('/texts/' + data.text_no);
             $scope.text = null;
           }).

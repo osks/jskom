@@ -3,6 +3,34 @@
 'use strict';
 
 angular.module('jskom.services', []).
+  factory('authService', [
+    '$http',
+    function($http) {
+      var config = { withCredentials: true };
+      
+      return {
+        createSession: function(session) {
+          return $http.post(jskom.Settings.HttpkomServer + '/sessions/', session, config);
+        },
+        
+        destroySession: function(sessionId) {
+          return $http.delete(jskom.Settings.HttpkomServer + '/sessions/' + sessionId, config);
+        },
+        
+        getSession: function(sessionId) {
+          return $http.get(jskom.Settings.HttpkomServer + '/sessions/' + sessionId, config);
+        },
+        
+        getCurrentSessionId: function() {
+          return $.cookie('session_id');
+        },
+        
+        getCurrentSession: function() {
+          var sessionId = this.getCurrentSessionId();
+          return this.getSession(sessionId);
+        }
+      };
+  }]).
   factory('messagesService', [
     '$rootScope', '$log',
     function($rootScope, $log) {

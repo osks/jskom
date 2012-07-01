@@ -32,32 +32,4 @@ angular.module('jskom.auth', []).
     }];
     
     $httpProvider.responseInterceptors.push(interceptor);
-  }]).
-  factory('authService', ['$http', function($http) {
-    
-    this.createSession = function(session) {
-      var config = { withCredentials: true };
-      return $http.post('http://localhost:5001/sessions/', session, config);
-    };
-    
-    this.destroySession = function(sessionId) {
-      var config = { withCredentials: true };
-      return $http.delete('http://localhost:5001/sessions/' + sessionId, config);
-    };
-    
-    this.getSession = function(sessionId) {
-      var config = { withCredentials: true };
-        return $http.get('http://localhost:5001/sessions/' + sessionId, config);
-    };
-      
-    this.getCurrentSessionId = function() {
-      return $.cookie('session_id');
-    };
-    
-    this.getCurrentSession = function() {
-      var sessionId = this.getCurrentSessionId();
-      return this.getSession(sessionId);
-    };
-    
-    return this;
   }]);
