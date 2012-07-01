@@ -4,8 +4,8 @@
 
 angular.module('jskom.services', []).
   factory('authService', [
-    '$http',
-    function($http) {
+    '$http', '$log',
+    function($http, $log) {
       var config = { withCredentials: true };
       
       return {

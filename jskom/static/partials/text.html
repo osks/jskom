@@ -1,60 +1,55 @@
-<div class="row">
-  <div class="span8">
-    
-    <div ng-show="text" ng-cloak>
+<div ng-show="text">
+  
+  <h4>
+    <jskom:a text-no="{{ text.text_no }}">{{ text.text_no }}</jskom:a>
+    / {{ text.creation_time }} / {{ text.author.pers_name }}
+  </h4>
+  
+  <div>
+    <div class="text"> 
+      <div ng-repeat="ct in text.comment_to_list">
+        {{ ct.type }} to text
+        <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
+        by {{ ct.author.pers_name }}
+      </div>
       
-      <h4>
-        <jskom:a text-no="{{ text.text_no }}">{{ text.text_no }}</jskom:a>
-        / {{ text.creation_time }} / {{ text.author.pers_name }}
-      </h4>
+      <div ng-repeat="r in text.recipient_list">
+        {{ r.type }}: {{ r.conf_name }}
+      </div>
       
-      <div>
-        <div class="text"> 
-          <div ng-repeat="ct in text.comment_to_list">
-            {{ ct.type }} to text
-            <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
-            by {{ ct.author.pers_name }}
-          </div>
-          
-          <div ng-repeat="r in text.recipient_list">
-            {{ r.type }}: {{ r.conf_name }}
-          </div>
-          
-          <div>subject: {{ text.subject }}</div>
-          <hr/>
-          <!-- TODO: fix stuff below, cannot use filters -->
-          <!--
+      <div>subject: {{ text.subject }}</div>
+      <hr/>
+      <!-- TODO: fix stuff below, cannot use filters -->
+      <!--
           <ng-switch on="text.content_type" ng-hide>
             <div ng-switch-on="text/x-kom-basic" ng-bind-html="text.body|formatTextBody"></div>
             <div ng-switch-on="image/jpeg">image</div>
           </ng-switch>
           -->
-          
-          <jskom:text-body model="text"></jskom:text-body>
-          
-          <hr/>
-          
-          <div ng-repeat="ci in text.comment_in_list">
-            {{ ci.type }} in text
-            <jskom:a text-no="{{ ci.text_no }}">{{ ci.text_no }}</jskom:a>
-            by {{ ci.author.pers_name }}
-          </div>
-          
-        </div>
-        
-        <div class="text-controls form-actions">
-          <button class="write-comment btn">Write comment</button>
-          
-          <div class="read-marking pull-right">
-            <button class="mark-as-read btn btn-mini btn-inverse" autocomplete="off"
-                    data-loading-text="Marking as read..."
-                    data-complete-text="Marked as read">
-              Mark as read
-            </button>
-          </div>
-        </div>
-        
+      
+      <jskom:text-body model="text"></jskom:text-body>
+      
+      <hr/>
+      
+      <div ng-repeat="ci in text.comment_in_list">
+        {{ ci.type }} in text
+        <jskom:a text-no="{{ ci.text_no }}">{{ ci.text_no }}</jskom:a>
+        by {{ ci.author.pers_name }}
+      </div>
+      
+    </div>
+    
+    <div class="text-controls form-actions">
+      <button class="write-comment btn">Write comment</button>
+      
+      <div class="read-marking pull-right">
+        <button class="mark-as-read btn btn-mini btn-inverse" autocomplete="off"
+                data-loading-text="Marking as read..."
+                data-complete-text="Marked as read">
+          Mark as read
+        </button>
       </div>
     </div>
+    
   </div>
 </div>

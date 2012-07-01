@@ -1,0 +1,13 @@
+<h2>Login</h2>
+<form>
+  <label>Person name</label>
+  <input type="text" class="span4" name="pers_name" ng-model="session.pers_name" />
+  <label>Password</label> 
+  <input type="password" class="span4" name="password" ng-model="session.password" />
+  
+  <div class="form-actions">
+    <div class="pull-right">
+      <button type="submit" class="btn btn-primary" ng-click="login()">Login</button>
+    </div>
+  </div>
+</form>

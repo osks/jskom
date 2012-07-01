@@ -120,8 +120,7 @@ angular.module('jskom.controllers', ['jskom.auth']).
             $log.log("CreateTextCtrl - createText() - success");
             messagesService.showMessage('success', 'Successfully created text.',
                                         'Text number ' + data.text_no + ' was created.');
-            //$location.path('/texts/' + data.text_no);
-            $scope.text = null;
+            $location.path('/texts/' + data.text_no);
           }).
           error(function(data, status) {
             $log.log("CreateTextCtrl - createText() - error");
