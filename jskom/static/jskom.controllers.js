@@ -3,9 +3,23 @@
 'use strict';
 
 angular.module('jskom.controllers', ['jskom.auth']).
+  controller('MessagesCtrl', [
+    '$scope', 'messagesService', '$log',
+    function($scope, messagesService, $log) {
+      $scope.messages = [];
+      
+      messagesService.onMessage(function(message) {
+        $scope.messages.push(message);
+      });
+      
+      messagesService.onClearAll(function() {
+        $scope.messages = [];
+      });
+    }
+  ]).
   controller('SessionCtrl', [
-    '$rootScope', '$scope', 'authService',
-    function($rootScope, $scope, authService) {
+    '$rootScope', '$scope', 'authService', 'messagesService',
+    function($rootScope, $scope, authService, messagesService) {
       $scope.state = 'loading';
       $scope.session = { client: { name: 'jskom', version: '0.2' } };
       
@@ -21,7 +35,7 @@ angular.module('jskom.controllers', ['jskom.auth']).
           $scope.state = 'loggedIn';
           $scope.session = data;
         }).
-        error(function() {
+        error(function(data, status) {
           jskom.Log.debug("SessionCtrl - getCurrentSession() - error");
           $scope.state = 'notLoggedIn';
         });
@@ -35,10 +49,12 @@ angular.module('jskom.controllers', ['jskom.auth']).
             jskom.Log.debug("SessionCtrl - login() - success");
             $scope.state = 'loggedIn';
             $scope.session = data;
+            messagesService.clearAll();
           }).
           error(function() {
             jskom.Log.debug("SessionCtrl - login() - error");
             $scope.state = 'notLoggedIn';
+            messagesService.showMessage('error', 'Failed to login.');
           });
       };
       
@@ -46,9 +62,18 @@ angular.module('jskom.controllers', ['jskom.auth']).
       $scope.logout = function() {
         jskom.Log.debug("SessionCtrl - logout()");
         
-        authService.destroySession(authService.getCurrentSessionId());
-        // set logged out regardless of how it went.
-        $scope.state = 'notLoggedIn';
+        authService.destroySession(authService.getCurrentSessionId()).
+          success(function() {
+            $scope.state = 'notLoggedIn';
+          }).
+          error(function(data, status) {
+            if (status == 404) {
+              // Session does not exist: we're not logged in.
+              $scope.state = 'notLoggedIn';
+            } else {
+              messagesService.showMessage('error', 'Error when logging out.');
+            }
+          });
       };
     }
   ]).
@@ -62,7 +87,7 @@ angular.module('jskom.controllers', ['jskom.auth']).
           jskom.Log.debug("UnreadConfsCtrl - getUnreadConferences() - success");
           $scope.unreadConfs = data.confs;
         }).
-        error(function(data) {
+        error(function(data, status) {
           jskom.Log.debug("UnreadConfsCtrl - getUnreadConferences() - error");
           // todo: error handling
           jskom.Log.debug(data);
@@ -70,8 +95,8 @@ angular.module('jskom.controllers', ['jskom.auth']).
     }
   ]).
   controller('NewTextCtrl', [
-    '$scope', 'textsService', '$log', '$location',
-    function($scope, textsService, $log, $location) {
+    '$scope', 'textsService', '$log', '$location', 'messagesService',
+    function($scope, textsService, $log, $location, messagesService) {
       $scope.recipientTypes = [
         { name: 'To', type: 'to' },
         { name: 'CC', type: 'cc' },
@@ -93,21 +118,21 @@ angular.module('jskom.controllers', ['jskom.auth']).
         textsService.createText($scope.text).
           success(function(data) {
             $log.log("CreateTextCtrl - createText() - success");
-            $location.path('/texts/' + data.text_no);
-            // TODO
+            messagesService.showMessage('success', 'Text ' + data.text_no + ' was created.');
+            //$location.path('/texts/' + data.text_no);
+            $scope.text = null;
           }).
           error(function(data, status) {
             $log.log("CreateTextCtrl - createText() - error");
             $log.log(data);
-            // todo: error handling.
+            messagesService.showMessage('error', 'Failed to create text.');
           });
-        
       };
     }
   ]).
   controller('ShowTextCtrl', [
-    '$scope', '$routeParams', 'textsService', '$log',
-    function($scope, $routeParams, textsService, $log) {
+    '$scope', '$routeParams', 'textsService', '$log', 'messagesService',
+    function($scope, $routeParams, textsService, $log, messagesService) {
       textsService.getText($routeParams.textNo).
         success(function(data) {
           $log.log("ShowTextCtrl - getText() - success");
@@ -115,8 +140,13 @@ angular.module('jskom.controllers', ['jskom.auth']).
         }).
         error(function(data, status) {
           $log.log("ShowTextCtrl - getText() - error");
-          // todo: error handling.
           $log.log(data);
+          if (status == 404) {
+            messagesService.showMessage('error', 'No such text',
+                                        'No text with number: ' + data.error_status);
+          } else {
+            messagesService.showMessage('error', 'Failed to get text.', data);
+          }
         });
     }
   ]).

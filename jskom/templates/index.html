@@ -56,6 +56,21 @@
     
     <div class="container">
       
+      <div ng-controller="MessagesCtrl" ng-cloak>
+        <div class="row">
+          <div class="span6">
+            <div ng-repeat="message in messages">
+              <div class="alert alert-block alert-{{message.level}}">
+                <a class="close" data-dismiss="alert" href="#"
+                 ng-click="messages.splice($index, 1)">×</a>
+                <h4 class="alert-heading">{{ message.heading }}</h4>
+                <span>{{ message.text }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <ng-switch on="state" ng-cloak>
         <div ng-switch-default>
           loading...
@@ -70,7 +85,6 @@
           <div class="row">
             <div class="span4">
               <h2>Login</h2>
-              <div class="message"></div> 
               <form>
                 <label>Person name</label>
                 <input type="text" class="span4" name="pers_name" ng-model="session.pers_name" />
@@ -78,7 +92,9 @@
                 <input type="password" class="span4" name="password" ng-model="session.password" />
                 
                 <div class="form-actions">
-                  <button type="submit" class="btn btn-primary" ng-click="login()">Login</button>
+                  <div class="pull-right">
+                    <button type="submit" class="btn btn-primary" ng-click="login()">Login</button>
+                  </div>
                 </div>
               </form>
             </div>
