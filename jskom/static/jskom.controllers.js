@@ -2,7 +2,7 @@
 
 'use strict';
 
-angular.module('jskom.controllers', ['jskom.auth']).
+angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
   controller('MessagesCtrl', [
     '$scope', 'messagesService', '$log',
     function($scope, messagesService, $log) {
@@ -151,7 +151,64 @@ angular.module('jskom.controllers', ['jskom.auth']).
     }
   ]).
   controller('ReaderCtrl', [
-    '$scope',
-    function($scope) {
+    '$scope', '$routeParams', '$log',
+    'readQueueService', 'messagesService', 'conferencesService', 'textsService',
+    function($scope, $routeParams, $log,
+             readQueueService, messagesService, conferencesService, textsService) {
+      
+      conferencesService.getConference($routeParams.confNo).
+        success(function(data) {
+          $log.log("ReaderCtrl - getConference() - success");
+          $scope.conf = data;
+        }).
+        error(function(data, status) {
+          $log.log("ReaderCtrl - getConference() - error");
+          messagesService.showMessage('error', 'Failed to get conference.', data);
+        });
+      
+      var readQueue = readQueueService.getReadQueueForConference(
+        $routeParams.confNo,
+        function() {
+          $log.log("ReaderCtrl - getReadQueueForConference() - success");
+          $scope.readQueue = readQueue;
+        },
+        function(data) {
+          $log.log("ReaderCtrl - getReadQueueForConference() - error");
+          messagesService.showMessage('error', 'Failed to get unread texts.', data);
+        });
+      
+      $scope.next = function() {
+        $scope.readQueue.moveNext();
+      };
+      
+      $scope.$watch('readQueue.current()', function(newText, oldText) {
+        $log.log("ReaderCtrl - $watch(readQueue.current()) - oldText: " + oldText);
+        $log.log("ReaderCtrl - $watch(readQueue.current()) - newText: " + newText);
+        
+        getText(newText);
+      });
+      
+      var getText = function(textNo) {
+        if (textNo) {
+          textsService.getText(textNo).
+            success(function(data) {
+              $log.log("ReaderCtrl - getText() - success");
+              $scope.text = data;
+            }).
+            error(function(data, status) {
+              $log.log("ReaderCtrl - getText() - error");
+              $log.log(data);
+              if (status == 404) {
+                messagesService.showMessage('error', 'No such text',
+                                            'No text with number: ' + data.error_status);
+              } else {
+                messagesService.showMessage('error', 'Failed to get text.', data);
+            }
+            });
+        } else {
+          $scope.text = null;
+        }
+        
+      }
     }
   ]);

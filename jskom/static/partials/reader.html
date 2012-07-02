@@ -1,24 +1,21 @@
-<div class="row">
-  <div class="span8">
+<span ng-hide="readQueue">Loading...</span>
+<div ng-show="readQueue">
+  <h2><em>{{ readQueue.size() }}</em> unread texts in <em>{{ conf.name }}</em></h2>
+  
+  <br />
+  
+  <ng-include src="'/static/partials/text.html'" ng-cloak></ng-include>
+  
+  <div class="reader-controls">
+    <a href="/" class="action-back-to-confs btn">
+      Back to conference list
+    </a>
     
-    <h2>{{ unreadCount }} unread texts in this conference</h2>
-    <br />
-    <div class="message"></div>
-    <div id="reader-container"></div>
-    
-    <div class="reader-controls">
-      <button class="action-back-to-confs btn">
-        Back to conference list
+    <div class="pull-right">
+      <button class="action-next-unread btn btn-primary"
+              ng-disabled="readQueue.isEmpty()" ng-click="next()">
+        Next unread text
       </button>
-      
-      <div class="pull-right">
-        {{#if hasUnreadTexts}}
-        <button class="action-next-unread btn btn-primary" disabled="disabled">
-          Next unread text
-        </button>
-        {{/if}}
-      </div>
-      
     </div>
   </div>
 </div>

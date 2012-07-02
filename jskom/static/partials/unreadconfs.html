@@ -1,16 +1,13 @@
-<div class="row">
-  <div class="span8">
-    
-    <h2 class="headline">Unread conferences</h2>
-    <div class="message"></div>
-    <ul>
-      <li ng-repeat="conf in unreadConfs">
-        <span class="name">
-          <a class="conf" href="/conferences/{{ conf.conf_no }}/unread/">{{ conf.name }}</a>
+<div>
+  <h2>Unread conferences</h2>
+  
+  <span ng-hide="unreadConfs">Loading...</span>
+  <ul ng-show="unreadConfs">
+    <li ng-repeat="conf in unreadConfs">
+      <span class="name">
+        <a class="conf" href="/conferences/{{ conf.conf_no }}/unread/">{{ conf.name }}</a>
         </span>
-        (<span class="no_of_unread">{{ conf.no_of_unread }}</span>)
-      </li>
-    </ul>
-    
-  </div>
+      (<span class="no_of_unread">{{ conf.no_of_unread }}</span>)
+    </li>
+  </ul>
 </div>

@@ -71,18 +71,6 @@ angular.module('jskom.services', []).
       };
     }
   ]).
-  factory('conferencesService', [
-    '$http',
-    function($http) {
-      var config = { withCredentials: true };
-      
-      return {
-        getUnreadConferences: function() {
-          return $http.get(jskom.Settings.HttpkomServer + '/conferences/unread/', config);
-        }
-      };
-    }
-  ]).
   factory('textsService', [
     '$http',
     function($http) {
@@ -95,6 +83,67 @@ angular.module('jskom.services', []).
         
         createText: function(text) {
           return $http.post(jskom.Settings.HttpkomServer + '/texts/', text, config);
+        }
+      };
+    }
+  ]).
+  factory('conferencesService', [
+    '$http',
+    function($http) {
+      var config = { withCredentials: true };
+      
+      return {
+        getConference: function(confNo) {
+          return $http.get(jskom.Settings.HttpkomServer + '/conferences/' + confNo, config);
+        },
+        
+        getUnreadConferences: function() {
+          return $http.get(jskom.Settings.HttpkomServer + '/conferences/unread/', config);
+        },
+      };
+    }
+  ]).
+  factory('readMarkingsService', [
+    '$http',
+    function($http) {
+      var config = { withCredentials: true };
+      
+      return {
+        getReadMarkingsForUnreadInConference: function(confNo) {
+          var cfg = _.clone(config);
+          return $http.get(jskom.Settings.HttpkomServer + '/conferences/' + confNo +
+                           '/read-markings/?unread=true', cfg);
+        }
+      };
+    }
+  ]).
+  factory('readQueueService', [
+    '$log', 'readMarkingsService',
+    function($log, readMarkingsService) {
+      
+      return {
+        getReadQueueForConference: function(confNo, successFn, errorFn) {
+          var readQueue = new ReadQueue();
+          
+          readMarkingsService.getReadMarkingsForUnreadInConference(confNo).
+            success(function(data, status, headers, config) {
+              // data.rms
+              var textNos = _.map(data.rms, function(rm) {
+                return rm.text_no;
+              });
+              readQueue.add(textNos);
+              
+              if (successFn) {
+                successFn(data, status, headers, config);
+              }
+            }).
+            error(function(data, status, headers, config) {
+              if (errorFn) {
+                errorFn(data, status, headers, config);
+              }
+            });
+          
+          return readQueue;
         }
       };
     }
