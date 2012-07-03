@@ -41,6 +41,7 @@ angular.module('jskom.directives', []).
     }
   ]).
   directive('jskomTextBody', [
+    // Example: <jskom:text-body model="text"></jskom:text-body>
     '$log',
     function($log) {
       
@@ -56,28 +57,9 @@ angular.module('jskom.directives', []).
           '</ng-switch>' +
           '<div ng-hide="text">[no text]</div>' +
           '',
-        scope: {
-          modelName: '@model'
-        },
+        scope: {},
         link: function(scope, iElement, iAttrs) {
-          // Hack so we can set the model name in an attribute. We use
-          // the parent scope, so being able to specify model makes
-          // this directive seem less magical.
-          var currentModelWatcher;
-          scope.$watch('modelName', function(newModelName) {
-            if (currentModelWatcher) {
-              currentModelWatcher.call(this);
-            }
-            
-            if (newModelName) {
-              currentModelWatcher = scope.$watch('$parent.' + newModelName, function(newText) {
-                // Update local scope text with text from parent scope.
-                scope.text = newText;
-              });
-            }
-          });
-          
-          scope.$watch('text', function(newText) {
+          scope.$parent.$watch(iAttrs.model, function(newText) {
             scope.text = newText;
             
             if (scope.text) {
@@ -99,5 +81,22 @@ angular.module('jskom.directives', []).
           
         }
       };
+    }
+  ]).
+  directive('jskomText', [
+    // Example: <jskom:text model="text"></jskom:text>
+    
+    '$log',
+    function($log) {
+      return {
+        restrict: 'E',
+        templateUrl: '/static/partials/text.html',
+        scope: {},
+        link: function(scope, iElement, iAttrs) {
+          scope.$parent.$watch(iAttrs.model, function(newText) {
+            scope.text = newText;
+          });
+        }
+      }
     }
   ]);

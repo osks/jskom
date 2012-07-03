@@ -4,15 +4,15 @@
   
   <br />
   
-  <ng-include src="'/static/partials/text.html'" ng-cloak></ng-include>
+  <jskom:text model="text"></jskom:text>
   
-  <div class="reader-controls">
-    <a href="/" class="action-back-to-confs btn">
+  <div>
+    <a href="/" class="btn">
       Back to conference list
     </a>
     
     <div class="pull-right">
-      <button class="action-next-unread btn btn-primary"
+      <button class="btn btn-primary"
               ng-disabled="readQueue.isEmpty()" ng-click="next()">
         Next unread text
       </button>

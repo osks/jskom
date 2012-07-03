@@ -19,13 +19,6 @@
       
       <div>subject: {{ text.subject }}</div>
       <hr/>
-      <!-- TODO: fix stuff below, cannot use filters -->
-      <!--
-          <ng-switch on="text.content_type" ng-hide>
-            <div ng-switch-on="text/x-kom-basic" ng-bind-html="text.body|formatTextBody"></div>
-            <div ng-switch-on="image/jpeg">image</div>
-          </ng-switch>
-          -->
       
       <jskom:text-body model="text"></jskom:text-body>
       
