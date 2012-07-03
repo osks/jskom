@@ -113,7 +113,18 @@ angular.module('jskom.services', []).
           var cfg = _.clone(config);
           return $http.get(jskom.Settings.HttpkomServer + '/conferences/' + confNo +
                            '/read-markings/?unread=true', cfg);
-        }
+        },
+        
+        // createLocalReadMarking: function(confNo, localTextNo) {},
+        
+        createGlobalReadMarking: function(textNo) {
+          return $http.put(jskom.Settings.HttpkomServer +
+                           '/texts/' + textNo + '/read-marking', null, config);
+        },
+        
+        destroyGlobalReadMarking: function(textNo) {
+          return $http.delete(jskom.Settings.HttpkomServer + '/texts/' + textNo, config);
+        },
       };
     }
   ]).

@@ -33,6 +33,7 @@ angular.module('jskom.directives', []).
           });
           
           scope.showText = function() {
+            // Is this necessary?
             $log.log("jskomA - showText() - iAttrs.href: " + iAttrs.href);
             $location.path(iAttrs.href);
           };
@@ -86,8 +87,8 @@ angular.module('jskom.directives', []).
   directive('jskomText', [
     // Example: <jskom:text model="text"></jskom:text>
     
-    '$log',
-    function($log) {
+    '$log', 'readMarkingsService', 'messagesService',
+    function($log, readMarkingsService, messagesService) {
       return {
         restrict: 'E',
         templateUrl: '/static/partials/text.html',
@@ -95,8 +96,20 @@ angular.module('jskom.directives', []).
         link: function(scope, iElement, iAttrs) {
           scope.$parent.$watch(iAttrs.model, function(newText) {
             scope.text = newText;
-          });
+          })
+          
+          scope.markAsRead = function() {
+            var textNo = scope.text.text_no;
+            readMarkingsService.createGlobalReadMarking(textNo).
+              success(function(data) {
+                $log.log("jskom:text - markAsRead(" + textNo + ") - success");
+              }).
+              error(function(data, status) {
+                $log.log("jskom:text - markAsRead(" + textNo + ") - error");
+                messagesService.showMessage('error', 'Failed to mark text as read.', data);
+              });
+          };
         }
-      }
+      };
     }
   ]);

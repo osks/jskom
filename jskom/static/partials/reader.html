@@ -7,13 +7,11 @@
   <jskom:text model="text"></jskom:text>
   
   <div>
-    <a href="/" class="btn">
-      Back to conference list
-    </a>
+    <a href="/" class="btn">Back to conference list</a>
     
     <div class="pull-right">
       <button class="btn btn-primary"
-              ng-disabled="readQueue.isEmpty()" ng-click="next()">
+              ng-disabled="readQueue.isEmpty()" ng-click="readQueue.moveNext()">
         Next unread text
       </button>
     </div>

@@ -177,17 +177,6 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
           messagesService.showMessage('error', 'Failed to get unread texts.', data);
         });
       
-      $scope.next = function() {
-        $scope.readQueue.moveNext();
-      };
-      
-      $scope.$watch('readQueue.current()', function(newText, oldText) {
-        $log.log("ReaderCtrl - $watch(readQueue.current()) - oldText: " + oldText);
-        $log.log("ReaderCtrl - $watch(readQueue.current()) - newText: " + newText);
-        
-        getText(newText);
-      });
-      
       var getText = function(textNo) {
         if (textNo) {
           textsService.getText(textNo).
@@ -203,12 +192,17 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
                                             'No text with number: ' + data.error_status);
               } else {
                 messagesService.showMessage('error', 'Failed to get text.', data);
-            }
+              }
             });
         } else {
           $scope.text = null;
         }
-        
-      }
+      };
+      
+      $scope.$watch('readQueue.current()', function(newText, oldText) {
+        //$log.log("ReaderCtrl - $watch(readQueue.current()) - oldText: " + oldText);
+        //$log.log("ReaderCtrl - $watch(readQueue.current()) - newText: " + newText);
+        getText(newText);
+      });
     }
   ]);
