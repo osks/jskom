@@ -87,8 +87,8 @@ angular.module('jskom.directives', []).
   directive('jskomText', [
     // Example: <jskom:text model="text"></jskom:text>
     
-    '$log', 'readMarkingsService', 'messagesService',
-    function($log, readMarkingsService, messagesService) {
+    '$log',
+    function($log) {
       return {
         restrict: 'E',
         templateUrl: '/static/partials/text.html',
@@ -96,19 +96,7 @@ angular.module('jskom.directives', []).
         link: function(scope, iElement, iAttrs) {
           scope.$parent.$watch(iAttrs.model, function(newText) {
             scope.text = newText;
-          })
-          
-          scope.markAsRead = function() {
-            var textNo = scope.text.text_no;
-            readMarkingsService.createGlobalReadMarking(textNo).
-              success(function(data) {
-                $log.log("jskom:text - markAsRead(" + textNo + ") - success");
-              }).
-              error(function(data, status) {
-                $log.log("jskom:text - markAsRead(" + textNo + ") - error");
-                messagesService.showMessage('error', 'Failed to mark text as read.', data);
-              });
-          };
+          });
         }
       };
     }

@@ -1,48 +1,30 @@
-<div ng-show="text">
-  
   <h4>
     <jskom:a text-no="{{ text.text_no }}">{{ text.text_no }}</jskom:a>
     / {{ text.creation_time }} / {{ text.author.pers_name }}
   </h4>
   
-  <div>
-    <div class="text"> 
-      <div ng-repeat="ct in text.comment_to_list">
-        {{ ct.type }} to text
-        <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
-        by {{ ct.author.pers_name }}
-      </div>
-      
-      <div ng-repeat="r in text.recipient_list">
-        {{ r.type }}: {{ r.conf_name }}
-      </div>
-      
-      <div>subject: {{ text.subject }}</div>
-      <hr/>
-      
-      <jskom:text-body model="text"></jskom:text-body>
-      
-      <hr/>
-      
-      <div ng-repeat="ci in text.comment_in_list">
-        {{ ci.type }} in text
-        <jskom:a text-no="{{ ci.text_no }}">{{ ci.text_no }}</jskom:a>
-        by {{ ci.author.pers_name }}
-      </div>
-      
+  <div> 
+    <div ng-repeat="ct in text.comment_to_list">
+      {{ ct.type }} to text
+      <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
+      by {{ ct.author.pers_name }}
     </div>
     
-    <div class="form-actions">
-      <button class="btn">Write comment</button>
-      
-      <div class="pull-right">
-        <button class="btn btn-mini btn-inverse" autocomplete="off"
-                data-loading-text="Marking as read..." data-complete-text="Marked as read"
-                ng-click="markAsRead()">
-          Mark as read
-        </button>
-      </div>
+    <div ng-repeat="r in text.recipient_list">
+      {{ r.type }}: {{ r.conf_name }}
+    </div>
+    
+    <div>subject: {{ text.subject }}</div>
+    <hr/>
+    
+    <jskom:text-body model="text"></jskom:text-body>
+    
+    <hr/>
+    
+    <div ng-repeat="ci in text.comment_in_list">
+      {{ ci.type }} in text
+      <jskom:a text-no="{{ ci.text_no }}">{{ ci.text_no }}</jskom:a>
+      by {{ ci.author.pers_name }}
     </div>
     
   </div>
-</div>

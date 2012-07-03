@@ -153,8 +153,10 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
   controller('ReaderCtrl', [
     '$scope', '$routeParams', '$log',
     'readQueueService', 'messagesService', 'conferencesService', 'textsService',
+    'readMarkingsService',
     function($scope, $routeParams, $log,
-             readQueueService, messagesService, conferencesService, textsService) {
+             readQueueService, messagesService, conferencesService, textsService,
+             readMarkingsService) {
       
       conferencesService.getConference($routeParams.confNo).
         success(function(data) {
@@ -183,6 +185,7 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
             success(function(data) {
               $log.log("ReaderCtrl - getText() - success");
               $scope.text = data;
+              $scope.markAsRead($scope.text.text_no);
             }).
             error(function(data, status) {
               $log.log("ReaderCtrl - getText() - error");
@@ -204,5 +207,16 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
         //$log.log("ReaderCtrl - $watch(readQueue.current()) - newText: " + newText);
         getText(newText);
       });
+      
+      $scope.markAsRead = function(textNo) {
+        readMarkingsService.createGlobalReadMarking(textNo).
+          success(function(data) {
+            $log.log("ReaderCtrl - markAsRead(" + textNo + ") - success");
+          }).
+          error(function(data, status) {
+            $log.log("ReaderCtrl - markAsRead(" + textNo + ") - error");
+            messagesService.showMessage('error', 'Failed to mark text as read.', data);
+          });
+      };
     }
   ]);

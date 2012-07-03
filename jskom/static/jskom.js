@@ -105,7 +105,7 @@ angular.module('jskom', ['jskom.auth', 'jskom.services', 'jskom.controllers',
         templateUrl: '/static/partials/new_text.html', controller: 'NewTextCtrl'
       }).
       when('/texts/:textNo', {
-        templateUrl: '/static/partials/text.html', controller: 'ShowTextCtrl'
+        templateUrl: '/static/partials/showtext.html', controller: 'ShowTextCtrl'
       }).
       otherwise({ redirectTo: '/' });
   }]).
