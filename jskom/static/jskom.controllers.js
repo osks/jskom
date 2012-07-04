@@ -98,8 +98,10 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
     }
   ]).
   controller('NewTextCtrl', [
-    '$scope', 'textsService', '$log', '$location', 'messagesService',
-    function($scope, textsService, $log, $location, messagesService) {
+    '$scope', 'textsService', '$log', '$location', 'messagesService', 'pageTitleService',
+    function($scope, textsService, $log, $location, messagesService, pageTitleService) {
+      pageTitleService.set("New text");
+      
       $scope.recipientTypes = [
         { name: 'To', type: 'to' },
         { name: 'CC', type: 'cc' },
