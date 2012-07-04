@@ -18,11 +18,10 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
     }
   ]).
   controller('SessionCtrl', [
-    '$rootScope', '$scope', 'authService', 'messagesService',
-    function($rootScope, $scope, authService, messagesService) {
+    '$rootScope', '$scope', 'authService', 'messagesService', 'pageTitleService',
+    function($rootScope, $scope, authService, messagesService, pageTitleService) {
       $scope.state = 'loading';
       $scope.session = { client: { name: 'jskom', version: '0.2' } };
-      
       
       $rootScope.$on('event:loginRequired', function() {
         jskom.Log.debug("SessionCtrl - event:loginRequired");
@@ -38,6 +37,7 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
         error(function(data, status) {
           jskom.Log.debug("SessionCtrl - getCurrentSession() - error");
           $scope.state = 'notLoggedIn';
+          pageTitleService.set("Login");
         });
       
       
@@ -50,6 +50,7 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
             $scope.state = 'loggedIn';
             $scope.session = data;
             messagesService.clearAll();
+            pageTitleService.set("");
           }).
           error(function() {
             jskom.Log.debug("SessionCtrl - login() - error");
@@ -78,8 +79,10 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
     }
   ]).
   controller('UnreadConfsCtrl', [
-    '$scope', '$http', 'conferencesService',
-    function($scope, $http, conferencesService) {
+    '$scope', '$http', 'conferencesService', 'pageTitleService',
+    function($scope, $http, conferencesService, pageTitleService) {
+      pageTitleService.set("Unread conferences");
+      
       $scope.unreadConfs = [];
       
       conferencesService.getUnreadConferences().
@@ -131,8 +134,16 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
     }
   ]).
   controller('ShowTextCtrl', [
-    '$scope', '$routeParams', 'textsService', '$log', 'messagesService',
-    function($scope, $routeParams, textsService, $log, messagesService) {
+    '$scope', '$routeParams', 'textsService', '$log', 'messagesService', 'pageTitleService',
+    function($scope, $routeParams, textsService, $log, messagesService, pageTitleService) {
+      $scope.$watch('text', function(newText) {
+        if (newText) {
+          pageTitleService.set("Text " + newText.text_no);
+        } else {
+          pageTitleService.set("");
+        }
+      });
+      
       textsService.getText($routeParams.textNo).
         success(function(data) {
           $log.log("ShowTextCtrl - getText() - success");
@@ -153,42 +164,52 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
   controller('ReaderCtrl', [
     '$scope', '$routeParams', '$log',
     'readQueueService', 'messagesService', 'conferencesService', 'textsService',
-    'readMarkingsService',
+    'readMarkingsService', 'pageTitleService',
     function($scope, $routeParams, $log,
              readQueueService, messagesService, conferencesService, textsService,
-             readMarkingsService) {
+             readMarkingsService, pageTitleService) {
+      $scope.$watch('conf', function(newConf) {
+        if (newConf) {
+          pageTitleService.set("Reading " + newConf.name);
+        } else {
+          pageTitleService.set("");
+        }
+      });
       
       conferencesService.getConference($routeParams.confNo).
         success(function(data) {
-          $log.log("ReaderCtrl - getConference() - success");
+          $log.log("ReaderCtrl - getConference(" + $routeParams.confNo + ") - success");
           $scope.conf = data;
         }).
         error(function(data, status) {
-          $log.log("ReaderCtrl - getConference() - error");
+          $log.log("ReaderCtrl - getConference(" + $routeParams.confNo + ") - error");
           messagesService.showMessage('error', 'Failed to get conference.', data);
         });
       
       var readQueue = readQueueService.getReadQueueForConference(
         $routeParams.confNo,
         function() {
-          $log.log("ReaderCtrl - getReadQueueForConference() - success");
+          $log.log("ReaderCtrl - getReadQueueForConference(" + $routeParams.confNo +
+                   ") - success");
           $scope.readQueue = readQueue;
         },
         function(data) {
-          $log.log("ReaderCtrl - getReadQueueForConference() - error");
+          $log.log("ReaderCtrl - getReadQueueForConference(" + $routeParams.confNo +
+                   ") - error");
           messagesService.showMessage('error', 'Failed to get unread texts.', data);
         });
       
-      var getText = function(textNo) {
+      var showText = function(textNo) {
         if (textNo) {
           textsService.getText(textNo).
             success(function(data) {
-              $log.log("ReaderCtrl - getText() - success");
+              $log.log("ReaderCtrl - getText(" + textNo + ") - success");
               $scope.text = data;
-              $scope.markAsRead($scope.text.text_no);
+              $scope.text.is_read = false;
+              $scope.markAsRead($scope.text);
             }).
             error(function(data, status) {
-              $log.log("ReaderCtrl - getText() - error");
+              $log.log("ReaderCtrl - getText(" + textNo + ") - error");
               $log.log(data);
               if (status == 404) {
                 messagesService.showMessage('error', 'No such text',
@@ -205,16 +226,29 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
       $scope.$watch('readQueue.current()', function(newText, oldText) {
         //$log.log("ReaderCtrl - $watch(readQueue.current()) - oldText: " + oldText);
         //$log.log("ReaderCtrl - $watch(readQueue.current()) - newText: " + newText);
-        getText(newText);
+        showText(newText);
       });
       
-      $scope.markAsRead = function(textNo) {
-        readMarkingsService.createGlobalReadMarking(textNo).
+      $scope.markAsRead = function(text) {
+        readMarkingsService.createGlobalReadMarking(text.text_no).
           success(function(data) {
-            $log.log("ReaderCtrl - markAsRead(" + textNo + ") - success");
+            $log.log("ReaderCtrl - markAsRead(" + text.text_no + ") - success");
+            text.is_read = true;
           }).
           error(function(data, status) {
-            $log.log("ReaderCtrl - markAsRead(" + textNo + ") - error");
+            $log.log("ReaderCtrl - markAsRead(" + text.text_no + ") - error");
+            messagesService.showMessage('error', 'Failed to mark text as read.', data);
+          });
+      };
+      
+      $scope.markAsUnread = function(text) {
+        readMarkingsService.destroyGlobalReadMarking(text.text_no).
+          success(function(data) {
+            $log.log("ReaderCtrl - markAsUnread(" + text.text_no + ") - success");
+            text.is_read = false;
+          }).
+          error(function(data, status) {
+            $log.log("ReaderCtrl - markAsUnread(" + text.text_no + ") - error");
             messagesService.showMessage('error', 'Failed to mark text as read.', data);
           });
       };

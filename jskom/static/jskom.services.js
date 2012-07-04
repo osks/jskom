@@ -3,6 +3,20 @@
 'use strict';
 
 angular.module('jskom.services', []).
+  factory('pageTitleService', [
+    '$window',
+    function($window) {
+      return {
+        set: function(title) {
+          if (title && title.length > 0) {
+            $window.document.title = "jskom - " + title;
+          } else {
+            $window.document.title = "jskom";
+          }
+        }
+      };
+    }
+  ]).
   factory('authService', [
     '$http', '$log',
     function($http, $log) {
@@ -123,7 +137,8 @@ angular.module('jskom.services', []).
         },
         
         destroyGlobalReadMarking: function(textNo) {
-          return $http.delete(jskom.Settings.HttpkomServer + '/texts/' + textNo, config);
+          return $http.delete(jskom.Settings.HttpkomServer +
+                              '/texts/' + textNo + '/read-marking', config);
         },
       };
     }

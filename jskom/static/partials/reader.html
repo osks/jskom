@@ -10,11 +10,23 @@
     <button class="btn">Write comment</button>
     
     <div class="pull-right">
-      <button class="btn btn-mini btn-inverse" autocomplete="off"
-              data-loading-text="Marking as read..." data-complete-text="Marked as read"
-                ng-click="markAsRead(text.text_no)">
-        Mark as read
-      </button>
+      <ng-switch on="text.is_read">
+        <div ng-switch-default>
+          <span  class="label">Unknown</span>
+        </div>
+        <div ng-switch-when="true">
+          <span class="label label-success">Read</span>
+          <button class="btn btn-mini btn-info" ng-click="markAsUnread(text)">
+            Mark as unread
+          </button>
+        </div>
+        <div ng-switch-when="false">
+          <span class="label label-info">Unread</span>
+          <button class="btn btn-mini btn-success" ng-click="markAsRead(text)">
+            Mark as read
+          </button>
+        </div>
+      </ng-switch>
     </div>
   </div>
   
