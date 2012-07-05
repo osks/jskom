@@ -103,25 +103,15 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
     function($scope, textsService, $log, $location, messagesService, pageTitleService) {
       pageTitleService.set("New text");
       
-      $scope.recipientTypes = [
-        { name: 'To', type: 'to' },
-        { name: 'CC', type: 'cc' },
-        { name: 'BCC', type: 'bcc' }
-      ];
-      
-      $scope.text = {
+      $scope.newText = {
         recipient_list: [{ type: 'to', conf_name: '' }],
         content_type: 'text/x-kom-basic',
         subject: '',
         body: ''
       };
       
-      $scope.newRecipient = function() {
-        return { type: 'to', conf_name: '' };
-      };
-      
       $scope.createText = function() {
-        textsService.createText($scope.text).
+        textsService.createText($scope.newText).
           success(function(data) {
             $log.log("CreateTextCtrl - createText() - success");
             messagesService.showMessage('success', 'Successfully created text.',
@@ -141,6 +131,8 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
     function($scope, $routeParams, textsService, $log, $location,
              messagesService, pageTitleService) {
       $scope.textNo = $routeParams.textNo;
+      $scope.isLoading = true;
+      $scope.isCommentFormVisisble = false;
       
       $scope.$watch('text', function(newText) {
         if (newText) {
@@ -150,16 +142,14 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
         }
       });
       
-      $scope.isLoading = true;
-      
       textsService.getText($scope.textNo).
         success(function(data) {
-          $log.log("ShowTextCtrl - getText() - success");
+          $log.log("ShowTextCtrl - getText(" + $scope.textNo + ") - success");
           $scope.isLoading = false;
           $scope.text = data;
         }).
         error(function(data, status) {
-          $log.log("ShowTextCtrl - getText() - error");
+          $log.log("ShowTextCtrl - getText(" + $scope.textNo + ") - error");
           $scope.isLoading = false;
           $log.log(data);
           if (status == 404) {
@@ -179,6 +169,7 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
              readQueueService, messagesService, conferencesService, textsService,
              readMarkingsService, pageTitleService) {
       $scope.textIsLoading = false;
+      $scope.isCommentFormVisible = false;
       
       $scope.$watch('conf', function(newConf) {
         if (newConf) {

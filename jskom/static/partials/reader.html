@@ -8,7 +8,10 @@
   <jskom:text model="text" ng-show="text"></jskom:text>
   
   <div class="form-actions">
-    <button class="btn">Write comment</button>
+    <button class="btn" ng-disabled="isCommentFormVisible"
+            ng-click="isCommentFormVisible = true">
+      Write comment
+    </button>
     
     <div class="pull-right">
       <ng-switch on="text.is_read">
@@ -37,12 +40,15 @@
     </div>
   </div>
   
+  <jskom:new-comment comment-to="text" visible="isCommentFormVisible"></jskom:new-comment>
+  
   <div>
-    <a href="/" class="btn">Back to conference list</a>
+    <a href="/" class="btn" ng-disabled="isCommentFormVisible">Back to conference list</a>
     
     <div class="pull-right">
       <button class="btn btn-primary" id="read-next"
-              ng-disabled="readQueue.isEmpty()" ng-click="readQueue.moveNext()">
+              ng-disabled="readQueue.isEmpty() || isCommentFormVisible"
+              ng-click="readQueue.moveNext()">
         Next unread text
       </button>
     </div>

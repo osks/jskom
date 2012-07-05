@@ -4,7 +4,12 @@
     <jskom:text model="text"></jskom:text>
     
     <div class="form-actions">
-      <button class="btn">Write comment</button>
+      <button class="btn" ng-disabled="isCommentFormVisible"
+              ng-click="isCommentFormVisible = true">
+        Write comment
+      </button>
     </div>
   </div>
+  
+  <jskom:new-comment comment-to="text" visible="isCommentFormVisible"></jskom:new-comment>b
 </div>

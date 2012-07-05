@@ -64,33 +64,6 @@ angular.module('jskom.directives', ['ngSanitize']).
       };
     }
   ]).
-  directive('jskomTextBody', [
-    // Example: <jskom:text-body model="text"></jskom:text-body>
-    '$log',
-    function($log) {
-      
-      return {
-        restrict: 'E',
-        templateUrl: '/static/partials/textbody.html',
-        scope: {
-        },
-        link: function(scope, iElement, iAttrs) {
-          scope.$parent.$watch(iAttrs.model, function(newText) {
-            scope.text = newText;
-          });
-          
-          scope.$watch('mode', function(newMode) {
-            //$log.log("new mode: " + newMode);
-            
-            iElement.find('.nav li').removeClass('active');
-            iElement.find('.nav #mode-' + newMode).addClass('active');
-          });
-          
-          scope.mode = "default";
-        }
-      };
-    }
-  ]).
   directive('jskomText', [
     // Example: <jskom:text model="text"></jskom:text>
     
@@ -118,7 +91,107 @@ angular.module('jskom.directives', ['ngSanitize']).
             
             scope.text = newText;
           });
-
+          
+          scope.mode = "default";
+        }
+      };
+    }
+  ]).
+  directive('jskomTextFields', [
+    // Example:
+    //   <jskom:text-fields model="newComment"></jskom:text-fields>
+    
+    '$log',
+    function($log) {
+      var recipientTypes = [
+        { name: 'To', type: 'to' },
+            { name: 'CC', type: 'cc' },
+        { name: 'BCC', type: 'bcc' }
+      ];
+      
+      return {
+        restrict: 'E',
+        templateUrl: '/static/partials/textform.html',
+        scope: {
+          text: '=model'
+        },
+        link: function(scope, iElement, iAttrs) {
+          scope.recipientTypes = recipientTypes;
+          
+          scope.newRecipient = function() {
+            return { type: 'to', conf_name: '' }
+          };
+        }
+      };
+    }
+  ]).
+  directive('jskomNewComment', [
+    // Example:
+    //   <jskom:new-comment comment-to="text"></jskom:new-comment>
+    
+    '$log', 'textsService', 'messagesService',
+    function($log, textsService, messagesService) {
+      var makeCommentTo = function(comment, commentedText) {
+        comment.comment_to_list = [
+          { type: 'comment', text_no: commentedText.text_no }
+        ];
+        
+        comment.subject = commentedText.subject;
+        
+        _.each(commentedText.recipient_list, function(r) {
+          if (r.type == 'to') {
+            comment.recipient_list.push(_.clone(r));
+          }
+        });
+      };
+      
+      var newComment = function(commentedText) {
+        var comment = {
+          recipient_list: [],
+          content_type: 'text/x-kom-basic',
+          subject: '',
+          body: ''
+        };
+        if (commentedText) {
+          makeCommentTo(comment, commentedText);
+        }
+        return comment;
+      };
+      
+      return {
+        restrict: 'E',
+        templateUrl: '/static/partials/newcommentform.html',
+        scope: {
+          isVisible: '=visible',
+          commentedText: '=commentTo'
+        },
+        link: function(scope, iElement, iAttrs) {
+          scope.comment = newComment(scope.commentedText);
+          
+          scope.$watch('commentedText', function(newCommentedText) {
+            scope.cancel();
+          });
+          
+          scope.cancel = function() {
+            scope.isVisible = false;
+            scope.comment = newComment(scope.commentedText);
+          };
+          
+          scope.createComment = function() {
+            $log.log("createComment");
+            $log.log(scope.comment);
+            textsService.createText(scope.comment).
+              success(function(data) {
+                $log.log("ShowTextCtrl - createText() - success");
+                messagesService.showMessage('success', 'Successfully created comment.',
+                                            'Text number ' + data.text_no + ' was created.');
+                scope.cancel();
+              }).
+              error(function(data, status) {
+                $log.log("ShowTextCtrl - createText() - error");
+                messagesService.showMessage('error', 'Failed to create comment.', data);
+              });
+          };
         }
       };
     }
