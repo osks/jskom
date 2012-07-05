@@ -1,9 +1,10 @@
 <span ng-hide="readQueue">Loading...</span>
 <div ng-show="readQueue">
-  <h2><em>{{ readQueue.size() }}</em> unread texts in <em>{{ conf.name }}</em></h2>
+  <h3><em>{{ readQueue.size() }}</em> unread texts in <em>{{ conf.name }}</em></h3>
   
   <br />
   
+  <span ng-show="textIsLoading">Loading...</span>
   <jskom:text model="text" ng-show="text"></jskom:text>
   
   <div class="form-actions">

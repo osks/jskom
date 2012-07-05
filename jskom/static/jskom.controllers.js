@@ -140,6 +140,8 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
     'messagesService', 'pageTitleService',
     function($scope, $routeParams, textsService, $log, $location,
              messagesService, pageTitleService) {
+      $scope.textNo = $routeParams.textNo;
+      
       $scope.$watch('text', function(newText) {
         if (newText) {
           pageTitleService.set("Text " + newText.text_no);
@@ -150,7 +152,7 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
       
       $scope.isLoading = true;
       
-      textsService.getText($routeParams.textNo).
+      textsService.getText($scope.textNo).
         success(function(data) {
           $log.log("ShowTextCtrl - getText() - success");
           $scope.isLoading = false;
@@ -176,6 +178,8 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
     function($scope, $routeParams, $log,
              readQueueService, messagesService, conferencesService, textsService,
              readMarkingsService, pageTitleService) {
+      $scope.textIsLoading = false;
+      
       $scope.$watch('conf', function(newConf) {
         if (newConf) {
           pageTitleService.set("Reading " + newConf.name);
@@ -209,9 +213,11 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
       
       var showText = function(textNo, markAsReadOnSuccess) {
         if (textNo) {
+          $scope.textIsLoading = true;
           textsService.getText(textNo).
             success(function(data) {
               $log.log("ReaderCtrl - getText(" + textNo + ") - success");
+              $scope.textIsLoading = false;
               $scope.text = data;
               if (markAsReadOnSuccess) {
                 $scope.text.is_read = false;
@@ -220,6 +226,7 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
             }).
             error(function(data, status) {
               $log.log("ReaderCtrl - getText(" + textNo + ") - error");
+              $scope.textIsLoading = false;
               $log.log(data);
               if (status == 404) {
                 messagesService.showMessage('error', 'No such text',
@@ -229,6 +236,7 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
               }
             });
         } else {
+          $scope.textIsLoading = false;
           $scope.text = null;
         }
       };
