@@ -3,27 +3,24 @@
 'use strict';
 
 angular.module('jskom.filters', ['ngSanitize']).
-  filter('foo', function() {
-    return function(input) {
-      var out = "foo " + input;
-      return out;
+  filter('textMediaType', [
+    function() {
+      return function(contentType) {
+        var mime_type = Mimeparse.parseMimeType(contentType);
+        return mime_type[0];
+      };
     }
-  }).
-  filter('textMediaType', function() {
-    return function(contentType) {
-      var mime_type = Mimeparse.parseMimeType(contentType);
-      return mime_type[0];
+  ]).
+  filter('textMediaSubType', [
+    function() {
+      return function(contentType) {
+        var mime_type = Mimeparse.parseMimeType(contentType);
+        return mime_type[1];
+      };
     }
-  }).
-  filter('textMediaSubType', function() {
-    return function(contentType) {
-      var mime_type = Mimeparse.parseMimeType(contentType);
-      return mime_type[1];
-    }
-  }).
+  ]).
   filter('formatTextBody', [
-    '$sanitize',
-    function($sanitize) {
+    function() {
       var escape = {
         "<": "&lt;",
         ">": "&gt;",
@@ -52,33 +49,8 @@ angular.module('jskom.filters', ['ngSanitize']).
       
       return function(rawBody) {
         var safeBody = escapeExpression(rawBody);
-        //var safeBody = $sanitize(rawBody);
         safeBody = safeBody.replace(/\r?\n|\r/g, "<br/>");
         return safeBody;
-      }
+      };
     }
   ]);
-
-/*
-    getSafeBody: function() {
-      var mime_type = Mimeparse.parseMimeType(this.get('content_type'));
-      var type = mime_type[0];
-      
-      if (type == 'text') {
-        var safeBody = Handlebars.Utils.escapeExpression(this.get('body'));
-        safeBody = safeBody.replace(/\r?\n|\r/g, "<br>");
-        return new Handlebars.SafeString(safeBody);
-      } else if (type == 'image') {
-        var name = "";
-        if (mime_type[2]['name']) {
-          name = mime_type[2]['name'];
-        }
-        
-        var imageUrl = Settings.HttpkomServer + this.url() + '/body';
-        var imageBody = '<img src="' + imageUrl + '" title="'+ name +'" />';
-        return new Handlebars.SafeString(imageBody);
-      } else {
-        return "<unknown content-type: " + this.get('content_type') + ">";
-      }
-    },
-*/

@@ -1,30 +1,38 @@
-  <h4>
-    <jskom:a text-no="{{ text.text_no }}">{{ text.text_no }}</jskom:a>
-    / {{ text.creation_time }} / {{ text.author.pers_name }}
-  </h4>
-  
-  <div> 
-    <div ng-repeat="ct in text.comment_to_list">
-      {{ ct.type }} to text
-      <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
-      by {{ ct.author.pers_name }}
-    </div>
-    
-    <div ng-repeat="r in text.recipient_list">
-      {{ r.type }}: {{ r.conf_name }}
-    </div>
-    
-    <div>subject: {{ text.subject }}</div>
-    <hr/>
-    
-    <jskom:text-body model="text"></jskom:text-body>
-    
-    <hr/>
-    
-    <div ng-repeat="ci in text.comment_in_list">
-      {{ ci.type }} in text
-      <jskom:a text-no="{{ ci.text_no }}">{{ ci.text_no }}</jskom:a>
-      by {{ ci.author.pers_name }}
-    </div>
-    
+<h4>
+  <jskom:a text-no="{{ text.text_no }}">{{ text.text_no }}</jskom:a>
+  / {{ text.creation_time }} / {{ text.author.pers_name }}
+</h4>
+
+<div> 
+  <div ng-repeat="ct in text.comment_to_list">
+    {{ ct.type }} to text
+    <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
+    by {{ ct.author.pers_name }}
   </div>
+  
+  <div ng-repeat="r in text.recipient_list">
+    {{ r.type }}: {{ r.conf_name }}
+  </div>
+  
+  <div>subject: {{ text.subject }}</div>
+  <hr/>
+
+  <ng-switch on="type">
+    <div ng-switch-default>
+      [unknown content-type: &quot;{{ text.content_type }}&quot;]
+    </div>
+    <div ng-switch-when="image"><img ng-src="{{ imageUrl }}" /></div>
+    <div ng-switch-when="text" class="row">
+      <jskom:text-body model="text"></jskom:text-body>
+    </div>
+  </ng-switch>
+  
+  <hr/>
+  
+  <div ng-repeat="ci in text.comment_in_list">
+    {{ ci.type }} in text
+    <jskom:a text-no="{{ ci.text_no }}">{{ ci.text_no }}</jskom:a>
+    by {{ ci.author.pers_name }}
+  </div>
+  
+</div>

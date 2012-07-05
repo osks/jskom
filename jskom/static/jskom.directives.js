@@ -2,18 +2,34 @@
 
 'use strict';
 
-angular.module('jskom.directives', []).
+// ngSanitize is needed for bind-html, which we use in jskom:text-body.
+angular.module('jskom.directives', ['ngSanitize']).
   directive('jskomA', [
     // Examples:
     // <jskom:a text-no="{{ text.text_no }}">Text: {{text.text_no}}</jskom:a>
     // <jskom:a conf-no="{{ text.conf_no }}">Conference: {{text.conf_no}}</jskom:a>
     
-    '$log', '$location',
-    function($log, $location) {
+    '$log', '$location', '$rootScope',
+    function($log, $location, $rootScope) {
+      var textEmit = 'jskom:a:text';
+      var confEmit = 'jskom:a:conference';
+      
+      $rootScope.$on(textEmit, function($event, textNo, href) {
+        //$log.log("on(jskom:a:text) - href - " + href);
+        $event.stopPropagation();
+        $location.path(href);
+      });
+      
+      $rootScope.$on(confEmit, function($event, confNo, href) {
+        //$log.log("on(jskom:a:conference) - href - " + href);
+        $event.stopPropagation();
+        $location.path(href);
+      });
+      
       return {
         restrict: 'E',
         replace: true,
-        template: '<a ng-href="{{href}}" ng-click="showText($event)" ng-transclude></a>',
+        template: '<a ng-href="{{href}}" ng-click="click($event)" ng-transclude></a>',
         transclude: true,
         scope: {
           textNo: '@',
@@ -32,10 +48,17 @@ angular.module('jskom.directives', []).
             }
           });
           
-          scope.showText = function() {
-            // Is this necessary?
-            $log.log("jskomA - showText() - iAttrs.href: " + iAttrs.href);
-            $location.path(iAttrs.href);
+          scope.click = function($event) {
+            $event.stopPropagation();
+            $event.preventDefault();
+            
+            $log.log("jskomA - click() - iAttrs.href: " + iAttrs.href);
+            
+            if (scope.textNo) {
+              scope.$emit(textEmit, scope.textNo, iAttrs.href);
+            } else if (scope.confNo) {
+              scope.$emit(confEmit, scope.confNo, iAttrs.href);
+            }
           };
         }
       };
@@ -48,38 +71,22 @@ angular.module('jskom.directives', []).
       
       return {
         restrict: 'E',
-        template: '' +
-          '<ng-switch on="type" ng-show="text">' +
-          '  <div ng-switch-when="text" ng-bind-html="text.body|formatTextBody"></div>' +
-          '  <div ng-switch-when="image"><img ng-src="{{ imageUrl }}" /></div>' +
-          '  <div ng-switch-default>' +
-          '    [unknown content-type: &quot;{{ text.content_type }}&quot;]' +
-          '</div>' +
-          '</ng-switch>' +
-          '<div ng-hide="text">[no text]</div>' +
-          '',
-        scope: {},
+        templateUrl: '/static/partials/textbody.html',
+        scope: {
+        },
         link: function(scope, iElement, iAttrs) {
           scope.$parent.$watch(iAttrs.model, function(newText) {
             scope.text = newText;
-            
-            if (scope.text) {
-              // todo: make this a function or property on the model.
-              var mimeType = Mimeparse.parseMimeType(newText.content_type);
-              scope.type = mimeType[0];
-            } else {
-              scope.type = '';
-            }
-            
-            if (scope.type == 'image') {
-              // todo: make this a function (or property) on the model.
-              scope.imageUrl = jskom.Settings.HttpkomServer +
-                '/texts/' + scope.text.text_no + '/body';
-            } else {
-              scope.imageUrl = '';
-            }
           });
           
+          scope.$watch('mode', function(newMode) {
+            //$log.log("new mode: " + newMode);
+            
+            iElement.find('.nav li').removeClass('active');
+            iElement.find('.nav #mode-' + newMode).addClass('active');
+          });
+          
+          scope.mode = "default";
         }
       };
     }
@@ -95,8 +102,23 @@ angular.module('jskom.directives', []).
         scope: {},
         link: function(scope, iElement, iAttrs) {
           scope.$parent.$watch(iAttrs.model, function(newText) {
+            if (newText) {
+              // todo: move this somewhere else
+              var mimeType = Mimeparse.parseMimeType(newText.content_type);
+              scope.type = mimeType[0];
+              
+              if (scope.type == 'image') {
+                // todo: move this somewhere else
+                scope.imageUrl = jskom.Settings.HttpkomServer +
+                  '/texts/' + newText.text_no + '/body';
+              } else {
+                scope.imageUrl = '';
+              }
+            }
+            
             scope.text = newText;
           });
+
         }
       };
     }

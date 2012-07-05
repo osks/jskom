@@ -1,5 +1,7 @@
 <div>
-  <jskom:text model="text"></jskom:text>
+  
+  <span ng-show="isLoading">Loading...</span>
+  <jskom:text model="text" ng-show="text"></jskom:text>
   
   <div class="form-actions">
     <button class="btn">Write comment</button>

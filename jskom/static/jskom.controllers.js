@@ -136,8 +136,10 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
     }
   ]).
   controller('ShowTextCtrl', [
-    '$scope', '$routeParams', 'textsService', '$log', 'messagesService', 'pageTitleService',
-    function($scope, $routeParams, textsService, $log, messagesService, pageTitleService) {
+    '$scope', '$routeParams', 'textsService', '$log', '$location',
+    'messagesService', 'pageTitleService',
+    function($scope, $routeParams, textsService, $log, $location,
+             messagesService, pageTitleService) {
       $scope.$watch('text', function(newText) {
         if (newText) {
           pageTitleService.set("Text " + newText.text_no);
@@ -146,13 +148,17 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
         }
       });
       
+      $scope.isLoading = true;
+      
       textsService.getText($routeParams.textNo).
         success(function(data) {
           $log.log("ShowTextCtrl - getText() - success");
+          $scope.isLoading = false;
           $scope.text = data;
         }).
         error(function(data, status) {
           $log.log("ShowTextCtrl - getText() - error");
+          $scope.isLoading = false;
           $log.log(data);
           if (status == 404) {
             messagesService.showMessage('error', 'No such text',
@@ -201,14 +207,16 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
           messagesService.showMessage('error', 'Failed to get unread texts.', data);
         });
       
-      var showText = function(textNo) {
+      var showText = function(textNo, markAsReadOnSuccess) {
         if (textNo) {
           textsService.getText(textNo).
             success(function(data) {
               $log.log("ReaderCtrl - getText(" + textNo + ") - success");
               $scope.text = data;
-              $scope.text.is_read = false;
-              $scope.markAsRead($scope.text);
+              if (markAsReadOnSuccess) {
+                $scope.text.is_read = false;
+                $scope.markAsRead($scope.text);
+              }
             }).
             error(function(data, status) {
               $log.log("ReaderCtrl - getText(" + textNo + ") - error");
@@ -225,10 +233,16 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
         }
       };
       
+      $scope.$on('jskom:a:text', function($event, textNo, href) {
+        $log.log("ReaderCtrl - on(jskom:a:text) - href - " + href);
+        $event.stopPropagation();
+        showText(textNo, false);
+      });
+      
       $scope.$watch('readQueue.current()', function(newText, oldText) {
         //$log.log("ReaderCtrl - $watch(readQueue.current()) - oldText: " + oldText);
         //$log.log("ReaderCtrl - $watch(readQueue.current()) - newText: " + newText);
-        showText(newText);
+        showText(newText, true);
       });
       
       $scope.markAsRead = function(text) {
