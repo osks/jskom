@@ -172,10 +172,10 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
     }
   ]).
   controller('ReaderCtrl', [
-    '$scope', '$routeParams', '$log',
+    '$scope', '$routeParams', '$log', '$window', '$location',
     'readQueueService', 'messagesService', 'conferencesService', 'textsService',
     'readMarkingsService', 'pageTitleService',
-    function($scope, $routeParams, $log,
+    function($scope, $routeParams, $log, $window, $location,
              readQueueService, messagesService, conferencesService, textsService,
              readMarkingsService, pageTitleService) {
       $scope.textIsLoading = false;
@@ -223,6 +223,7 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
                 $scope.text.is_read = false;
                 $scope.markAsRead($scope.text);
               }
+              angular.element($window).scrollTop(0);
             }).
             error(function(data, status) {
               $log.log("ReaderCtrl - getText(" + textNo + ") - error");
@@ -275,6 +276,46 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
             $log.log("ReaderCtrl - markAsUnread(" + text.text_no + ") - error");
             messagesService.showMessage('error', 'Failed to mark text as read.', data);
           });
+      };
+      
+      
+      angular.element('body').bind('keydown', function(event) {
+        if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) {
+          return true;
+        }
+        
+        // Check that we're not in an input field or similarly
+        if (event.target.nodeName.toLowerCase() != 'body') {
+          return true;
+        }
+        
+        var ret = true;
+        switch (event.which) {
+        case 32: // Space
+          $log.log("space!");
+          if (readQueue.size() > 0) {
+            if (isScrolledIntoView(angular.element('#read-next'))) {
+              event.preventDefault();
+              angular.element('#read-next').click();
+              ret = false;
+            }
+          } else {
+            $location.path('/');
+            ret = false;
+          }
+        }
+        
+        return ret;
+      });
+      
+      var isScrolledIntoView = function(elem) {
+        var docViewTop = angular.element($window).scrollTop();
+        var docViewBottom = docViewTop + angular.element($window).height();
+        
+        var elemTop = angular.element(elem).offset().top;
+        var elemBottom = elemTop + angular.element(elem).height();
+        
+        return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
       };
     }
   ]);
