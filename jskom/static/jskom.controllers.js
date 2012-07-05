@@ -79,21 +79,22 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
     }
   ]).
   controller('UnreadConfsCtrl', [
-    '$scope', '$http', 'conferencesService', 'pageTitleService',
-    function($scope, $http, conferencesService, pageTitleService) {
+    '$scope', '$http', 'conferencesService', 'pageTitleService', 'messagesService',
+    function($scope, $http, conferencesService, pageTitleService, messagesService) {
       pageTitleService.set("Unread conferences");
       
       $scope.unreadConfs = [];
-      
+      $scope.isLoading = true;
       conferencesService.getUnreadConferences().
         success(function(data) {
           jskom.Log.debug("UnreadConfsCtrl - getUnreadConferences() - success");
+          $scope.isLoading = false;
           $scope.unreadConfs = data.confs;
         }).
         error(function(data, status) {
           jskom.Log.debug("UnreadConfsCtrl - getUnreadConferences() - error");
-          // todo: error handling
-          jskom.Log.debug(data);
+          $scope.isLoading = false;
+          messagesService.showMessage('error', 'Failed to get unread conferences.', data);
         });
     }
   ]).
@@ -129,8 +130,7 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
           }).
           error(function(data, status) {
             $log.log("CreateTextCtrl - createText() - error");
-            $log.log(data);
-            messagesService.showMessage('error', 'Failed to create text.');
+            messagesService.showMessage('error', 'Failed to create text.', data);
           });
       };
     }
