@@ -1,0 +1,22 @@
+<ng-switch on="text.is_unread">
+  <div ng-switch-default>
+    <button class="btn btn-mini btn-success" ng-click="markAsRead()" ng-disabled="isRequesting">
+      Mark as read
+    </button>
+    <button class="btn btn-mini btn-info" ng-click="markAsUnread()" ng-disabled="isRequesting">
+      Mark as unread
+    </button>
+  </div>
+  <div ng-switch-when="true">
+    <span class="label label-info">Unread</span>
+    <button class="btn btn-mini btn-success" ng-click="markAsRead()" ng-disabled="isRequesting">
+      Mark as read
+    </button>
+  </div>
+  <div ng-switch-when="false">
+    <span class="label label-success">Read</span>
+    <button class="btn btn-mini btn-info" ng-click="markAsUnread()" ng-disabled="isRequesting">
+      Mark as unread
+    </button>
+  </div>
+</ng-switch>

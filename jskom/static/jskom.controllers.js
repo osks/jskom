@@ -164,10 +164,10 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
   controller('ReaderCtrl', [
     '$scope', '$routeParams', '$log', '$window', '$location',
     'readQueueService', 'messagesService', 'conferencesService', 'textsService',
-    'readMarkingsService', 'pageTitleService',
+    'pageTitleService',
     function($scope, $routeParams, $log, $window, $location,
              readQueueService, messagesService, conferencesService, textsService,
-             readMarkingsService, pageTitleService) {
+             pageTitleService) {
       $scope.textIsLoading = false;
       $scope.isCommentFormVisible = false;
       
@@ -202,7 +202,7 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
           messagesService.showMessage('error', 'Failed to get unread texts.', data);
         });
       
-      var showText = function(textNo, markAsReadOnSuccess) {
+      var showText = function(textNo, isUnreadOnLoad) {
         if (textNo) {
           $scope.textIsLoading = true;
           textsService.getText(textNo).
@@ -210,15 +210,15 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
               $log.log("ReaderCtrl - getText(" + textNo + ") - success");
               $scope.textIsLoading = false;
               $scope.text = data;
-              if (markAsReadOnSuccess) {
-                $scope.text.is_read = false;
-                $scope.markAsRead($scope.text);
+              if (isUnreadOnLoad) {
+                $scope.text.is_unread = true;
               }
               angular.element($window).scrollTop(0);
             }).
             error(function(data, status) {
               $log.log("ReaderCtrl - getText(" + textNo + ") - error");
               $scope.textIsLoading = false;
+              $scope.text = null;
               $log.log(data);
               if (status == 404) {
                 messagesService.showMessage('error', 'No such text',
@@ -234,40 +234,17 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
       };
       
       $scope.$on('jskom:a:text', function($event, textNo, href) {
+        // When clicking on text links in the reader, we just show the
+        // text inside the reader, instead of going to the "show text"
+        // page.
         $log.log("ReaderCtrl - on(jskom:a:text) - href - " + href);
         $event.stopPropagation();
         showText(textNo, false);
       });
       
       $scope.$watch('readQueue.current()', function(newText, oldText) {
-        //$log.log("ReaderCtrl - $watch(readQueue.current()) - oldText: " + oldText);
-        //$log.log("ReaderCtrl - $watch(readQueue.current()) - newText: " + newText);
         showText(newText, true);
       });
-      
-      $scope.markAsRead = function(text) {
-        readMarkingsService.createGlobalReadMarking(text.text_no).
-          success(function(data) {
-            $log.log("ReaderCtrl - markAsRead(" + text.text_no + ") - success");
-            text.is_read = true;
-          }).
-          error(function(data, status) {
-            $log.log("ReaderCtrl - markAsRead(" + text.text_no + ") - error");
-            messagesService.showMessage('error', 'Failed to mark text as read.', data);
-          });
-      };
-      
-      $scope.markAsUnread = function(text) {
-        readMarkingsService.destroyGlobalReadMarking(text.text_no).
-          success(function(data) {
-            $log.log("ReaderCtrl - markAsUnread(" + text.text_no + ") - success");
-            text.is_read = false;
-          }).
-          error(function(data, status) {
-            $log.log("ReaderCtrl - markAsUnread(" + text.text_no + ") - error");
-            messagesService.showMessage('error', 'Failed to mark text as read.', data);
-          });
-      };
       
       
       angular.element('body').bind('keydown', function(event) {
@@ -283,7 +260,7 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
         var ret = true;
         switch (event.which) {
         case 32: // Space
-          $log.log("space!");
+          //$log.log("space!");
           if (readQueue.size() > 0) {
             if (isScrolledIntoView(angular.element('#read-next'))) {
               event.preventDefault();
@@ -300,13 +277,17 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
       });
       
       var isScrolledIntoView = function(elem) {
-        var docViewTop = angular.element($window).scrollTop();
-        var docViewBottom = docViewTop + angular.element($window).height();
-        
-        var elemTop = angular.element(elem).offset().top;
-        var elemBottom = elemTop + angular.element(elem).height();
-        
-        return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
+        if (elem) {
+          var docViewTop = angular.element($window).scrollTop();
+          var docViewBottom = docViewTop + angular.element($window).height();
+          
+          var elemTop = angular.element(elem).offset().top;
+          var elemBottom = elemTop + angular.element(elem).height();
+          
+          return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
+        } else {
+          return false;
+        }
       };
     }
   ]);

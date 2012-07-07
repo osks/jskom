@@ -5,38 +5,18 @@
   <br />
   
   <span ng-show="textIsLoading">Loading...</span>
-  <jskom:text model="text" ng-show="text"></jskom:text>
-  
-  <div class="form-actions">
-    <button class="btn" ng-disabled="isCommentFormVisible"
-            ng-click="isCommentFormVisible = true">
-      Write comment
-    </button>
+  <div>
+    <jskom:text text="text" ng-show="text"></jskom:text>
     
-    <div class="pull-right">
-      <ng-switch on="text.is_read">
-        <div ng-switch-default>
-          <span  class="label">Unknown</span>
-          <button class="btn btn-mini btn-success" ng-click="markAsRead(text)">
-            Mark as read
-          </button>
-          <button class="btn btn-mini btn-info" ng-click="markAsUnread(text)">
-            Mark as unread
-          </button>
-        </div>
-        <div ng-switch-when="true">
-          <span class="label label-success">Read</span>
-          <button class="btn btn-mini btn-info" ng-click="markAsUnread(text)">
-            Mark as unread
-          </button>
-        </div>
-        <div ng-switch-when="false">
-          <span class="label label-info">Unread</span>
-          <button class="btn btn-mini btn-success" ng-click="markAsRead(text)">
-            Mark as read
-          </button>
-        </div>
-      </ng-switch>
+    <div class="form-actions">
+      <button class="btn" ng-disabled="isCommentFormVisible"
+              ng-click="isCommentFormVisible = true">
+        Write comment
+      </button>
+      
+      <div class="pull-right">
+        <jskom:mark-as-read text="text" read-on-load></jskom:mark-as-read>
+      </div>
     </div>
   </div>
   
