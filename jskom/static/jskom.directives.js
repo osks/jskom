@@ -241,8 +241,6 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           };
           
           scope.createComment = function() {
-            $log.log("createComment");
-            $log.log(scope.comment);
             textsService.createText(scope.comment).
               success(function(data) {
                 $log.log("jskomNewComment - createComment() - success");
