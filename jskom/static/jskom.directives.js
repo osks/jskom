@@ -3,7 +3,7 @@
 'use strict';
 
 // ngSanitize is needed for bind-html, which we use in jskom:text-body.
-angular.module('jskom.directives', ['ngSanitize']).
+angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
   directive('jskomA', [
     // Examples:
     // <jskom:a text-no="{{ text.text_no }}">Text: {{text.text_no}}</jskom:a>
@@ -192,8 +192,8 @@ angular.module('jskom.directives', ['ngSanitize']).
     // Example:
     //   <jskom:new-comment comment-to="text"></jskom:new-comment>
     
-    '$log', 'textsService', 'messagesService',
-    function($log, textsService, messagesService) {
+    '$log', 'textsService', 'messagesService', 'keybindingService',
+    function($log, textsService, messagesService, keybindingService) {
       var makeCommentTo = function(comment, commentedText) {
         comment.comment_to_list = [
           { type: 'comment', text_no: commentedText.text_no }
@@ -245,16 +245,24 @@ angular.module('jskom.directives', ['ngSanitize']).
             $log.log(scope.comment);
             textsService.createText(scope.comment).
               success(function(data) {
-                $log.log("ShowTextCtrl - createText() - success");
+                $log.log("jskomNewComment - createComment() - success");
                 messagesService.showMessage('success', 'Successfully created comment.',
                                             'Text number ' + data.text_no + ' was created.');
                 scope.cancel();
               }).
               error(function(data, status) {
-                $log.log("ShowTextCtrl - createText() - error");
+                $log.log("jskomNewComment - createComment() - error");
                 messagesService.showMessage('error', 'Failed to create comment.', data);
               });
           };
+          
+          // Not working:
+          keybindingService.bind('ctrl+c ctrl+c', function(e) {
+            $log.log("jskomNewComment - bind(ctrl+c ctrl+c)");
+            if (scope.isVisible) {
+              // TODO
+            }
+          });
         }
       };
     }

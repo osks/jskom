@@ -2,54 +2,10 @@
 
 'use strict';
 
-
-(function($) {
-
-  var ojskom;    
-  ojskom = window.ojskom = {
-    version: "0.1",
-    
-    Routers: {},
-    Models: {},
-    Collections: {},
-    Views: {},
-    
-    // httpkom server URL without trailing slash (example: 'http://localhost:5001')
-    Settings: {
-      HttpkomServer: "",
-      PrefetchCount: 2
-    },
-    
-    Log: {
-      debug: function() {
-        if (window.console && console.log) {
-          console.log.apply(console, arguments);
-        }
-      }
-    },
-    
-  };
-})(jQuery);
-
-
-
 (function($) {
 
   var jskom;    
   jskom = window.jskom = {
-    version: "0.1",
-    
-    Routers: {},
-    Models: {},
-    Collections: {},
-    Views: {},
-    
-    // httpkom server URL without trailing slash (example: 'http://localhost:5001')
-    Settings: {
-      HttpkomServer: "",
-      PrefetchCount: 2
-    },
-    
     Log: {
       debug: function() {
         if (window.console && console.log) {
@@ -90,24 +46,29 @@
 })(jQuery);
 
 
-
-angular.module('jskom', ['jskom.auth', 'jskom.services', 'jskom.controllers',
-                         'jskom.filters', 'jskom.directives']).
+angular.module('jskom', ['jskom.settings', 'jskom.services', 'jskom.controllers',
+                         'jskom.filters', 'jskom.directives', 'jskom.auth']).
   config(['$routeProvider', function($routeProvider) {
     $routeProvider.
       when('/', {
-        templateUrl: '/static/partials/unreadconfs.html', controller: 'UnreadConfsCtrl'
+        templateUrl: '/static/partials/unreadconfs.html',
+        controller: 'UnreadConfsCtrl'
       }).
       when('/conferences/:confNo/unread/', {
-        templateUrl: '/static/partials/reader.html', controller: 'ReaderCtrl'
+        templateUrl: '/static/partials/reader.html',
+        controller: 'ReaderCtrl'
       }).
       when('/texts/new', {
-        templateUrl: '/static/partials/new_text.html', controller: 'NewTextCtrl'
+        templateUrl: '/static/partials/new_text.html',
+        controller: 'NewTextCtrl'
       }).
       when('/texts/:textNo', {
-        templateUrl: '/static/partials/showtext.html', controller: 'ShowTextCtrl'
+        templateUrl: '/static/partials/showtext.html',
+        controller: 'ShowTextCtrl'
       }).
-      otherwise({ redirectTo: '/' });
+      otherwise({
+        redirectTo: '/'
+      });
   }]).
   config(['$locationProvider', function($locationProvider) {  
     $locationProvider.hashPrefix('');
@@ -117,7 +78,7 @@ angular.module('jskom', ['jskom.auth', 'jskom.services', 'jskom.controllers',
 
 
 var ReadQueue = function() {
-  this._prefetchCount = jskom.Settings.PrefetchCount;
+  this._prefetchCount = 2; // jskom.Settings.PrefetchCount;
   this._currentText = null;
   this._currentThreadStack = [];
   this._unreadTexts = [];

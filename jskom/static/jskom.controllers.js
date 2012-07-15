@@ -2,7 +2,7 @@
 
 'use strict';
 
-angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
+angular.module('jskom.controllers', ['jskom.services', 'ngResource']).
   controller('MessagesCtrl', [
     '$scope', 'messagesService', '$log',
     function($scope, messagesService, $log) {
@@ -17,70 +17,11 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
       });
     }
   ]).
-  controller('SessionCtrl', [
-    '$rootScope', '$scope', 'authService', 'messagesService', 'pageTitleService',
-    function($rootScope, $scope, authService, messagesService, pageTitleService) {
-      $scope.state = 'loading';
-      $scope.session = { client: { name: 'jskom', version: '0.2' } };
-      
-      $rootScope.$on('event:loginRequired', function() {
-        jskom.Log.debug("SessionCtrl - event:loginRequired");
-        $scope.state = 'notLoggedIn';
-      });
-      
-      authService.getCurrentSession().
-        success(function(data) {
-          jskom.Log.debug("SessionCtrl - getCurrentSession() - success");
-          $scope.state = 'loggedIn';
-          $scope.session = data;
-        }).
-        error(function(data, status) {
-          jskom.Log.debug("SessionCtrl - getCurrentSession() - error");
-          $scope.state = 'notLoggedIn';
-          pageTitleService.set("Login");
-        });
-      
-      
-      $scope.login = function() {
-        jskom.Log.debug("SessionCtrl - login()");
-        
-        authService.createSession($scope.session).
-          success(function(data) {
-            jskom.Log.debug("SessionCtrl - login() - success");
-            $scope.state = 'loggedIn';
-            $scope.session = data;
-            messagesService.clearAll();
-            pageTitleService.set("");
-          }).
-          error(function() {
-            jskom.Log.debug("SessionCtrl - login() - error");
-            $scope.state = 'notLoggedIn';
-            messagesService.showMessage('error', 'Failed to login.');
-          });
-      };
-      
-      
-      $scope.logout = function() {
-        jskom.Log.debug("SessionCtrl - logout()");
-        
-        authService.destroySession(authService.getCurrentSessionId()).
-          success(function() {
-            $scope.state = 'notLoggedIn';
-          }).
-          error(function(data, status) {
-            if (status == 404) {
-              // Session does not exist: we're not logged in.
-              $scope.state = 'notLoggedIn';
-            } else {
-              messagesService.showMessage('error', 'Error when logging out.');
-            }
-          });
-      };
-    }
-  ]).
   controller('UnreadConfsCtrl', [
-    '$scope', '$http', 'conferencesService', 'pageTitleService', 'messagesService',
-    function($scope, $http, conferencesService, pageTitleService, messagesService) {
+    '$scope', '$http', '$location', '$log',
+    'conferencesService', 'pageTitleService', 'messagesService', 'keybindingService',
+    function($scope, $http, $location, $log,
+             conferencesService, pageTitleService, messagesService, keybindingService) {
       pageTitleService.set("Unread conferences");
       
       $scope.unreadConfs = [];
@@ -96,6 +37,14 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
           $scope.isLoading = false;
           messagesService.showMessage('error', 'Failed to get unread conferences.', data);
         });
+
+      keybindingService.bind('space', function(e) {
+        if (_.size($scope.unreadConfs) > 0) {
+          $scope.$apply(function() {
+            $location.path("/conferences/" + _.first($scope.unreadConfs).conf_no + "/unread/");
+          });
+        }
+      });
     }
   ]).
   controller('NewTextCtrl', [
@@ -127,9 +76,9 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
   ]).
   controller('ShowTextCtrl', [
     '$scope', '$routeParams', 'textsService', '$log', '$location',
-    'messagesService', 'pageTitleService',
+    'messagesService', 'pageTitleService', 'keybindingService',
     function($scope, $routeParams, textsService, $log, $location,
-             messagesService, pageTitleService) {
+             messagesService, pageTitleService, keybindingService) {
       $scope.textNo = $routeParams.textNo;
       $scope.isLoading = true;
       $scope.isCommentFormVisisble = false;
@@ -159,15 +108,21 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
             messagesService.showMessage('error', 'Failed to get text.', data);
           }
         });
+      
+      keybindingService.bind('k', function(e) {
+        $scope.$apply(function() {
+          $scope.isCommentFormVisible = true;
+        });
+      });
     }
   ]).
   controller('ReaderCtrl', [
     '$scope', '$routeParams', '$log', '$window', '$location',
     'readQueueService', 'messagesService', 'conferencesService', 'textsService',
-    'pageTitleService',
+    'pageTitleService', 'keybindingService',
     function($scope, $routeParams, $log, $window, $location,
              readQueueService, messagesService, conferencesService, textsService,
-             pageTitleService) {
+             pageTitleService, keybindingService) {
       $scope.textIsLoading = false;
       $scope.isCommentFormVisible = false;
       
@@ -246,34 +201,29 @@ angular.module('jskom.controllers', ['jskom.auth', 'ngResource']).
         showText(newText, true);
       });
       
-      
-      angular.element('body').bind('keydown', function(event) {
-        if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) {
-          return true;
-        }
-        
-        // Check that we're not in an input field or similarly
-        if (event.target.nodeName.toLowerCase() != 'body') {
-          return true;
-        }
-        
-        var ret = true;
-        switch (event.which) {
-        case 32: // Space
-          //$log.log("space!");
-          if (readQueue.size() > 0) {
-            if (isScrolledIntoView(angular.element('#read-next'))) {
-              event.preventDefault();
-              angular.element('#read-next').click();
-              ret = false;
+      keybindingService.bind('space', function(e) {
+        $scope.$apply(function() {
+          //$log.log("ReaderCtrl - bind(space)");
+          if (!readQueue.isEmpty()) {
+            if (isScrolledIntoView(angular.element('#read-next'))
+                && !$scope.isCommentFormVisible) {
+              //angular.element('#read-next').click();
+              readQueue.moveNext();
+              return false;
+            } else {
+              return true;
             }
           } else {
             $location.path('/');
-            ret = false;
+            return false;
           }
-        }
-        
-        return ret;
+        });
+      });
+      
+      keybindingService.bind('k', function(e) {
+        $scope.$apply(function() {
+          $scope.isCommentFormVisible = true;
+        });
       });
       
       var isScrolledIntoView = function(elem) {

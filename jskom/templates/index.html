@@ -108,10 +108,13 @@
     <script src="{{ url_for('static', filename='lib/angular-sanitize.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/angular-resource.js') }}"></script>
     
-    <script src="{{ url_for('static', filename='jskom.js') }}"></script>
     <script type="text/javascript">
-      jskom.Settings.HttpkomServer = "{{ httpkom_server }}";
+      angular.module('jskom.settings', []).
+        value('httpkomServer', '{{ httpkom_server }}').
+        value('jskomName', 'jskom').
+        value('jskomVersion', '0.2');
     </script>
+    <script src="{{ url_for('static', filename='jskom.js') }}"></script>
     <script src="{{ url_for('static', filename='jskom.services.js') }}"></script>
     <script src="{{ url_for('static', filename='jskom.controllers.js') }}"></script>
     <script src="{{ url_for('static', filename='jskom.auth.js') }}"></script>

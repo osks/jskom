@@ -2,7 +2,30 @@
 
 'use strict';
 
-angular.module('jskom.services', []).
+angular.module('jskom.services', ['jskom.settings']).
+  factory('keybindingService',[
+    '$log', '$rootScope',
+    function($log, $rootScope) {
+      
+      // This is supposed to reset all events on "page load", but
+      // since we don't actually reload pages here, we reset them when
+      // the route (url) is changing.
+      $rootScope.$on('$routeChangeStart', function(route) {
+        //$log.log("keybindingService - on($routeChangeSuccess)");
+        Mousetrap.reset();
+      });
+      
+      return {
+        bind: function() {
+          Mousetrap.bind.apply(this, arguments);
+        },
+        
+        reset: function() {
+          Mousetrap.reset();
+        }
+      };
+    }
+  ]). 
   factory('pageTitleService', [
     '$window',
     function($window) {
@@ -17,34 +40,6 @@ angular.module('jskom.services', []).
       };
     }
   ]).
-  factory('authService', [
-    '$http', '$log',
-    function($http, $log) {
-      var config = { withCredentials: true };
-      
-      return {
-        createSession: function(session) {
-          return $http.post(jskom.Settings.HttpkomServer + '/sessions/', session, config);
-        },
-        
-        destroySession: function(sessionId) {
-          return $http.delete(jskom.Settings.HttpkomServer + '/sessions/' + sessionId, config);
-        },
-        
-        getSession: function(sessionId) {
-          return $http.get(jskom.Settings.HttpkomServer + '/sessions/' + sessionId, config);
-        },
-        
-        getCurrentSessionId: function() {
-          return $.cookie('session_id');
-        },
-        
-        getCurrentSession: function() {
-          var sessionId = this.getCurrentSessionId();
-          return this.getSession(sessionId);
-        }
-      };
-  }]).
   factory('messagesService', [
     '$rootScope', '$log',
     function($rootScope, $log) {
@@ -86,58 +81,58 @@ angular.module('jskom.services', []).
     }
   ]).
   factory('textsService', [
-    '$http',
-    function($http) {
+    '$http', 'httpkomServer',
+    function($http, httpkomServer) {
       var config = { withCredentials: true };
       
       return {
         getText: function(textNo) {
-          return $http.get(jskom.Settings.HttpkomServer + '/texts/' + textNo, config);
+          return $http.get(httpkomServer + '/texts/' + textNo, config);
         },
         
         createText: function(text) {
-          return $http.post(jskom.Settings.HttpkomServer + '/texts/', text, config);
+          return $http.post(httpkomServer + '/texts/', text, config);
         }
       };
     }
   ]).
   factory('conferencesService', [
-    '$http',
-    function($http) {
+    '$http', 'httpkomServer',
+    function($http, httpkomServer) {
       var config = { withCredentials: true };
       
       return {
         getConference: function(confNo) {
-          return $http.get(jskom.Settings.HttpkomServer + '/conferences/' + confNo, config);
+          return $http.get(httpkomServer + '/conferences/' + confNo, config);
         },
         
         getUnreadConferences: function() {
-          return $http.get(jskom.Settings.HttpkomServer + '/conferences/unread/', config);
+          return $http.get(httpkomServer + '/conferences/unread/', config);
         },
       };
     }
   ]).
   factory('readMarkingsService', [
-    '$http',
-    function($http) {
+    '$http', 'httpkomServer',
+    function($http, httpkomServer) {
       var config = { withCredentials: true };
       
       return {
         getReadMarkingsForUnreadInConference: function(confNo) {
           var cfg = _.clone(config);
-          return $http.get(jskom.Settings.HttpkomServer + '/conferences/' + confNo +
+          return $http.get(httpkomServer + '/conferences/' + confNo +
                            '/read-markings/?unread=true', cfg);
         },
         
         // createLocalReadMarking: function(confNo, localTextNo) {},
         
         createGlobalReadMarking: function(textNo) {
-          return $http.put(jskom.Settings.HttpkomServer +
+          return $http.put(httpkomServer +
                            '/texts/' + textNo + '/read-marking', null, config);
         },
         
         destroyGlobalReadMarking: function(textNo) {
-          return $http.delete(jskom.Settings.HttpkomServer +
+          return $http.delete(httpkomServer +
                               '/texts/' + textNo + '/read-marking', config);
         },
       };
