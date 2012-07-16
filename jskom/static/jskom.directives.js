@@ -67,8 +67,8 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
   directive('jskomText', [
     // Example: <jskom:text text="text"></jskom:text>
     
-    '$log',
-    function($log) {
+    '$log', 'httpkomServer',
+    function($log, httpkomServer) {
       return {
         restrict: 'E',
         templateUrl: '/static/partials/text.html',
@@ -84,7 +84,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
               
               if (scope.type == 'image') {
                 // todo: move this somewhere else
-                scope.imageUrl = jskom.Settings.HttpkomServer +
+                scope.imageUrl = httpkomServer +
                   '/texts/' + newText.text_no + '/body';
               } else {
                 scope.imageUrl = '';
@@ -231,6 +231,12 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
         link: function(scope, iElement, iAttrs) {
           scope.comment = newComment(scope.commentedText);
           
+          scope.$watch('isVisible', function(newIsVisible) {
+            if (newIsVisible) {
+              iElement.find('textarea').focus();
+            }
+          });
+          
           scope.$watch('commentedText', function(newCommentedText) {
             scope.cancel();
           });
@@ -240,27 +246,41 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             scope.comment = newComment(scope.commentedText);
           };
           
-          scope.createComment = function() {
-            textsService.createText(scope.comment).
-              success(function(data) {
-                $log.log("jskomNewComment - createComment() - success");
-                messagesService.showMessage('success', 'Successfully created comment.',
-                                            'Text number ' + data.text_no + ' was created.');
-                scope.cancel();
-              }).
-              error(function(data, status) {
-                $log.log("jskomNewComment - createComment() - error");
-                messagesService.showMessage('error', 'Failed to create comment.', data);
-              });
+          scope.createComment = function(event) {
+            // Make sure the form is visible before creating the
+            // comment.  With tab you can select the button and toggle
+            // it even when the form is hidden.
+            if (scope.isVisible) {
+              textsService.createText(scope.comment).
+                success(function(data) {
+                  $log.log("jskomNewComment - createComment() - success");
+                  messagesService.showMessage('success', 'Successfully created comment.',
+                                              'Text number ' + data.text_no + ' was created.');
+                  scope.cancel();
+            
+                  if (event) {
+                    // If we got the event param, we were called form
+                    // the button and we want to blur (un-focus) the
+                    // button so keyboard commands work again.  We
+                    // will close the form anyway, so no point in
+                    // having it focused.
+                    angular.element(event.target).blur();
+                  }
+                }).
+                error(function(data, status) {
+                  $log.log("jskomNewComment - createComment() - error");
+                  messagesService.showMessage('error', 'Failed to create comment.', data);
+                });
+            }
           };
           
           // Not working:
-          keybindingService.bind('ctrl+c ctrl+c', function(e) {
+          /*keybindingService.bindLocal('ctrl+c ctrl+c', 'Post comment', function(e) {
             $log.log("jskomNewComment - bind(ctrl+c ctrl+c)");
             if (scope.isVisible) {
               // TODO
             }
-          });
+          });*/
         }
       };
     }

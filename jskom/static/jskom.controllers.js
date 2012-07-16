@@ -17,6 +17,27 @@ angular.module('jskom.controllers', ['jskom.services', 'ngResource']).
       });
     }
   ]).
+  controller('HelpCtrl', [
+    '$scope', '$log', 'keybindingService',
+    function($scope, $log, keybindingService) {
+      $scope.isVisible = false;
+      
+      keybindingService.bindGlobal('?', 'Show this help (toggle)', function(e) {
+        $scope.$apply(function() {
+          $scope.isVisible = !$scope.isVisible;
+        });
+      });
+      
+      $scope.$watch(keybindingService.getBindings, function(newBindings) {
+        $scope.globalKeys = _.reject(newBindings, function(kb) {
+          return kb.isLocal;
+        });
+        $scope.localKeys = _.filter(newBindings, function(kb) {
+          return kb.isLocal;
+        });
+      }, true);
+    }
+  ]).
   controller('UnreadConfsCtrl', [
     '$scope', '$http', '$location', '$log',
     'conferencesService', 'pageTitleService', 'messagesService', 'keybindingService',
@@ -38,7 +59,7 @@ angular.module('jskom.controllers', ['jskom.services', 'ngResource']).
           messagesService.showMessage('error', 'Failed to get unread conferences.', data);
         });
 
-      keybindingService.bind('space', function(e) {
+      keybindingService.bindLocal(['space', 'n'], 'Go to first conference', function(e) {
         if (_.size($scope.unreadConfs) > 0) {
           $scope.$apply(function() {
             $location.path("/conferences/" + _.first($scope.unreadConfs).conf_no + "/unread/");
@@ -48,8 +69,10 @@ angular.module('jskom.controllers', ['jskom.services', 'ngResource']).
     }
   ]).
   controller('NewTextCtrl', [
-    '$scope', 'textsService', '$log', '$location', 'messagesService', 'pageTitleService',
-    function($scope, textsService, $log, $location, messagesService, pageTitleService) {
+    '$scope', 'textsService', '$log', '$location',
+    'messagesService', 'pageTitleService', 'keybindingService',
+    function($scope, textsService, $log, $location,
+             messagesService, pageTitleService, keybindingService) {
       pageTitleService.set("New text");
       
       $scope.newText = {
@@ -72,6 +95,13 @@ angular.module('jskom.controllers', ['jskom.services', 'ngResource']).
             messagesService.showMessage('error', 'Failed to create text.', data);
           });
       };
+
+      // Not working that good, since it won't capture inside input
+      // fields (which is usually good, but makes it slow/useless for
+      // this). What key should we use?
+      /*keybindingService.bindLocal('ctrl+enter', 'Post text', function(e) {
+        $log.log("NewTextCtrl - bind(ctrl+enter) - pressed");
+      });*/
     }
   ]).
   controller('ShowTextCtrl', [
@@ -109,10 +139,11 @@ angular.module('jskom.controllers', ['jskom.services', 'ngResource']).
           }
         });
       
-      keybindingService.bind('k', function(e) {
+      keybindingService.bindLocal('k', 'Write comment', function(e) {
         $scope.$apply(function() {
           $scope.isCommentFormVisible = true;
         });
+        return false;
       });
     }
   ]).
@@ -201,29 +232,34 @@ angular.module('jskom.controllers', ['jskom.services', 'ngResource']).
         showText(newText, true);
       });
       
-      keybindingService.bind('space', function(e) {
+      $scope.readNext = function() {
+        if (!$scope.isCommentFormVisible) {
+          if (readQueue.isEmpty()) {
+            $location.path('/');
+          } else {
+            readQueue.moveNext();
+          }
+        }
+      };
+      
+      keybindingService.bindLocal(['space', 'n'], 'Read next unread text', function(e) {
         $scope.$apply(function() {
-          //$log.log("ReaderCtrl - bind(space)");
-          if (!readQueue.isEmpty()) {
-            if (isScrolledIntoView(angular.element('#read-next'))
-                && !$scope.isCommentFormVisible) {
-              //angular.element('#read-next').click();
-              readQueue.moveNext();
-              return false;
-            } else {
-              return true;
+          if (e.which == 32) {
+            // Check that the read next button is visible if we used space
+            if (isScrolledIntoView(angular.element('#read-next'))) {
+              $scope.readNext();
             }
           } else {
-            $location.path('/');
-            return false;
+            $scope.readNext();
           }
         });
       });
       
-      keybindingService.bind('k', function(e) {
+      keybindingService.bindLocal('k', 'Write comment', function(e) {
         $scope.$apply(function() {
           $scope.isCommentFormVisible = true;
         });
+        return false;
       });
       
       var isScrolledIntoView = function(elem) {

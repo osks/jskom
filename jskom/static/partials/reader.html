@@ -27,8 +27,8 @@
     
     <div class="pull-right">
       <button class="btn btn-primary" id="read-next"
-              ng-disabled="readQueue.isEmpty() || isCommentFormVisible"
-              ng-click="readQueue.moveNext()">
+              ng-disabled="isCommentFormVisible"
+              ng-click="readNext()">
         Next unread text
       </button>
     </div>

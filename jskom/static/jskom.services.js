@@ -6,23 +6,107 @@ angular.module('jskom.services', ['jskom.settings']).
   factory('keybindingService',[
     '$log', '$rootScope',
     function($log, $rootScope) {
+      Mousetrap.reset();
+      var keyBindings = [];
+      
+      var resetBindings = function() {
+        var kbsByLocal = _.groupBy(keyBindings, 'isLocal');
+        
+        _.each(kbsByLocal['true'], function(kb) {
+          // Only unbind local bindings on reset.
+          _.each(kb.keys, function(key) {
+            unbindKey(key);
+          });
+        });
+        
+        keyBindings = kbsByLocal['false']; // Keep only the non-locals.
+      };
+      
+      var removeBindingsForKey = function(key) {
+        var keep = [];
+        _.each(keyBindings, function(keyBinding) {
+          if (_.include(keyBinding.keys, key)) {
+            unbindKey(key);
+            // If there is more than one key (i.e. any other than
+            // 'key') for this binding, keep it, but remove 'key' from
+            // its keys.
+            if (_.size(keyBinding.keys) > 1) {
+              keyBinding.keys = _.without(keyBinding.keys, key);
+              keep.push(keyBinding);
+            }
+          } else {
+            keep.push(keyBinding);
+          }
+        });
+        keyBindings = keep;
+      };
+      
+      var addBinding = function(keyBinding) {
+        if (_.isString(keyBinding.keys)) {
+          var keyArr = [keyBinding.keys];
+          keyBinding.keys = keyArr;
+        };
+        
+        _.each(keyBinding.keys, function(key) {
+          removeBindingsForKey(key);
+          bindKey(key, keyBinding.callback);
+        });
+        
+        keyBindings.push(keyBinding);
+      };
+      
+      var bindKey = function(key, callbackFn) {
+        //$log.log("keybindingService - bindKey: " + key);
+        Mousetrap.bind(key, callbackFn);
+      };
+      
+      var unbindKey = function(key) {
+        //$log.log("keybindingService - unbindKey: " + key);
+        Mousetrap.unbind(key);
+      };
       
       // This is supposed to reset all events on "page load", but
       // since we don't actually reload pages here, we reset them when
       // the route (url) is changing.
-      $rootScope.$on('$routeChangeStart', function(route) {
-        //$log.log("keybindingService - on($routeChangeSuccess)");
-        Mousetrap.reset();
+      $rootScope.$on('$routeChangeStart', function() {
+        resetBindings();
       });
       
       return {
-        bind: function() {
-          Mousetrap.bind.apply(this, arguments);
+        bind: function(keys, description, callbackFn, isLocal) {
+          addBinding({
+            keys: keys,
+            isLocal: isLocal,
+            description: description,
+            callback: callbackFn
+          });
+        },
+        
+        bindGlobal: function(keys, description, callbackFn) {
+          addBinding({
+            keys: keys,
+            isLocal: false,
+            description: description,
+            callback: callbackFn
+          });
+        },
+        
+        bindLocal: function(keys, description, callbackFn) {
+          addBinding({
+            keys: keys,
+            isLocal: true,
+            description: description,
+            callback: callbackFn
+          });
         },
         
         reset: function() {
-          Mousetrap.reset();
-        }
+          resetBindings();
+        },
+        
+        getBindings: function() {
+          return keyBindings;
+        },
       };
     }
   ]). 

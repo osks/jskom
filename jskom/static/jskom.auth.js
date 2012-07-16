@@ -65,8 +65,10 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
       };
   }]).
   controller('SessionCtrl', [
-    '$rootScope', '$scope', 'authService', 'messagesService', 'pageTitleService',
-    function($rootScope, $scope, authService, messagesService, pageTitleService) {
+    '$rootScope', '$scope',
+    'authService', 'messagesService', 'pageTitleService', 'keybindingService',
+    function($rootScope, $scope,
+             authService, messagesService, pageTitleService, keybindingService) {
       $scope.state = 'loading';
       $scope.session = authService.newSession();
       
