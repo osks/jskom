@@ -2,23 +2,7 @@
 
 'use strict';
 
-angular.module('jskom.filters', ['ngSanitize']).
-  filter('textMediaType', [
-    function() {
-      return function(contentType) {
-        var mime_type = Mimeparse.parseMimeType(contentType);
-        return mime_type[0];
-      };
-    }
-  ]).
-  filter('textMediaSubType', [
-    function() {
-      return function(contentType) {
-        var mime_type = Mimeparse.parseMimeType(contentType);
-        return mime_type[1];
-      };
-    }
-  ]).
+angular.module('jskom.filters', []).
   filter('formatTextBody', [
     function() {
       var escape = {
@@ -50,6 +34,10 @@ angular.module('jskom.filters', ['ngSanitize']).
       return function(rawBody) {
         var safeBody = escapeExpression(rawBody);
         safeBody = safeBody.replace(/\r?\n|\r/g, "<br/>");
+
+        //safeBody = safeBody.replace(/\b([0-9]{4,})\b/g,
+        //                            '<em>hej</em><jskom:a text-no="$1">$1</jskom:a>');
+        
         return safeBody;
       };
     }
