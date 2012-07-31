@@ -109,8 +109,30 @@ angular.module('jskom.controllers', ['jskom.services', 'ngResource']).
     'messagesService', 'pageTitleService', 'keybindingService',
     function($scope, $routeParams, textsService, $log, $location,
              messagesService, pageTitleService, keybindingService) {
-      $scope.textNo = $routeParams.textNo;
-      $scope.isLoading = true;
+      var showText = function(textNo) {
+        $scope.textNo = textNo;
+        $scope.isLoading = true;
+        textsService.getText($scope.textNo).
+          success(function(data) {
+            $log.log("ShowTextCtrl - getText(" + $scope.textNo + ") - success");
+            $scope.isLoading = false;
+            $scope.text = data;
+          }).
+          error(function(data, status) {
+            $log.log("ShowTextCtrl - getText(" + $scope.textNo + ") - error");
+            $scope.isLoading = false;
+            $log.log(data);
+            if (status == 404) {
+              messagesService.showMessage('error', 'No such text',
+                                          'No text with number: ' + data.error_status);
+            } else {
+              messagesService.showMessage('error', 'Failed to get text.', data);
+            }
+          });
+      };
+      
+      showText($routeParams.textNo);
+      
       $scope.isCommentFormVisisble = false;
       
       $scope.$watch('text', function(newText) {
@@ -121,24 +143,29 @@ angular.module('jskom.controllers', ['jskom.services', 'ngResource']).
         }
       });
       
-      textsService.getText($scope.textNo).
-        success(function(data) {
-          $log.log("ShowTextCtrl - getText(" + $scope.textNo + ") - success");
-          $scope.isLoading = false;
-          $scope.text = data;
-        }).
-        error(function(data, status) {
-          $log.log("ShowTextCtrl - getText(" + $scope.textNo + ") - error");
-          $scope.isLoading = false;
-          $log.log(data);
-          if (status == 404) {
-            messagesService.showMessage('error', 'No such text',
-                                        'No text with number: ' + data.error_status);
-          } else {
-            messagesService.showMessage('error', 'Failed to get text.', data);
+      keybindingService.bindLocal('p', 'Show first commented text', function() {
+        $scope.$apply(function() {
+          var textNo = _.first(_.map($scope.text.comment_to_list, function(ct) {
+            return ct.text_no
+          }));
+          if (textNo) {
+            showText(textNo);
           }
         });
+        return false;
+      });
       
+      keybindingService.bindLocal('n', 'Show first comment', function(e) {
+        $scope.$apply(function() {
+          var textNo = _.first(_.map($scope.text.comment_in_list, function(ci) {
+            return ci.text_no
+          }));
+          if (textNo) {
+            showText(textNo);
+          }
+        });
+      });
+                                  
       keybindingService.bindLocal('k', 'Write comment', function(e) {
         $scope.$apply(function() {
           $scope.isCommentFormVisible = true;
@@ -242,15 +269,40 @@ angular.module('jskom.controllers', ['jskom.services', 'ngResource']).
         }
       };
       
-      keybindingService.bindLocal(['space', 'n'], 'Read next unread text', function(e) {
+      keybindingService.bindLocal('p', 'Show first commented text', function() {
+        $scope.$apply(function() {
+          var textNo = _.first(_.map($scope.text.comment_to_list, function(ct) {
+            return ct.text_no
+          }));
+          if (textNo) {
+            showText(textNo, false);
+          }
+        });
+        return false;
+      });
+      
+      keybindingService.bindLocal('n', 'Show first comment', function(e) {
+        $scope.$apply(function() {
+          var textNo = _.first(_.map($scope.text.comment_in_list, function(ci) {
+            return ci.text_no
+          }));
+          if (textNo) {
+            showText(textNo, false);
+          }
+        });
+      });
+      
+      keybindingService.bindLocal(['space'], 'Read next unread text', function(e) {
         $scope.$apply(function() {
           if (e.which == 32) {
             // Check that the read next button is visible if we used space
             if (isScrolledIntoView(angular.element('#read-next'))) {
               $scope.readNext();
+              return false;
             }
           } else {
             $scope.readNext();
+            return false;
           }
         });
       });

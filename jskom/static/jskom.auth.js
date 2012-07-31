@@ -39,7 +39,8 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
       var config = { withCredentials: true };
       return {
         newSession: function() {
-          return { pers_name: '', client: { name: jskomName, version: jskomVersion } };
+          return { person: { pers_name: '', pers_no: null }, password: '',
+                   client: { name: jskomName, version: jskomVersion } };
         },
         
         createSession: function(session) {
@@ -65,61 +66,114 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
       };
   }]).
   controller('SessionCtrl', [
-    '$rootScope', '$scope',
-    'authService', 'messagesService', 'pageTitleService', 'keybindingService',
-    function($rootScope, $scope,
-             authService, messagesService, pageTitleService, keybindingService) {
-      $scope.state = 'loading';
-      $scope.session = authService.newSession();
+    '$rootScope', '$scope', '$log',
+    'authService', 'personsService', 'messagesService', 'pageTitleService', 'keybindingService',
+    function($rootScope, $scope, $log,
+             authService, personsService, messagesService, pageTitleService, keybindingService) {
+      var reset = function() {
+        $scope.session = authService.newSession();
+        $scope.lookup = { name: '', matches: [] };
+      };
       
-      $rootScope.$on('event:loginRequired', function() {
-        jskom.Log.debug("SessionCtrl - event:loginRequired");
-        $scope.state = 'notLoggedIn';
-      });
+      var getCurrentSession = function() {
+        $scope.isLoading = true;
+        $scope.state = '';
+        authService.getCurrentSession().
+          success(function(data) {
+            $log.log("SessionCtrl - getCurrentSession() - success");
+            $scope.isLoading = false;
+            $scope.state = 'loggedIn';
+            $scope.session = data;
+          }).
+          error(function(data, status) {
+            $log.log("SessionCtrl - getCurrentSession() - error");
+            $scope.isLoading = false;
+            $scope.state = 'notLoggedIn';
+            pageTitleService.set("Login");
+          });
+      };
       
-      authService.getCurrentSession().
-        success(function(data) {
-          jskom.Log.debug("SessionCtrl - getCurrentSession() - success");
-          $scope.state = 'loggedIn';
-          $scope.session = data;
-        }).
-        error(function(data, status) {
-          jskom.Log.debug("SessionCtrl - getCurrentSession() - error");
-          $scope.state = 'notLoggedIn';
-          pageTitleService.set("Login");
-        });
-      
-      
-      $scope.login = function() {
-        jskom.Log.debug("SessionCtrl - login()");
-        
+      var createSession = function() {
+        $scope.isLoading = true;
         authService.createSession($scope.session).
           success(function(data) {
-            jskom.Log.debug("SessionCtrl - login() - success");
+            $log.log("SessionCtrl - login() - success");
+            $scope.isLoading = false;
             $scope.state = 'loggedIn';
             $scope.session = data;
             messagesService.clearAll();
             pageTitleService.set("");
           }).
-          error(function() {
-            jskom.Log.debug("SessionCtrl - login() - error");
+          error(function(data) {
+            $log.log("SessionCtrl - login() - error");
+            $scope.isLoading = false;
             $scope.state = 'notLoggedIn';
-            messagesService.showMessage('error', 'Failed to login.');
+            messagesService.showMessage('error', 'Failed to login.', data);
           });
       };
       
+      $scope.lookupName = function(loginOnMatch) {
+        $scope.isLoading = true;
+        personsService.lookupPersons($scope.lookup.name).
+          success(function(data) {
+            $log.log("SessionCtrl - lookupPersons(" + $scope.lookup.name + ") - success");
+            $scope.isLoading = false;
+            $scope.lookup.matches = data.persons;
+            
+            if ($scope.lookup.matches.length > 0) {
+              $scope.session.person = $scope.lookup.matches[0];
+              
+              if ($scope.lookup.matches.length == 1 && loginOnMatch) {
+                createSession();
+              }
+            } else {
+              messagesService.showMessage('error', 'Could not find any person with that name.');
+            }
+          }).
+          error(function(data) {
+            $log.log("SessionCtrl - lookupPersons(" + $scope.lookup.name + ") - error");
+            $scope.isLoading = false;
+            messagesService.showMessage('error', 'Failed to lookup person.', data);
+          });
+      };
+      
+      $rootScope.$on('event:loginRequired', function() {
+        $log.log("SessionCtrl - event:loginRequired");
+        $scope.state = 'notLoggedIn';
+        $scope.session = authService.newSession();
+      });
+      
+      $scope.isLoading = false;
+      reset();
+      getCurrentSession();
+      
+      $scope.clearMatchingPersons = function() {
+        var oldLookupName = $scope.lookup.name;
+        reset();
+        $scope.lookup.name = oldLookupName;
+      };
+      
+      $scope.login = function() {
+        $log.log("SessionCtrl - login()");
+        if ($scope.session.person.pers_no) {
+          createSession();
+        } else {
+          $scope.lookupName(true);
+        }
+      };
       
       $scope.logout = function() {
-        jskom.Log.debug("SessionCtrl - logout()");
-        
+        $log.log("SessionCtrl - logout()");
         authService.destroySession(authService.getCurrentSessionId()).
           success(function() {
             $scope.state = 'notLoggedIn';
+            reset();
           }).
           error(function(data, status) {
             if (status == 404) {
               // Session does not exist: we're not logged in.
               $scope.state = 'notLoggedIn';
+              reset();
             } else {
               messagesService.showMessage('error', 'Error when logging out.');
             }

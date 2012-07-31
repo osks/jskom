@@ -38,8 +38,8 @@
       <div ng-switch-when="text">
         <ng-switch on="mode">
           <div ng-switch-when="default" ng-bind-html="text.body|formatTextBody"></div>
-          <div ng-switch-when="html" ng-bind-html="text.body"></div>
           <pre ng-switch-when="raw">{{text.body}}</pre>
+          <div ng-switch-when="html" ng-bind-html="text.body"></div>
         </ng-switch>
       </div>
     </ng-switch>

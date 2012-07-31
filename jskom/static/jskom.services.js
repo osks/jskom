@@ -196,6 +196,19 @@ angular.module('jskom.services', ['jskom.settings']).
       };
     }
   ]).
+  factory('personsService', [
+    '$http', 'httpkomServer',
+    function($http, httpkomServer) {
+      var config = { withCredentials: true };
+      
+      return {
+        lookupPersons: function(name) {
+          return $http.get(httpkomServer + '/persons/',
+                           _.extend({ params: { "name": name } }, config));
+        },
+      };
+    }
+  ]).
   factory('readMarkingsService', [
     '$http', 'httpkomServer',
     function($http, httpkomServer) {
