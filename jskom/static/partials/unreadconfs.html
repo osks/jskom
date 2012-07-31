@@ -1,0 +1,14 @@
+<div>
+  <h3>Unread conferences</h3>
+  
+  <span ng-show="isLoading">Loading...</span>
+  <span ng-hide="isLoading || unreadConfs">Nothing unread</span>
+  <ul ng-show="unreadConfs">
+    <li ng-repeat="conf in unreadConfs">
+      <span>
+        <a href="/conferences/{{ conf.conf_no }}/unread/">{{ conf.name }}</a>
+        </span>
+      (<span class="no_of_unread">{{ conf.no_of_unread }}</span>)
+    </li>
+  </ul>
+</div>

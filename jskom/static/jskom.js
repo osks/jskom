@@ -1,25 +1,11 @@
 // Copyright (C) 2012 Oskar Skoog. Released under GPL.
 
-"use strict";
+'use strict';
 
-
-(function($, _, Backbone, Handlebars) {
+(function($) {
 
   var jskom;    
   jskom = window.jskom = {
-    version: "0.1",
-    
-    Routers: {},
-    Models: {},
-    Collections: {},
-    Views: {},
-    
-    // httpkom server URL without trailing slash (example: 'http://localhost:5001')
-    Settings: {
-      HttpkomServer: "",
-      PrefetchCount: 2
-    },
-    
     Log: {
       debug: function() {
         if (window.console && console.log) {
@@ -28,16 +14,6 @@
       }
     },
     
-    init: function() {
-      var jskomUrlRoot = '/';
-      jskom.Models.Session.fetchCurrentSession(function(currentSession) {
-        jskom.router = new jskom.Routers.AppRouter({
-          currentSession: currentSession,
-          urlRoot: jskomUrlRoot
-        });
-        Backbone.history.start({ pushState: true, root: jskomUrlRoot });
-      });
-    },
   };
   
   var checkBrowser = function() {
@@ -65,41 +41,160 @@
   };
 
   $(function() {
-    if (checkBrowser()) {
-      jskom.init();
+    checkBrowser();
+  });
+})(jQuery);
+
+
+angular.module('jskom', ['jskom.settings', 'jskom.services', 'jskom.controllers',
+                         'jskom.filters', 'jskom.directives', 'jskom.auth']).
+  config(['$routeProvider', function($routeProvider) {
+    $routeProvider.
+      when('/', {
+        templateUrl: '/static/partials/unreadconfs.html',
+        controller: 'UnreadConfsCtrl'
+      }).
+      when('/conferences/:confNo/unread/', {
+        templateUrl: '/static/partials/reader.html',
+        controller: 'ReaderCtrl'
+      }).
+      when('/texts/new', {
+        templateUrl: '/static/partials/new_text.html',
+        controller: 'NewTextCtrl'
+      }).
+      when('/texts/:textNo', {
+        templateUrl: '/static/partials/showtext.html',
+        controller: 'ShowTextCtrl'
+      }).
+      otherwise({
+        redirectTo: '/'
+      });
+  }]).
+  config(['$locationProvider', function($locationProvider) {  
+    $locationProvider.hashPrefix('');
+    $locationProvider.html5Mode(true);
+  }]);
+
+
+
+var ReadQueue = function() {
+  this._prefetchCount = 2; // jskom.Settings.PrefetchCount;
+  this._currentText = null;
+  this._currentThreadStack = [];
+  this._unreadTexts = [];
+}
+
+_.extend(ReadQueue.prototype, {
+  add: function(unreadTexts) {
+    this._unreadTexts = _.union(this._unreadTexts, unreadTexts);
+    this._unreadTexts.sort();
+    
+    if (this._currentText == null && this._unreadTexts.length > 0) {
+      this.moveNext();
     }
-  });
-
-
-  $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
-    options.url = jskom.Settings.HttpkomServer + options.url;
+  },
+  
+  current: function() {
+    return this._currentText;
+  },
+  
+  isEmpty: function() {
+    return !(this.size() > 0);
+  },
+  
+  size: function() {
+    // should we include currentText or not? currently we don't,
+    // because it is assumed to be read.
+    return this._unreadTexts.length;
+  },
+  
+  moveNext: function() {
+    // Algorithm:
+    // 
+    // We use a stack to store the parts of the thread we don't
+    // visit this time. Because we are not traversing the entire
+    // tree at this time, we need to remember texts (branches)
+    // further up in the tree, so we know where to continue when
+    // the current branch ends.
+    // 
+    // If there are texts on the stack: pop to get the new text.
+    // 
+    // Else: find new thread start by selecting the unread text
+    // with lowest text number.
+    // 
+    // For the new text, push all unread comments onto the stack, in
+    // reverse order.
     
-    options.xhrFields = {
-      withCredentials: true
-    };
-  });
-
-
-  Handlebars.registerHelper('url_for', function() {
-    // Example: {{url_for "texts/" text_no}} or {{url_for "texts" "/" "more" "/" text_no}}
+    var nextText = null;
+    if (this._currentThreadStack.length > 0) {
+      // We still have texts to read in this thread
+      nextText = this._currentThreadStack.pop();
+      this._unreadTexts = _.without(this._unreadTexts, nextText);
+      this._unreadTexts.sort(); // todo: do we need to sort it here?
+      jskom.Log.debug("readQueue:moveNext() - pop:ed " + nextText + " from stack.")
+    } else {
+      // No more texts in this thread, find new thread
+      
+      if (this._unreadTexts.length > 0) {
+        // We have unread texts, find new thread start by taking the
+        // lowest text number.
+        // Since this._unreadTexts is sorted, we just shift.
+        nextText = this._unreadTexts.shift();
+        jskom.Log.debug("readQueue:moveNext() - found new thread in " + nextText);
+      } else {
+        // No unread texts
+        nextText = null;
+        jskom.Log.debug("readQueue:moveNext() - no unread texts.")
+      }
+    }
     
-    // Remove the last argument, because it's the options object.
-    var params = _.first(arguments, arguments.length-1)
-    var path = _.reduce(params, function(memo, str){ return memo + str; }, "");
-    //jskom.Log.debug("url_for: " + path);
-    return jskom.router.url(path);
-  });
-
-  Handlebars.registerHelper('text_link', function(text_no, options) {
-    // Example: {{text_link text_no}} or {{text_link text_no text="hej"}}
-    
-    var url = jskom.router.url('texts/' + text_no);
-    var text = (options.hash['text'] || text_no);
-    
-    return new Handlebars.SafeString(
-      '<a class="text-link" href="' + Handlebars.Utils.escapeExpression(url) +
-        '" data-text-no="' + Handlebars.Utils.escapeExpression(text_no) + '">' + 
-        Handlebars.Utils.escapeExpression(text) + '</a>');
-  });
-
-})(jQuery, _, Backbone, Handlebars);
+    if (nextText == null) {
+      // Nothing to read, set currentText to null
+      this._currentText = null;
+    } else {
+      this._currentText = nextText;
+      
+      /*
+      // Start fetching the new current text, and when we have
+      // fetched the text: Push all comments onto the stack, in
+      // reverse order
+      
+      var self = this;
+      nextText.deferredFetch().done(function() {
+        // Don't trigger the change event until we've fetched the text
+        // That way we know that we won't call moveNext() again until
+        // the new text has been fetched.
+        self._currentText = nextText;
+        
+        var comments = _.clone(nextText.get('comment_in_list'));
+        if (comments) {
+          var commentTextNos = _.pluck(comments, 'text_no');
+          commentTextNos.reverse();
+          _.each(commentTextNos, function(commentTextNo) {
+            self._currentThreadStack.push(new Models.Text({
+              text_no: commentTextNo
+            }));
+          });
+        }
+        
+        // Simple prefetch of texts on the thread stack, we
+        // wait for the fetch so we can consider the new
+        // text's comments. ("last" because we pop from the end of the array)
+        _.each(_.last(self._currentThreadStack, self._prefetchCount), function(text) {
+          jskom.Log.debug("readQueue:moveNext() - prefetching comment "
+                    + text.get('text_no'));
+          text.deferredFetch();
+        });
+      });
+      
+      // Simple prefetch of the texts with low text numbers
+      // ("thread starts"), no need to wait for fetching of the
+      // new text.
+      _.each(this._unreadTexts.first(this._prefetchCount), function(text) {
+        jskom.Log.debug("readQueue:moveNext() - prefetching " + text.get('text_no'));
+        text.deferredFetch();
+      });
+      */
+    }
+  }
+});

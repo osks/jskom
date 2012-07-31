@@ -1,0 +1,34 @@
+<div>
+  <label>Recipients</label>
+  
+  <div ng-repeat="recipient in text.recipient_list">
+    <fieldset class="row form-inline">
+      <div class="span8">
+        <select class="input-small" ng-model="recipient.type"
+                ng-options="rt.type as rt.name for rt in recipientTypes"></select>
+        
+        <input class="span5" type="text" ng-model="recipient.conf_name" />
+        
+        <button class="btn btn-small btn-danger"
+                ng-click="text.recipient_list.splice($index, 1)">
+          <i class="icon-minus-sign icon-white"></i>
+        </button>
+      </div>
+    </fieldset>
+    <p />
+  </div>
+  
+  <p/>
+  
+  <button class="btn btn-small btn-success"
+          ng-click="text.recipient_list.push(newRecipient())">
+    <i class="icon-plus-sign icon-white"></i> Recipient
+  </button>
+  <p/>
+</div>
+
+<label>Subject</label>
+<input class="span8" type="text" name="subject" ng-model="text.subject" />
+
+<label>Body</label>
+<textarea class="span8" name="body" rows="5" ng-model="text.body"></textarea>

@@ -1,0 +1,36 @@
+<span ng-hide="readQueue">Loading...</span>
+<div ng-show="readQueue">
+  <h3><em>{{ readQueue.size() }}</em> unread texts in <em>{{ conf.name }}</em></h3>
+  
+  <br />
+  
+  <span ng-show="textIsLoading">Loading...</span>
+  <div ng-show="text">
+    <jskom:text text="text" ></jskom:text>
+    
+    <div class="form-actions">
+      <button class="btn" ng-disabled="isCommentFormVisible"
+              ng-click="isCommentFormVisible = true">
+        Write comment
+      </button>
+      
+      <div class="pull-right">
+        <jskom:mark-as-read text="text" read-on-load></jskom:mark-as-read>
+      </div>
+    </div>
+  </div>
+  
+  <jskom:new-comment comment-to="text" visible="isCommentFormVisible"></jskom:new-comment>
+  
+  <div>
+    <a href="/" class="btn" ng-disabled="isCommentFormVisible">Back to conference list</a>
+    
+    <div class="pull-right">
+      <button class="btn btn-primary" id="read-next"
+              ng-disabled="isCommentFormVisible"
+              ng-click="readNext()">
+        Next unread text
+      </button>
+    </div>
+  </div>
+</div>
