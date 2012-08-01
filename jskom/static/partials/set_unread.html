@@ -1,0 +1,17 @@
+<div>
+  <h3>Set number of unread</h3>
+
+  <form>
+    <label>Conference</label>
+    <input type="text" class="span4" name="conference" ng-model="conference.conf_name" />
+
+    <label># Unread</label> 
+    <input type="text" class="span4" name="unread" ng-model="conference.no_of_unread" />
+
+    <div class="form-actions">
+      <div class="pull-right">
+        <input type="submit" class="btn btn-primary" value="Set Unread" ng-click="setNumberOfUnreadTexts()"/>
+      </div>
+    </div>
+  </form>
+</div>
