@@ -58,6 +58,10 @@ angular.module('jskom', ['jskom.settings', 'jskom.services', 'jskom.controllers'
         templateUrl: '/static/partials/reader.html',
         controller: 'ReaderCtrl'
       }).
+      when('/conferences/set_unread', {
+        templateUrl: '/static/partials/set_unread.html',
+        controller: 'SetUnreadTextsCtrl'
+      }).
       when('/texts/new', {
         templateUrl: '/static/partials/new_text.html',
         controller: 'NewTextCtrl'
