@@ -189,10 +189,14 @@ angular.module('jskom.services', ['jskom.settings']).
         getConference: function(confNo) {
           return $http.get(httpkomServer + '/conferences/' + confNo, config);
         },
-        
+
         getUnreadConferences: function() {
           return $http.get(httpkomServer + '/conferences/unread/', config);
         },
+
+        setNumberOfUnreadTexts: function(data) {
+          return $http.post(httpkomServer + '/conferences/set_unread', data, config);
+        }
       };
     }
   ]).

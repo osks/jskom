@@ -66,6 +66,35 @@ angular.module('jskom.controllers', ['jskom.services', 'ngResource']).
           });
         }
       });
+      keybindingService.bindLocal('e', 'Set Number of Unread', function(e) {
+        $scope.$apply(function() {
+          $location.path('/conferences/set_unread');
+        });
+      });
+    }
+  ]).
+  controller('SetUnreadTextsCtrl', [
+    '$scope', '$http', '$location', '$routeParams', '$log',
+    'conferencesService', 'pageTitleService', 'messagesService', 'keybindingService',
+    function($scope, $http, $location, $routeParams, $log,
+             conferencesService, pageTitleService, messagesService, keybindingService) {
+      pageTitleService.set("Set Unread Texts");
+      $scope.setUnread = {
+        conference: conferencesService.getConference($routeParams.confNo),
+        subject: '',
+        body: ''
+      };
+
+      $scope.setNumberOfUnreadTexts = function() {
+        $log.log("Running setNumberOfUnreadTexts");
+        conferencesService.setNumberOfUnreadTexts($scope.conference).
+          success(function(data) {
+            $location.path('/');
+          }).
+          error(function(data, status) {
+            $log.log("SetUnreadTextsCtrl - setNumberOfUnreadTexts() - error");
+          });
+      };
     }
   ]).
   controller('NewTextCtrl', [
