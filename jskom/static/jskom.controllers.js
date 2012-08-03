@@ -80,7 +80,7 @@ angular.module('jskom.controllers', ['jskom.services', 'ngResource']).
              conferencesService, pageTitleService, messagesService, keybindingService) {
       pageTitleService.set("Set Unread Texts");
       $scope.setUnread = {
-        conference: conferencesService.getConference($routeParams.confNo),
+        conference: '',
         subject: '',
         body: ''
       };
