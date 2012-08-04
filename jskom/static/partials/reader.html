@@ -8,16 +8,7 @@
   <div ng-show="text">
     <jskom:text text="text" ></jskom:text>
     
-    <div class="form-actions">
-      <button class="btn" ng-disabled="isCommentFormVisible"
-              ng-click="isCommentFormVisible = true">
-        Write comment
-      </button>
-      
-      <div class="pull-right">
-        <jskom:mark-as-read text="text" read-on-load></jskom:mark-as-read>
-      </div>
-    </div>
+    <ng-include src="'/static/partials/text_controls.html'"></ng-include>
   </div>
   
   <jskom:new-comment comment-to="text" visible="isCommentFormVisible"></jskom:new-comment>

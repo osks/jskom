@@ -67,9 +67,9 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
   }]).
   controller('SessionCtrl', [
     '$rootScope', '$scope', '$log',
-    'authService', 'personsService', 'messagesService', 'pageTitleService', 'keybindingService',
+    'authService', 'personsService', 'messagesService', 'pageTitleService',
     function($rootScope, $scope, $log,
-             authService, personsService, messagesService, pageTitleService, keybindingService) {
+             authService, personsService, messagesService, pageTitleService) {
       var reset = function() {
         $scope.session = authService.newSession();
         $scope.lookup = { name: '', matches: [] };
@@ -119,7 +119,6 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
             $log.log("SessionCtrl - lookupPersons(" + $scope.lookup.name + ") - success");
             $scope.isLoading = false;
             $scope.lookup.matches = data.persons;
-            
             if ($scope.lookup.matches.length > 0) {
               $scope.session.person = $scope.lookup.matches[0];
               
@@ -140,7 +139,6 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
       $rootScope.$on('event:loginRequired', function() {
         $log.log("SessionCtrl - event:loginRequired");
         $scope.state = 'notLoggedIn';
-        $scope.session = authService.newSession();
       });
       
       $scope.isLoading = false;

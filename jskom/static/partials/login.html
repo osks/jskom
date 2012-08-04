@@ -1,43 +1,52 @@
 <h2>Login</h2>
 <form>
-  <label>Person name</label>
   
+  <label>Person name</label>
   <fieldset class="row form-inline">
     <div class="span5">
-      <input type="text" class="span4" tabindex="1"
-             ng-model="lookup.name" ng-hide="lookup.matches" />
+      <div ng-hide="lookup.matches">
+        <input type="text" class="span4" tabindex="1"
+               ng-model="lookup.name" />
+        <button type="button" class="btn btn-info"
+                tabindex="4" ng-disabled="isLoading || lookup.name.length < 1"
+                ng-click="lookupName(false)">
+          <i class="icon-search icon-white"></i>
+        </button>
+      </div>
       
-      <input type="text" class="span4" tabindex="-1"
-             ng-model="session.person.pers_name"
-             ng-show="lookup.matches.length == 1" readonly />
+      <div ng-show="lookup.matches.length == 1">
+        <input type="text" class="span4" tabindex="-1"
+               ng-model="session.person.pers_name" readonly />
+        <button type="button" class="btn btn-danger" tabindex="4"
+                ng-click="clearMatchingPersons()">
+          <i class="icon-remove icon-white"></i>
+        </button>
+      </div>
       
-      <select class="span4" tabindex="1"
-              ng-model="session.person.pers_no"
-              ng-show="lookup.matches.length > 1"
-              ng-options="mp.pers_no as mp.pers_name for mp in lookup.matches"></select>
-      
-      <button type="button" class="btn btn-warning" tabindex="4"
-              ng-show="lookup.matches"
-              ng-click="clearMatchingPersons()">
-        Clear
-      </button>
-
-      <button type="button" class="btn btn-info"
-              ng-hide="lookup.matches" tabindex="4"
-              ng-click="lookupName(false)">
-        <i class="icon-search icon-white"></i>
-      </button>
+      <div ng-show="lookup.matches.length > 1">
+        <select class="span4" tabindex="1"
+                ng-model="session.person.pers_no"
+                ng-options="mp.pers_no as mp.pers_name for mp in lookup.matches">
+        </select>
+        <button type="button" class="btn btn-danger" tabindex="4"
+                ng-click="clearMatchingPersons()">
+          <i class="icon-remove icon-white"></i>
+        </button>
+      </div>
     </div>
     <br/><br/>
   </fieldset>
-  
+
   <label>Password</label>
   <input type="password" class="span4" tabindex="2" ng-model="session.password" />
   
   <div class="form-actions">
     <div class="pull-right">
       <button type="submit" class="btn btn-primary" tabindex="3"
-              ng-disabled="isLoading" ng-click="login()">Login</button>
+              ng-disabled="isLoading || !(lookup.name.length > 0 || session.person.pers_no)"
+              ng-click="login()">
+        Login
+      </button>
     </div>
   </div>
 </form>
