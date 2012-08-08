@@ -2,47 +2,46 @@
 
 'use strict';
 
-var formatBody = (function() {
-  var escape = {
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#x27;",
-    "`": "&#x60;"
-  };
-  
-  var badChars = /&(?!\w+;)|[<>"'`]/g;
-  var possible = /[&<>"'`]/;
-  
-  var escapeChar = function(chr) {
-    return escape[chr] || "&amp;";
-  };
-  
-  // Escape html tags
-  var escapeExpression = function(string) {
-    if (string == null || string === false) {
-      return "";
-    }
-    if (!possible.test(string)) {
-      return string;
-    }
-    return string.replace(badChars, escapeChar);
-  };
-  
-  return function(rawBody) {
-    var safeBody = escapeExpression(rawBody);
-    safeBody = safeBody.replace(/\r?\n|\r/g, "<br/>");
-    
-    //safeBody = safeBody.replace(/\b([0-9]{4,})\b/g,
-    //                            '<em>hej</em><jskom:a text-no="$1">$1</jskom:a>');
-    
-    return safeBody;
-  };
-});
-
-
 // ngSanitize is needed for bind-html, which we use in jskom:text-body.
 angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
+  directive('jskomBindBody', [
+    // Example:
+    // <div jskom-bind-body="text.body"></div>
+    
+    '$log', '$compile', 'htmlFormattingService',
+    function($log, $compile, htmlFormattingService) {
+      return {
+        restrict: 'A',
+        link: function(scope, iElement, iAttrs) {
+          scope.$watch(iAttrs.jskomBindBody, function(value) {
+            var formattedBody = htmlFormattingService.formatBody(value);
+            var templateHtml = angular.element('<article>' + formattedBody + '</article>');
+            $compile(templateHtml)(scope);
+            iElement.html(templateHtml);
+          });
+        }
+      };
+    }
+  ]).
+  directive('jskomBindLinkified', [
+    // Example:
+    // <span jskom-bind-linkified="text.body"></span>
+    
+    '$log', '$compile', 'htmlFormattingService',
+    function($log, $compile, htmlFormattingService) {
+      return {
+        restrict: 'A',
+        link: function(scope, iElement, iAttrs) {
+          scope.$watch(iAttrs.jskomBindLinkified, function(value) {
+            var formattedBody = htmlFormattingService.linkifyLyskomLinks(value);
+            var templateHtml = angular.element('<span>' + formattedBody + '</span>');
+            $compile(templateHtml)(scope);
+            iElement.html(templateHtml);
+          });
+        }
+      };
+    }
+  ]).
   directive('jskomA', [
     // Examples:
     // <jskom:a text-no="{{ text.text_no }}">Text: {{text.text_no}}</jskom:a>

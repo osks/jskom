@@ -23,9 +23,9 @@
     <button ng-click="mode = 'raw'" class="btn">
       <i class="icon-align-justify"></i>
     </button>
-    <button ng-click="mode = 'html'" class="btn">
+    <!--<button ng-click="mode = 'html'" class="btn">
       <i class="icon-picture"></i>
-    </button>
+    </button>-->
   </div>
   
   <div >
@@ -37,9 +37,9 @@
       <div ng-switch-when="image"><img ng-src="{{ imageUrl }}" /></div>
       <div ng-switch-when="text">
         <ng-switch on="mode">
-          <div ng-switch-when="default" ng-bind-html="text.body|formatTextBody"></div>
-          <pre ng-switch-when="raw">{{text.body}}</pre>
-          <div ng-switch-when="html" ng-bind-html="text.body"></div>
+          <div ng-switch-when="default" jskom-bind-body="text.body"></div>
+          <pre ng-switch-when="raw" jskom-bind-body="text.body"></pre>
+          <!--<div ng-switch-when="html" ng-bind-html="text.body"></div>-->
         </ng-switch>
       </div>
     </ng-switch>

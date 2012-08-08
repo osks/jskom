@@ -3,8 +3,8 @@
     <div class="alert alert-block alert-{{message.level}}">
       <a class="close" data-dismiss="alert" href="#"
          ng-click="messages.splice($index, 1)">×</a>
-      <h4 class="alert-heading">{{ message.heading }}</h4>
-      <span>{{ message.text }}</span>
+      <h4 class="alert-heading" jskom-bind-linkified="message.heading"></h4>
+      <span jskom-bind-linkified="message.text"></span>
     </div>
   </div>
 </div>

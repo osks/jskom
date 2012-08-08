@@ -3,7 +3,73 @@
 'use strict';
 
 angular.module('jskom.services', ['jskom.settings']).
-  factory('keybindingService',[
+  factory('htmlFormattingService', [
+    '$log',
+    function($log) {
+      var escape = {
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#x27;",
+        "`": "&#x60;"
+      };
+      
+      var badChars = /&(?!\w+;)|[<>"'`]/g;
+      var possible = /[&<>"'`]/;
+      
+      var escapeChar = function(chr) {
+        return escape[chr] || "&amp;";
+      };
+      
+      // Escape html tags
+      var escapeExpression = function(string) {
+        if (string == null || string === false) {
+          return "";
+        }
+        if (!possible.test(string)) {
+          return string;
+        }
+        return string.replace(badChars, escapeChar);
+      };
+      
+      // http://daringfireball.net/2009/11/liberal_regex_for_matching_urls
+      // http://alanstorm.com/url_regex_explained
+      var urlRegexp = new RegExp(
+        "\\b(([\\w-]+://?|www[.])[^\\s()<>]+(?:\\([\\w\\d]+\\)|([^[:punct:]\\s]|/)))",
+        "g"
+      );
+      
+      var lyskomTextNumberRegexp = new RegExp("\\b([0-9]{4,})\\b", "g");
+      
+      return {
+        formatBody: function(rawBody) {
+          var escaped = this.escapeHtml(rawBody);
+          escaped = this.formatLineBreaks(escaped);
+          escaped = this.linkifyUrls(escaped);
+          escaped = this.linkifyLyskomLinks(escaped);
+          return escaped;
+        },
+        
+        escapeHtml: function(htmlStr) {
+          return escapeExpression(htmlStr);
+        },
+        
+        formatLineBreaks: function(htmlStr) { 
+          return htmlStr.replace(/\r?\n|\r/g, "<br/>");
+        },
+        
+        linkifyUrls: function(htmlStr) {
+          return htmlStr.replace(urlRegexp, '<a href="$1">$1</a>');
+        },
+        
+        linkifyLyskomLinks: function(htmlStr) {
+          return htmlStr.replace(lyskomTextNumberRegexp,
+                                 '<jskom:a text-no="$1">$1</jskom:a>');
+        }
+      };
+    }
+  ]).
+  factory('keybindingService', [
     '$log', '$rootScope',
     function($log, $rootScope) {
       Mousetrap.reset();
