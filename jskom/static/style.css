@@ -34,7 +34,25 @@
     }
     
     .jskomTextForm select.jskomRecipientType {
-        width: 60px;
+        width: 50px;
         display: inline-block;
+    }
+}
+
+@media (max-width: 480px) {
+    .jskomTextForm select.jskomRecipientType {
+        width: 50px;
+        display: inline-block;
+    }
+    
+    
+    .jskomConfInput[class*="span"] {
+        width: 180px;
+    }
+    .jskomConfInput button {
+        width: 40px;
+    }
+    .jskomConfInput[class*="span"] input, .jskomConfInput[class*="span"] select {
+        width: 130px;
     }
 }
