@@ -23,7 +23,7 @@
 }
 
 @media (max-width: 767px) {
-    #jskomTextForm .jskomConfInput {
+    .jskomTextForm .jskomConfInput {
         width: 60%;
     }
 }

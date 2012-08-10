@@ -389,21 +389,21 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           commentedText: '=commentTo'
         },
         link: function(scope, iElement, iAttrs) {
-          scope.comment = newComment(scope.commentedText);
-          
           scope.$watch('isVisible', function(newIsVisible) {
             if (newIsVisible) {
+              // When it's time to show: create a new comment based on
+              // the text we are commenting. This is to avoid having
+              // to do name look-ups for the commented conferences for
+              // each text we read.
+              scope.comment = newComment(scope.commentedText);
               iElement.find('textarea').focus();
+            } else {
+              scope.comment = newComment(); // new empty comment
             }
-          });
-          
-          scope.$watch('commentedText', function(newCommentedText) {
-            scope.cancel();
           });
           
           scope.cancel = function() {
             scope.isVisible = false;
-            scope.comment = newComment(scope.commentedText);
           };
           
           scope.createComment = function(event) {
@@ -433,14 +433,6 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
                 });
             }
           };
-          
-          // Not working:
-          /*keybindingService.bindLocal('ctrl+c ctrl+c', 'Post comment', function(e) {
-            $log.log("jskomNewComment - bind(ctrl+c ctrl+c)");
-            if (scope.isVisible) {
-              // TODO
-            }
-          });*/
         }
       };
     }

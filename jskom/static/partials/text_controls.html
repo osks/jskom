@@ -1,10 +1,14 @@
-<div class="form-actions">
-  <button class="btn" ng-disabled="isCommentFormVisible"
-          ng-click="isCommentFormVisible = true">
-    Comment
-  </button>
-  
-  <div class="pull-right">
-    <jskom:mark-as-read text="text" read-on-load></jskom:mark-as-read>
+<div>
+  <div class="form-actions">
+    <button class="btn" ng-disabled="isCommentFormVisible"
+            ng-click="isCommentFormVisible = true">
+      Comment
+    </button>
+    
+    <div class="pull-right">
+      <jskom:mark-as-read text="text" read-on-load></jskom:mark-as-read>
+    </div>
   </div>
+  
+  <jskom:new-comment comment-to="text" visible="isCommentFormVisible"></jskom:new-comment>
 </div>
