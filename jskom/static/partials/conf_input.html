@@ -1,0 +1,36 @@
+<div class="jskomConfInput">
+  <div ng-hide="matches" class="input-append">
+    <input type="text" class="jskomConfInputLookup"
+           ng-disabled="conf"
+           ng-model="lookup" 
+           /><button
+                type="button" class="btn btn-info" tabindex="-1"
+                ng-disabled="isLoading || lookup.length < 1" ng-readonly="isLoading"
+                ng-click="getConf()">
+      <i class="icon-search icon-white"></i>
+    </button>
+  </div>
+  
+  <div ng-show="matches.length == 1" class="input-append">
+    <input type="text" class="" tabindex="-1" readonly
+           ng-disabled="!conf"
+           ng-model="conf.conf_name"
+           /><button
+                type="button" class="btn btn-warning"
+                ng-click="clearMatching()">
+      <i class="icon-remove icon-white"></i>
+    </button>
+  </div>
+  
+  <div ng-show="matches.length > 1">
+    <select class=""
+            ng-model="model"
+            ng-disabled="!conf"
+            ng-options="mp.conf_no as mp.conf_name for mp in matches">
+    </select>
+    <button type="button" class="btn btn-warning"
+            ng-click="clearMatching()">
+      <i class="icon-remove icon-white"></i>
+    </button>
+  </div>
+</div>

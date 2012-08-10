@@ -1,49 +1,16 @@
 <h2>Login</h2>
-<form>
+<form id="jskomLogin">
   
   <label>Person name</label>
-  <fieldset class="row form-inline">
-    <div class="span5">
-      <div ng-hide="lookup.matches">
-        <input type="text" class="span4" tabindex="1"
-               ng-model="lookup.name" />
-        <button type="button" class="btn btn-info"
-                tabindex="4" ng-disabled="isLoading || lookup.name.length < 1"
-                ng-click="lookupName(false)">
-          <i class="icon-search icon-white"></i>
-        </button>
-      </div>
-      
-      <div ng-show="lookup.matches.length == 1">
-        <input type="text" class="span4" tabindex="-1"
-               ng-model="session.person.pers_name" readonly />
-        <button type="button" class="btn btn-danger" tabindex="4"
-                ng-click="clearMatchingPersons()">
-          <i class="icon-remove icon-white"></i>
-        </button>
-      </div>
-      
-      <div ng-show="lookup.matches.length > 1">
-        <select class="span4" tabindex="1"
-                ng-model="session.person.pers_no"
-                ng-options="mp.pers_no as mp.pers_name for mp in lookup.matches">
-        </select>
-        <button type="button" class="btn btn-danger" tabindex="4"
-                ng-click="clearMatchingPersons()">
-          <i class="icon-remove icon-white"></i>
-        </button>
-      </div>
-    </div>
-    <br/><br/>
-  </fieldset>
-
+  <jskom:conf-input class="span6" model="session.person.pers_no" only-pers></jskom:conf-input>
+  
   <label>Password</label>
-  <input type="password" class="span4" tabindex="2" ng-model="session.password" />
+  <input type="password" class="span6" ng-model="session.password" />
   
   <div class="form-actions">
     <div class="pull-right">
-      <button type="submit" class="btn btn-primary" tabindex="3"
-              ng-disabled="isLoading || !(lookup.name.length > 0 || session.person.pers_no)"
+      <button type="submit" class="btn btn-primary"
+              ng-disabled="isLoading || !session.person.pers_no"
               ng-click="login()">
         Login
       </button>

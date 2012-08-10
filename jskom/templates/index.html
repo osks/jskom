@@ -37,6 +37,9 @@
               <li>
                 <a class="new-text" href="/texts/new">New text</a>
               </li>
+              <li>
+                <a class="new-text" href="/conferences/set-unread">Set unread</a>
+              </li>
             </ul>
             <div class="btn-group pull-right" id="menu-right">
               <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
@@ -77,7 +80,7 @@
           </div>
           
           <div ng-switch-when="notLoggedIn">
-            <div class="span5">
+            <div class="span6">
               <ng-include src="'/static/partials/messages.html'" ng-cloak></ng-include>
               <ng-include src="'/static/partials/login.html'"></ng-include>
             </div>

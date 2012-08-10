@@ -1,0 +1,29 @@
+.jskomConfInput {
+}
+
+.jskomConfInput .input-append {
+    width: 100%;
+}
+
+.jskomConfInput button {
+    vertical-align: top;
+}
+
+.jskomConfInput[class*="span"] {
+    float: none;
+    margin-left: 0;
+}
+
+.form-inline .jskomConfInput {
+    display: inline-block;
+}
+
+.jskomConfInput[class*="span"] input, .jskomConfInput[class*="span"] select {
+    width: 75%;
+}
+
+@media (max-width: 767px) {
+    #jskomTextForm .jskomConfInput {
+        width: 60%;
+    }
+}

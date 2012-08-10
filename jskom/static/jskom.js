@@ -54,13 +54,17 @@ angular.module('jskom', ['jskom.settings', 'jskom.services', 'jskom.controllers'
         templateUrl: '/static/partials/unreadconfs.html',
         controller: 'UnreadConfsCtrl'
       }).
+      when('/conferences/set-unread', {
+        templateUrl: '/static/partials/set_unread.html',
+        controller: 'SetUnreadTextsCtrl'
+      }).
+      when('/conferences/:confNo/set-unread', {
+        templateUrl: '/static/partials/set_unread.html',
+        controller: 'SetUnreadTextsCtrl'
+      }).
       when('/conferences/:confNo/unread/', {
         templateUrl: '/static/partials/reader.html',
         controller: 'ReaderCtrl'
-      }).
-      when('/conferences/set_unread', {
-        templateUrl: '/static/partials/set_unread.html',
-        controller: 'SetUnreadTextsCtrl'
       }).
       when('/texts/new', {
         templateUrl: '/static/partials/new_text.html',

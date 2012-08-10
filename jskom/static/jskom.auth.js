@@ -67,12 +67,11 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
   }]).
   controller('SessionCtrl', [
     '$rootScope', '$scope', '$log',
-    'authService', 'personsService', 'messagesService', 'pageTitleService',
+    'authService', 'messagesService', 'pageTitleService',
     function($rootScope, $scope, $log,
-             authService, personsService, messagesService, pageTitleService) {
+             authService, messagesService, pageTitleService) {
       var reset = function() {
         $scope.session = authService.newSession();
-        $scope.lookup = { name: '', matches: [] };
       };
       
       var getCurrentSession = function() {
@@ -112,30 +111,6 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
           });
       };
       
-      $scope.lookupName = function(loginOnMatch) {
-        $scope.isLoading = true;
-        personsService.lookupPersons($scope.lookup.name).
-          success(function(data) {
-            $log.log("SessionCtrl - lookupPersons(" + $scope.lookup.name + ") - success");
-            $scope.isLoading = false;
-            $scope.lookup.matches = data.persons;
-            if ($scope.lookup.matches.length > 0) {
-              $scope.session.person = $scope.lookup.matches[0];
-              
-              if ($scope.lookup.matches.length == 1 && loginOnMatch) {
-                createSession();
-              }
-            } else {
-              messagesService.showMessage('error', 'Could not find any person with that name.');
-            }
-          }).
-          error(function(data) {
-            $log.log("SessionCtrl - lookupPersons(" + $scope.lookup.name + ") - error");
-            $scope.isLoading = false;
-            messagesService.showMessage('error', 'Failed to lookup person.', data);
-          });
-      };
-      
       $rootScope.$on('event:loginRequired', function() {
         $log.log("SessionCtrl - event:loginRequired");
         $scope.state = 'notLoggedIn';
@@ -145,20 +120,10 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
       reset();
       getCurrentSession();
       
-      $scope.clearMatchingPersons = function() {
-        var oldLookupName = $scope.lookup.name;
-        reset();
-        $scope.lookup.name = oldLookupName;
-      };
-      
       $scope.login = function() {
         $log.log("SessionCtrl - login()");
-        if ($scope.session.person.pers_no) {
-          createSession();
-        } else {
-          $scope.lookupName(true);
-        }
-      };
+        createSession();
+      }
       
       $scope.logout = function() {
         $log.log("SessionCtrl - logout()");

@@ -8,13 +8,22 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
     // Example:
     // <div jskom-bind-body="text.body"></div>
     
-    '$log', '$compile', 'htmlFormattingService',
-    function($log, $compile, htmlFormattingService) {
+    '$log', '$compile', '$filter', 'htmlFormattingService',
+    function($log, $compile, $filter, htmlFormattingService) {
       return {
         restrict: 'A',
         link: function(scope, iElement, iAttrs) {
           scope.$watch(iAttrs.jskomBindBody, function(value) {
-            var formattedBody = htmlFormattingService.formatBody(value);
+            var str;
+            if (!value) {
+              str = "";
+            }
+            else if (_.isObject(value)) {
+              str = $filter('json')(value);
+            } else {
+              str = value.toString();
+            }
+            var formattedBody = htmlFormattingService.formatBody(str);
             var templateHtml = angular.element('<article>' + formattedBody + '</article>');
             $compile(templateHtml)(scope);
             iElement.html(templateHtml);
@@ -27,13 +36,22 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
     // Example:
     // <span jskom-bind-linkified="text.body"></span>
     
-    '$log', '$compile', 'htmlFormattingService',
-    function($log, $compile, htmlFormattingService) {
+    '$log', '$compile', '$filter', 'htmlFormattingService',
+    function($log, $compile, $filter, htmlFormattingService) {
       return {
         restrict: 'A',
         link: function(scope, iElement, iAttrs) {
           scope.$watch(iAttrs.jskomBindLinkified, function(value) {
-            var formattedBody = htmlFormattingService.linkifyLyskomLinks(value);
+            var str;
+            if (!value) {
+              str = "";
+            }
+            else if (_.isObject(value)) {
+              str = $filter('json')(value);
+            } else {
+              str = value.toString();
+            }
+            var formattedBody = htmlFormattingService.linkifyLyskomLinks(str);
             var templateHtml = angular.element('<span>' + formattedBody + '</span>');
             $compile(templateHtml)(scope);
             iElement.html(templateHtml);
@@ -134,6 +152,110 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           
           scope.mode = "default";
         },
+      };
+    }
+  ]).
+  directive('jskomConfInput', [
+    // Example:
+    // <jskom:conf-input model="session.person.pers_no" only-pers></jskom:conf-input>
+    
+    '$log', '$filter', 'conferencesService', 'messagesService',
+    function($log, $filter, conferencesService, messagesService) {
+      var errorMsgText = function(wantPers, wantConfs) {
+        if (!wantPers) {
+          return "conference";
+        } else if (!wantConfs) {
+          return "person";
+        } else {
+          return "conference or person";
+        }
+      };
+      
+      return {
+        restrict: 'E',
+        replace: true,
+        templateUrl: '/static/partials/conf_input.html',
+        scope: {
+          model: '=',
+        },
+        link: function(scope, iElement, iAttrs) {
+          var lookupElement = iElement.find('.jskomConfInputLookup');
+          scope.isLoading = false;
+          scope.wantPers = true;
+          scope.wantConfs = true;
+          
+          scope.matches = [];
+          scope.lookup = '';
+          scope.conf = null;
+          
+          if (('onlyPers' in iAttrs)) {
+            scope.wantConfs = false;
+          }
+          if (('onlyConfs' in iAttrs)) {
+            scope.wantPers = false;
+          }
+          
+          scope.$watch('model', function(newModel) {
+            //$log.log("<jskom:conf-input> - $watch(model) - changed: " + newModel);
+
+            // We want to allow initialization by setting the
+            // conference number in the model from the start, but the
+            // model is also the currently selected conference - which
+            // is changed when using the control. Therefor we only
+            // look at the changed model value if scope.conf is not
+            // set (i.e. we haven't loaded the real conf data yet).
+            if (newModel && !scope.conf) {
+              scope.lookup = '#' + newModel;
+              scope.getConf();
+            }
+          });
+          
+          lookupElement.bind('blur', function(e) {
+            //$log.log("<jskom:conf-input> - .confInputLookupName - blur");
+            scope.getConf();
+          });
+          
+          scope.clearMatching = function() {
+            scope.conf = null;
+            scope.matches = [];
+          };
+          
+          scope.$watch('conf', function(newConf) {
+            //$log.log("<jskom:conf-input> - $watch(conf) - changed: " + $filter('json')(newConf));
+            if (newConf) {
+              scope.model = newConf.conf_no;
+            } else {
+              scope.model = null;
+            }
+          });
+          
+          scope.getConf = function() {
+            if (scope.isLoading || !(scope.lookup && scope.lookup.length > 0)) {
+              return;
+            }
+            scope.isLoading = true;
+            conferencesService.lookupConferences(scope.lookup, scope.wantPers, scope.wantConfs).
+              success(function(data) {
+                $log.log("<jskom:conf-input> - lookupConferences(" + scope.lookup + ") - success");
+                scope.isLoading = false;
+                scope.matches = data.confs;
+                if (scope.matches.length > 0) {
+                  scope.conf = scope.matches[0];
+                } else {
+                  messagesService.showMessage('error', 'Could not find any ' +
+                                              errorMsgText(scope.wantPers, scope.wantConfs) +
+                                              ' with that name.');
+                }
+              }).
+              error(function(data) {
+                $log.log("<jskom:conf-input> - lookupConferences(" + scope.lookup + ") - error");
+                scope.isLoading = false;
+                messagesService.showMessage('error', 'Failed to lookup ' + 
+                                            errorMsgText(scope.wantPers, scope.wantConfs) +
+                                            '.', data);
+              });
+          };
+        }
       };
     }
   ]).

@@ -66,11 +66,14 @@ angular.module('jskom.controllers', ['jskom.services', 'ngResource']).
           });
         }
       });
-      keybindingService.bindLocal('e', 'Set Number of Unread', function(e) {
+      // No key binding for set_unread right now. It doesn't feel right to have key bindings
+      // for going to separate pages. I could accept having 'e' bound when you're
+      // already in a conference and have it show a "pop-up" or something.
+      /*keybindingService.bindLocal('e', 'Only read last...', function(e) {
         $scope.$apply(function() {
-          $location.path('/conferences/set_unread');
+          $location.path('/conferences/set-unread');
         });
-      });
+      });*/
     }
   ]).
   controller('SetUnreadTextsCtrl', [
@@ -78,21 +81,26 @@ angular.module('jskom.controllers', ['jskom.services', 'ngResource']).
     'conferencesService', 'pageTitleService', 'messagesService', 'keybindingService',
     function($scope, $http, $location, $routeParams, $log,
              conferencesService, pageTitleService, messagesService, keybindingService) {
-      pageTitleService.set("Set Unread Texts");
-      $scope.setUnread = {
-        conference: '',
-        subject: '',
-        body: ''
-      };
-
+      pageTitleService.set("Set number of unread texts");
+      
+      $scope.confNo = $routeParams.confNo || null;
+      $scope.noOfUnread = 0;
+      $scope.isLoading = false;
+      
       $scope.setNumberOfUnreadTexts = function() {
-        $log.log("Running setNumberOfUnreadTexts");
-        conferencesService.setNumberOfUnreadTexts($scope.conference).
+        $log.log("SetUnreadTextsCtrl - setNumberOfUnreadTexts()");
+        $scope.isLoading = true;
+        conferencesService.setNumberOfUnreadTexts($scope.confNo, $scope.noOfUnread).
           success(function(data) {
+            $log.log("SetUnreadTextsCtrl - setNumberOfUnreadTexts() - success");
+            $scope.isLoading = false;
+            messagesService.showMessage('success', 'Successfully set number of unread texts.');
             $location.path('/');
           }).
           error(function(data, status) {
             $log.log("SetUnreadTextsCtrl - setNumberOfUnreadTexts() - error");
+            $scope.isLoading = false;
+            messagesService.showMessage('error', 'Failed to set number of unread texts.', data);
           });
       };
     }

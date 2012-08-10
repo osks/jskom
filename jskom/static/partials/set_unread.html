@@ -1,17 +1,21 @@
-<div>
-  <h3>Set number of unread</h3>
-
-  <form>
-    <label>Conference</label>
-    <input type="text" class="span4" name="conference" ng-model="conference.conf_name" />
-
-    <label># Unread</label> 
-    <input type="text" class="span4" name="unread" ng-model="conference.no_of_unread" />
-
-    <div class="form-actions">
-      <div class="pull-right">
-        <input type="submit" class="btn btn-primary" value="Set Unread" ng-click="setNumberOfUnreadTexts()"/>
+<div class="row">
+  <div class="span6">
+    <h3>Set number of unread texts</h3>
+    
+    <form>
+      <label>Conference</label>
+      <jskom:conf-input class="span6" model="confNo"></jskom:conf-input>
+      
+      <label>Number of unread texts</label> 
+      <input type="text" class="span6" name="unread" ng-model="noOfUnread" />
+      
+      <div class="form-actions">
+        <div class="pull-right">
+          <input type="submit" class="btn btn-primary" value="Set Unread"
+                 ng-disabled="isLoading || !confNo"
+                 ng-click="setNumberOfUnreadTexts()"/>
+        </div>
       </div>
-    </div>
-  </form>
+    </form>
+  </div>
 </div>

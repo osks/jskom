@@ -252,6 +252,17 @@ angular.module('jskom.services', ['jskom.settings']).
       var config = { withCredentials: true };
       
       return {
+        lookupConferences: function(name, wantPers, wantConfs) {
+          return $http.get(httpkomServer + '/conferences/',
+                           _.extend({
+                             params: {
+                               "name": name,
+                               "want_pers": wantPers,
+                               "want_confs": wantConfs
+                             }
+                           }, config));
+        },
+        
         getConference: function(confNo) {
           return $http.get(httpkomServer + '/conferences/' + confNo, config);
         },
@@ -259,23 +270,12 @@ angular.module('jskom.services', ['jskom.settings']).
         getUnreadConferences: function() {
           return $http.get(httpkomServer + '/conferences/unread/', config);
         },
-
-        setNumberOfUnreadTexts: function(data) {
-          return $http.post(httpkomServer + '/conferences/set_unread', data, config);
+        
+        setNumberOfUnreadTexts: function(confNo, noOfUnread) {
+          var data = { no_of_unread: parseInt(noOfUnread) };
+          return $http.post(httpkomServer + '/conferences/' + confNo + '/no-of-unread',
+                            data, config);
         }
-      };
-    }
-  ]).
-  factory('personsService', [
-    '$http', 'httpkomServer',
-    function($http, httpkomServer) {
-      var config = { withCredentials: true };
-      
-      return {
-        lookupPersons: function(name) {
-          return $http.get(httpkomServer + '/persons/',
-                           _.extend({ params: { "name": name } }, config));
-        },
       };
     }
   ]).
