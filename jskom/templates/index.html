@@ -34,12 +34,28 @@
               <li class="active">
                 <a class="home" href="/">Home</a>
               </li>
-              <li>
+              <li class="hidden-phone">
                 <a class="new-text" href="/texts/new">New text</a>
               </li>
-              <li>
+              <li class="hidden-phone">
                 <a class="new-text" href="/conferences/set-unread">Set unread</a>
               </li>
+              
+              <li class="dropdown visible-phone" id="menu">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#menu">
+                  Menu
+                  <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a class="new-text" href="/texts/new">New text</a>
+                  </li>
+                  <li>
+                    <a class="new-text" href="/conferences/set-unread">Set unread</a>
+                  </li>
+                </ul>
+              </li>
+              
             </ul>
             <div class="btn-group pull-right" id="menu-right">
               <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
