@@ -39,30 +39,59 @@ angular.module('jskom.controllers', ['jskom.services', 'ngResource']).
     }
   ]).
   controller('UnreadConfsCtrl', [
-    '$scope', '$http', '$location', '$log',
+    '$scope', '$http', '$location', '$log', '$timeout',
     'conferencesService', 'pageTitleService', 'messagesService', 'keybindingService',
-    function($scope, $http, $location, $log,
+    function($scope, $http, $location, $log, $timeout,
              conferencesService, pageTitleService, messagesService, keybindingService) {
       pageTitleService.set("Unread conferences");
       
-      $scope.unreadConfs = [];
-      $scope.isLoading = true;
-      conferencesService.getUnreadConferences().
-        success(function(data) {
-          jskom.Log.debug("UnreadConfsCtrl - getUnreadConferences() - success");
-          $scope.isLoading = false;
-          $scope.unreadConfs = data.confs;
-        }).
-        error(function(data, status) {
-          jskom.Log.debug("UnreadConfsCtrl - getUnreadConferences() - error");
-          $scope.isLoading = false;
-          messagesService.showMessage('error', 'Failed to get unread conferences.', data);
-        });
-
+      $scope.load = function() {
+        $scope.unreadConfs = [];
+        $scope.isLoading = true;
+        conferencesService.getUnreadConferences().
+          success(function(data) {
+            jskom.Log.debug("UnreadConfsCtrl - getUnreadConferences() - success");
+            $scope.isLoading = false;
+            $scope.unreadConfs = data.confs;
+          }).
+          error(function(data, status) {
+            jskom.Log.debug("UnreadConfsCtrl - getUnreadConferences() - error");
+            $scope.isLoading = false;
+            messagesService.showMessage('error', 'Failed to get unread conferences.', data);
+          });
+      };
+      $scope.load();
+      
+      
+      $scope.refresherPromise = null;
+      $scope.startRefresher = function() {
+        jskom.Log.debug("UnreadConfsCtrl - starting auto-refresher");
+        var scheduleReload = function() {
+          $scope.refresherPromise = $timeout(function() {
+            $scope.load();
+            scheduleReload();
+          }, 2*60*1000);
+        }
+        scheduleReload();
+      };
+      $scope.$on('$destroy', function() {
+        if ($scope.refresherPromise) {
+          jskom.Log.debug("UnreadConfsCtrl - stopping auto-refresher");
+          $timeout.cancel($scope.refresherPromise);
+        }
+      });
+      $scope.startRefresher();
+      
+      
+      $scope.gotoFirstConference = function() {
+        $location.path("/conferences/" + _.first($scope.unreadConfs).conf_no + "/unread/");
+      };
+      
       keybindingService.bindLocal(['space', 'n'], 'Go to first conference', function(e) {
         if (_.size($scope.unreadConfs) > 0) {
           $scope.$apply(function() {
-            $location.path("/conferences/" + _.first($scope.unreadConfs).conf_no + "/unread/");
+            //$location.path("/conferences/" + _.first($scope.unreadConfs).conf_no + "/unread/");
+            $scope.gotoFirstConference();
           });
         }
       });
