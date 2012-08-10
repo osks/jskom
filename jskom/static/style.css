@@ -22,8 +22,19 @@
     width: 75%;
 }
 
+@media (max-width: 979px) and (min-width: 768px) {
+    .jskomTextForm select.jskomRecipientType {
+        width: 60px;
+    }
+}
+
 @media (max-width: 767px) {
     .jskomTextForm .jskomConfInput {
         width: 60%;
+    }
+    
+    .jskomTextForm select.jskomRecipientType {
+        width: 60px;
+        display: inline-block;
     }
 }

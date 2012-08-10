@@ -4,15 +4,15 @@
   <div ng-repeat="recipient in text.recipient_list">
     <fieldset class="row form-inline">
       <div class="span8">
-        <select class="input-small" ng-model="recipient.type"
-                ng-options="rt.type as rt.name for rt in recipientTypes"></select>
-        
-        <jskom:conf-input class="span5" model="recipient.conf_no"></jskom:conf-input>
-        
-        <button class="btn btn-small btn-danger pull-right"
+        <button class="btn btn-small btn-danger"
                 ng-click="text.recipient_list.splice($index, 1)">
           <i class="icon-minus-sign icon-white"></i>
         </button>
+        <select class="span1 jskomRecipientType" ng-model="recipient.type"
+                ng-options="rt.type as rt.name for rt in recipientTypes"></select>
+        
+        <jskom:conf-input class="span6" model="recipient.conf_no"></jskom:conf-input>
+        
       </div>
     </fieldset>
     <p />
