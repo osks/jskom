@@ -70,26 +70,32 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
     'authService', 'messagesService', 'pageTitleService',
     function($rootScope, $scope, $log,
              authService, messagesService, pageTitleService) {
+      $scope.isLoading = false;
       var reset = function() {
         $scope.session = authService.newSession();
       };
       
       var getCurrentSession = function() {
-        $scope.isLoading = true;
-        $scope.state = '';
-        authService.getCurrentSession().
-          success(function(data) {
-            $log.log("SessionCtrl - getCurrentSession() - success");
-            $scope.isLoading = false;
-            $scope.state = 'loggedIn';
-            $scope.session = data;
-          }).
-          error(function(data, status) {
-            $log.log("SessionCtrl - getCurrentSession() - error");
-            $scope.isLoading = false;
-            $scope.state = 'notLoggedIn';
-            pageTitleService.set("Login");
-          });
+        if (authService.getCurrentSessionId()) {
+          $scope.isLoading = true;
+          $scope.state = '';
+          authService.getCurrentSession().
+            success(function(data) {
+              $log.log("SessionCtrl - getCurrentSession() - success");
+              $scope.isLoading = false;
+              $scope.state = 'loggedIn';
+              $scope.session = data;
+            }).
+            error(function(data, status) {
+              $log.log("SessionCtrl - getCurrentSession() - error");
+              $scope.isLoading = false;
+              $scope.state = 'notLoggedIn';
+              pageTitleService.set("Login");
+            });
+        } else {
+          $scope.state = 'notLoggedIn';
+          pageTitleService.set("Login");
+        }
       };
       
       var createSession = function() {
