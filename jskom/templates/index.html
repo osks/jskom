@@ -90,10 +90,12 @@
       </div>
       
       <hr />
-      <footer>
+      <footer ng-controller="VersionCtrl">
         <p>
           <a href="https://github.com/osks/jskom">jskom</a>
           &copy; <a href="mailto:oskar@osd.se">Oskar Skoog</a> 2012
+          &#8212;
+          {{ name}} v{{ version }}
         </p>
       </footer>
     </div>
@@ -113,7 +115,7 @@
     
     <script src="{{ url_for('static', filename='lib/angular.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/angular-sanitize.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/angular-resource.js') }}"></script>
+    <!--<script src="{{ url_for('static', filename='lib/angular-resource.js') }}"></script>-->
     
     <script type="text/javascript">
       angular.module('jskom.settings', []).

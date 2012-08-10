@@ -2,7 +2,14 @@
 
 'use strict';
 
-angular.module('jskom.controllers', ['jskom.services', 'ngResource']).
+angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
+  controller('VersionCtrl', [
+    '$scope', 'jskomName', 'jskomVersion',
+    function($scope, jskomName, jskomVersion) {
+      $scope.name = jskomName;
+      $scope.version = jskomVersion;
+    }
+  ]).
   controller('MessagesCtrl', [
     '$scope', 'messagesService', '$log',
     function($scope, messagesService, $log) {
