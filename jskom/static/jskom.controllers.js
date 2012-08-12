@@ -3,13 +3,6 @@
 'use strict';
 
 angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
-  controller('VersionCtrl', [
-    '$scope', 'jskomName', 'jskomVersion',
-    function($scope, jskomName, jskomVersion) {
-      $scope.name = jskomName;
-      $scope.version = jskomVersion;
-    }
-  ]).
   controller('MessagesCtrl', [
     '$scope', 'messagesService', '$log',
     function($scope, messagesService, $log) {
@@ -206,8 +199,6 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       showText($routeParams.textNo);
       
-      $scope.isCommentFormVisisble = false;
-      
       $scope.$watch('text', function(newText) {
         if (newText) {
           pageTitleService.set("Text " + newText.text_no);
@@ -238,13 +229,6 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
           }
         });
       });
-                                  
-      keybindingService.bindLocal('k', 'Write comment', function(e) {
-        $scope.$apply(function() {
-          $scope.isCommentFormVisible = true;
-        });
-        return false;
-      });
     }
   ]).
   controller('ReaderCtrl', [
@@ -255,7 +239,6 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
              readQueueService, messagesService, conferencesService, textsService,
              pageTitleService, keybindingService) {
       $scope.textIsLoading = false;
-      $scope.isCommentFormVisible = false;
       
       $scope.$watch('conf', function(newConf) {
         if (newConf) {
@@ -333,12 +316,10 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       });
       
       $scope.readNext = function() {
-        if (!$scope.isCommentFormVisible) {
-          if (readQueue.isEmpty()) {
-            $location.path('/');
-          } else {
-            readQueue.moveNext();
-          }
+        if (readQueue.isEmpty()) {
+          $location.path('/');
+        } else {
+          readQueue.moveNext();
         }
       };
       
@@ -378,13 +359,6 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
             return false;
           }
         });
-      });
-      
-      keybindingService.bindLocal('k', 'Write comment', function(e) {
-        $scope.$apply(function() {
-          $scope.isCommentFormVisible = true;
-        });
-        return false;
       });
       
       var isScrolledIntoView = function(elem) {

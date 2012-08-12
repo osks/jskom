@@ -123,8 +123,8 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
   directive('jskomText', [
     // Example: <jskom:text text="text"></jskom:text>
     
-    '$log', 'httpkomServer',
-    function($log, httpkomServer) {
+    '$log', 'httpkomServer', 'keybindingService', 'readMarkingsService',
+    function($log, httpkomServer, keybindingService, readMarkingsService) {
       return {
         restrict: 'E',
         templateUrl: '/static/partials/text.html',
@@ -132,6 +132,9 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           text: '=',
         },
         link: function(scope, iElement, iAttrs) {
+          scope.isCommentFormVisisble = false;
+          scope.isRequesting = false;
+          
           scope.$watch('text', function(newText) {
             if (newText) {
               // todo: move this somewhere else
@@ -145,12 +148,59 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
               } else {
                 scope.imageUrl = '';
               }
+              
+              if (('readOnLoad' in iAttrs) && newText.is_unread) {
+                scope.markAsRead();
+              }
             }
             
             scope.text = newText;
           });
           
           scope.mode = "default";
+          
+          keybindingService.bindLocal('k', 'Write comment', function(e) {
+            scope.$apply(function() {
+              scope.isCommentFormVisible = true;
+            });
+            return false;
+          });
+          
+          scope.markAsRead = function() {
+            if (scope.text) {
+              var text = scope.text;
+              scope.isRequesting = true;
+              readMarkingsService.createGlobalReadMarking(text.text_no).
+                success(function(data) {
+                  $log.log("jskomMarkAsRead - markAsRead(" + text.text_no + ") - success");
+                  scope.isRequesting = false;
+                  text.is_unread = false;
+                }).
+                error(function(data, status) {
+                  $log.log("jskomMarkAsRead - markAsRead(" + text.text_no + ") - error");
+                  scope.isRequesting = false;
+                  messagesService.showMessage('error', 'Failed to mark text as read.', data);
+                });
+            }
+          };
+          
+          scope.markAsUnread = function() {
+            if (scope.text) {
+              var text = scope.text;
+              scope.isRequesting = false;
+              readMarkingsService.destroyGlobalReadMarking(text.text_no).
+                success(function(data) {
+                  $log.log("jskomMarkAsRead - markAsUnread(" + text.text_no + ") - success");
+                  scope.isRequesting = false;
+                  text.is_unread = true;
+                }).
+                error(function(data, status) {
+                  $log.log("jskomMarkAsRead - markAsUnread(" + text.text_no + ") - error");
+                  scope.isRequesting = false;
+                  messagesService.showMessage('error', 'Failed to mark text as read.', data);
+                });
+            }
+          };
         },
       };
     }
@@ -257,67 +307,6 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           };
         }
       };
-    }
-  ]).
-  directive('jskomMarkAsRead', [
-    // <jskom:mark-as-read text="text" read-on-load></jskom:mark-as-read>
-    
-    '$log', 'readMarkingsService', 'messagesService',
-    function($log, readMarkingsService, messagesService) {
-      return {
-        restrict: 'E',
-        templateUrl: '/static/partials/text_markasread.html',
-        scope: {
-          text: '=',
-        },
-        link: function(scope, iElement, iAttrs) {
-          scope.isRequesting = false;
-          
-          scope.markAsRead = function() {
-            if (scope.text) {
-              var text = scope.text;
-              scope.isRequesting = true;
-              readMarkingsService.createGlobalReadMarking(text.text_no).
-                success(function(data) {
-                  $log.log("jskomMarkAsRead - markAsRead(" + text.text_no + ") - success");
-                  scope.isRequesting = false;
-                  text.is_unread = false;
-                }).
-                error(function(data, status) {
-                  $log.log("jskomMarkAsRead - markAsRead(" + text.text_no + ") - error");
-                  scope.isRequesting = false;
-                  messagesService.showMessage('error', 'Failed to mark text as read.', data);
-                });
-            }
-          };
-          
-          scope.markAsUnread = function() {
-            if (scope.text) {
-              var text = scope.text;
-              scope.isRequesting = false;
-              readMarkingsService.destroyGlobalReadMarking(text.text_no).
-                success(function(data) {
-                  $log.log("jskomMarkAsRead - markAsUnread(" + text.text_no + ") - success");
-                  scope.isRequesting = false;
-                  text.is_unread = true;
-                }).
-                error(function(data, status) {
-                  $log.log("jskomMarkAsRead - markAsUnread(" + text.text_no + ") - error");
-                  scope.isRequesting = false;
-                  messagesService.showMessage('error', 'Failed to mark text as read.', data);
-                });
-            }
-          };
-          
-          scope.$watch('text', function(newText) {
-            if (newText) {
-              if (('readOnLoad' in iAttrs) && newText.is_unread) {
-                scope.markAsRead();
-              }
-            }
-          });
-        }
-      }; 
     }
   ]).
   directive('jskomTextFields', [

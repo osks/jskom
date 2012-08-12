@@ -32,21 +32,56 @@ angular.module('jskom.services', ['jskom.settings']).
         return string.replace(badChars, escapeChar);
       };
       
-      // http://daringfireball.net/2009/11/liberal_regex_for_matching_urls
-      // http://alanstorm.com/url_regex_explained
-      var urlRegexp = new RegExp(
-        "\\b(([\\w-]+://?|www[.])[^\\s()<>]+(?:\\([\\w\\d]+\\)|([^[:punct:]\\s]|/)))",
-        "g"
-      );
+      // http://daringfireball.net/2010/07/improved_regex_for_matching_urls
+      var urlRegexp = /\b((?:[a-z][\w-]+:(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
       
-      var lyskomTextNumberRegexp = new RegExp("\\b([0-9]{4,})\\b", "g");
+      var lyskomTextNumberRegexp = /\b([0-9]{4,})\b/g;
+      
+      var replaceMultiple = function(str, replacers) {
+        var i = 0;
+        var replace = function(str, regexp, replaceFunc, tmpObj) {
+          var matches = str.match(regexp);
+          if (matches) {
+            _.each(_.uniq(matches), function(match) {
+              str = str.replace(match, '<$' + i +'$>');
+              tmpObj['<$' + i + '$>'] = replaceFunc(match);
+              ++i;
+            });
+            }
+          return str;
+        };
+        
+        var tmp = {};
+        _.each(replacers, function(replacer) {
+          str = replace(str, replacer.regexp, replacer.func, tmp);
+        });
+        _.each(tmp, function(value, key) {
+          str = str.replace(key, value);
+        });
+        
+        return str;
+      };
       
       return {
         formatBody: function(rawBody) {
           var escaped = this.escapeHtml(rawBody);
           escaped = this.formatLineBreaks(escaped);
-          escaped = this.linkifyUrls(escaped);
-          escaped = this.linkifyLyskomLinks(escaped);
+          
+          escaped = replaceMultiple(escaped, [
+            {
+              regexp: urlRegexp,
+              func: function(match) {
+                return '<a href="' + encodeURI(match) + '">' + match + '</a>';
+              }
+            },
+            {
+              regexp: lyskomTextNumberRegexp,
+              func: function(match) {
+                return '<jskom:a text-no="' + encodeURI(match) + '">' + match + '</jskom:a>';
+              },
+            }
+          ]);
+          
           return escaped;
         },
         
@@ -59,12 +94,17 @@ angular.module('jskom.services', ['jskom.settings']).
         },
         
         linkifyUrls: function(htmlStr) {
-          return htmlStr.replace(urlRegexp, '<a href="$1">$1</a>');
+          var replacer = function(match, p1) {
+            return '<a href="' + encodeURI(p1) + '">' + p1 + '</a>';
+          };
+          return htmlStr.replace(urlRegexp, replacer);
         },
         
         linkifyLyskomLinks: function(htmlStr) {
-          return htmlStr.replace(lyskomTextNumberRegexp,
-                                 '<jskom:a text-no="$1">$1</jskom:a>');
+          var replacer = function(match, p1) {
+            return '<jskom:a text-no="' + encodeURI(p1) + '">' + p1 + '</jskom:a>';
+          };
+          return htmlStr.replace(lyskomTextNumberRegexp, replacer);
         }
       };
     }

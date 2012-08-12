@@ -25,7 +25,6 @@
   </head>
   <body ng-controller="SessionCtrl">
     {% raw %}
-    
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container" id="menu-container">
@@ -74,9 +73,11 @@
         </div>
       </div>
     </div>
+    {% endraw %}
     
     <div class="container">
       
+      {% raw %}
       <div class="row">
         <ng-switch on="state">
           
@@ -106,24 +107,26 @@
       
         </ng-switch>
       </div>
+      {% endraw %}
       
       <hr />
-      <footer ng-controller="VersionCtrl">
+      <footer>
         <p>
           <a href="https://github.com/osks/jskom">jskom</a>
           &copy; <a href="mailto:oskar@osd.se">Oskar Skoog</a> 2012
           <span ng-cloak>
-            &#8212; {{ name}} v{{ version }}
+            {# This is in the jinja2 template, not Angular. #}
+            &#8212; version {{ version }}
           </span>
         </p>
       </footer>
     </div>
-    {% endraw %}
+    
     
     {% assets "js_libs" %}
     <script type="text/javascript" src="{{ ASSET_URL }}"></script>
     {%- endassets %}
-
+    
     {% assets "js_angular" %}
     <script type="text/javascript" src="{{ ASSET_URL }}"></script>
     {%- endassets %}

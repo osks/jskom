@@ -5,18 +5,14 @@
   <br />
   
   <span ng-show="textIsLoading">Loading...</span>
-  <div ng-show="text">
-    <jskom:text text="text" ></jskom:text>
-    
-    <ng-include src="'/static/partials/text_controls.html'"></ng-include>
-  </div>
+  
+  <jskom:text text="text" read-on-load ng-show="text"></jskom:text>
   
   <div>
-    <a href="/" class="btn" ng-disabled="isCommentFormVisible">Back to conference list</a>
+    <a href="/" class="btn">Back to conference list</a>
     
     <div class="pull-right">
       <button class="btn btn-primary" id="read-next"
-              ng-disabled="isCommentFormVisible"
               ng-click="readNext()">
         Next unread text
       </button>

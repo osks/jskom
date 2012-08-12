@@ -3,7 +3,7 @@
   / {{ text.creation_time }} / {{ text.author.pers_name }}
 </h4>
 
-<div> 
+<div>
   <div ng-repeat="ct in text.comment_to_list">
     {{ ct.type }} to text
     <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
@@ -53,4 +53,40 @@
     </div>
   </div>
 
+</div>
+
+<div>
+  <div class="form-actions">
+    <button class="btn" ng-disabled="isCommentFormVisible"
+            ng-click="isCommentFormVisible = true">
+      Comment
+    </button>
+    
+    <div class="pull-right">
+      <ng-switch on="text.is_unread">
+        <div ng-switch-default>
+          <button class="btn btn-mini btn-success" ng-click="markAsRead()" ng-disabled="isRequesting">
+            Mark as read
+          </button>
+          <button class="btn btn-mini btn-info" ng-click="markAsUnread()" ng-disabled="isRequesting">
+            Mark as unread
+          </button>
+        </div>
+        <div ng-switch-when="true">
+          <span class="label label-info">Unread</span>
+          <button class="btn btn-mini btn-success" ng-click="markAsRead()" ng-disabled="isRequesting">
+            Mark as read
+          </button>
+        </div>
+        <div ng-switch-when="false">
+          <span class="label label-success">Read</span>
+          <button class="btn btn-mini btn-info" ng-click="markAsUnread()" ng-disabled="isRequesting">
+            Mark as unread
+          </button>
+        </div>
+      </ng-switch>
+    </div>
+  </div>
+  
+  <jskom:new-comment comment-to="text" visible="isCommentFormVisible"></jskom:new-comment>
 </div>
