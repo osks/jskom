@@ -95,14 +95,12 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
           });
         }
       });
-      // No key binding for set_unread right now. It doesn't feel right to have key bindings
-      // for going to separate pages. I could accept having 'e' bound when you're
-      // already in a conference and have it show a "pop-up" or something.
-      /*keybindingService.bindLocal('e', 'Only read last...', function(e) {
+      
+      keybindingService.bindLocal('e', 'Set unread...', function(e) {
         $scope.$apply(function() {
           $location.path('/conferences/set-unread');
         });
-      });*/
+      });
     }
   ]).
   controller('SetUnreadTextsCtrl', [
@@ -384,7 +382,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         });
       });
       
-      keybindingService.bindLocal('e', 'Set unread', function(e) {
+      keybindingService.bindLocal('e', 'Set unread...', function(e) {
         $scope.$apply(function() {
           if ($scope.conf) {
             var confNo = $scope.conf.conf_no;
