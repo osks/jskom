@@ -62,38 +62,49 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       };
       $scope.load();
       
-      
-      $scope.refresherPromise = null;
-      $scope.startRefresher = function() {
-        jskom.Log.debug("UnreadConfsCtrl - starting auto-refresher");
+      $scope.autoRefreshing = false;
+      $scope.autoRefreshPromise = null;
+      $scope.enableAutoRefresh = function() {
+        jskom.Log.debug("UnreadConfsCtrl - enabling auto-refresh");
+        $scope.autoRefreshing = true;
         var scheduleReload = function() {
-          $scope.refresherPromise = $timeout(function() {
+          $scope.autoRefreshPromise = $timeout(function() {
             $scope.load();
             scheduleReload();
           }, 2*60*1000);
         }
         scheduleReload();
       };
-      $scope.$on('$destroy', function() {
-        if ($scope.refresherPromise) {
-          jskom.Log.debug("UnreadConfsCtrl - stopping auto-refresher");
-          $timeout.cancel($scope.refresherPromise);
+      $scope.disableAutoRefresh = function() {
+        if ($scope.autoRefreshPromise != null) {
+          jskom.Log.debug("UnreadConfsCtrl - disabling auto-refresh");
+          $scope.autoRefreshing = false;
+          $timeout.cancel($scope.autoRefreshPromise);
+          $scope.autoRefresher = null;
         }
+      };
+      $scope.$on('$destroy', function() {
+        $scope.disableAutoRefresh();
       });
-      $scope.startRefresher();
+      $scope.enableAutoRefresh();
       
       
       $scope.gotoFirstConference = function() {
         $location.path("/conferences/" + _.first($scope.unreadConfs).conf_no + "/unread/");
       };
       
-      keybindingService.bindLocal(['space', 'n'], 'Go to first conference', function(e) {
+      keybindingService.bindLocal(['space'], 'Go to first conference', function(e) {
         if (_.size($scope.unreadConfs) > 0) {
           $scope.$apply(function() {
-            //$location.path("/conferences/" + _.first($scope.unreadConfs).conf_no + "/unread/");
             $scope.gotoFirstConference();
           });
         }
+      });
+      
+      keybindingService.bindLocal('R', 'Refresh', function(e) {
+        $scope.$apply(function() {
+          $scope.load();
+        });
       });
       
       keybindingService.bindLocal('e', 'Set unread...', function(e) {
