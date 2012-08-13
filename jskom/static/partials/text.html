@@ -1,92 +1,98 @@
-<h4>
-  <jskom:a text-no="{{ text.text_no }}">{{ text.text_no }}</jskom:a>
-  / {{ text.creation_time }} / {{ text.author.pers_name }}
-</h4>
+<div ng-controller="TextCtrl" ng-show="text">
+  <h4>
+    <jskom:a text-no="{{ text.text_no }}">{{ text.text_no }}</jskom:a>
+    / {{ text.creation_time }} / {{ text.author.pers_name }}
+  </h4>
 
-<div>
-  <div ng-repeat="ct in text.comment_to_list">
-    {{ ct.type }} to text
-    <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
-    by {{ ct.author.pers_name }}
-  </div>
-  
-  <div ng-repeat="r in text.recipient_list">
-    {{ r.type }}: {{ r.conf_name }}
-  </div>
-  
-  <div>subject: {{ text.subject }}</div>
-  
-  <div class="btn-group pull-right" data-toggle="buttons-radio" ng-show="type == 'text'">
-    <button ng-click="mode = 'default'" class="btn active">
-      <i class="icon-align-left"></i>
-    </button>
-    <button ng-click="mode = 'raw'" class="btn">
-      <i class="icon-align-justify"></i>
-    </button>
-    <!--<button ng-click="mode = 'html'" class="btn">
-      <i class="icon-picture"></i>
-    </button>-->
-  </div>
-  
-  <div >
-    <hr />
-    <ng-switch on="type">
-      <div ng-switch-default>
-        [unknown content-type: &quot;{{ text.content_type }}&quot;]
-      </div>
-      <div ng-switch-when="image"><img ng-src="{{ imageUrl }}" /></div>
-      <div ng-switch-when="text">
-        <ng-switch on="mode">
-          <div ng-switch-when="default" jskom-bind-body="text.body"></div>
-          <pre ng-switch-when="raw" jskom-bind-body="text.body"></pre>
-          <!--<div ng-switch-when="html" ng-bind-html="text.body"></div>-->
-        </ng-switch>
-      </div>
-    </ng-switch>
-    
-    <hr />
-    
-    <div ng-repeat="ci in text.comment_in_list">
-      {{ ci.type }} in text
-      <jskom:a text-no="{{ ci.text_no }}">{{ ci.text_no }}</jskom:a>
-      by {{ ci.author.pers_name }}
+  <div>
+    <div ng-repeat="ct in text.comment_to_list">
+      {{ ct.type }} to text
+      <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
+      by {{ ct.author.pers_name }}
     </div>
-  </div>
-
-</div>
-
-<div>
-  <div class="form-actions">
-    <button class="btn" ng-disabled="isCommentFormVisible"
-            ng-click="isCommentFormVisible = true">
-      Comment
-    </button>
     
-    <div class="pull-right">
-      <ng-switch on="text.is_unread">
+    <div ng-repeat="r in text.recipient_list">
+      {{ r.type }}: {{ r.conf_name }}
+    </div>
+    
+    <div>subject: {{ text.subject }}</div>
+    
+    <div class="btn-group pull-right" data-toggle="buttons-radio" ng-show="text._type == 'text'">
+      <button ng-click="textMode = 'default'" class="btn active">
+        <i class="icon-align-left"></i>
+      </button>
+      <button ng-click="textMode = 'raw'" class="btn">
+        <i class="icon-align-justify"></i>
+      </button>
+      <!--<button ng-click="textMode = 'html'" class="btn">
+          <i class="icon-picture"></i>
+      </button>-->
+    </div>
+    
+    <div >
+      <hr />
+      <ng-switch on="text._type">
         <div ng-switch-default>
-          <button class="btn btn-mini btn-success" ng-click="markAsRead()" ng-disabled="isRequesting">
-            Mark as read
-          </button>
-          <button class="btn btn-mini btn-info" ng-click="markAsUnread()" ng-disabled="isRequesting">
-            Mark as unread
-          </button>
+          [unknown content-type: &quot;{{ text.content_type }}&quot;]
         </div>
-        <div ng-switch-when="true">
-          <span class="label label-info">Unread</span>
-          <button class="btn btn-mini btn-success" ng-click="markAsRead()" ng-disabled="isRequesting">
-            Mark as read
-          </button>
-        </div>
-        <div ng-switch-when="false">
-          <span class="label label-success">Read</span>
-          <button class="btn btn-mini btn-info" ng-click="markAsUnread()" ng-disabled="isRequesting">
-            Mark as unread
-          </button>
+        <div ng-switch-when="image"><img ng-src="{{ text._image_url }}" /></div>
+        <div ng-switch-when="text">
+          <ng-switch on="textMode">
+            <div ng-switch-when="default" jskom-bind-body="text.body"></div>
+            <pre ng-switch-when="raw" jskom-bind-body="text.body"></pre>
+            <!--<div ng-switch-when="html" ng-bind-html="text.body"></div>-->
+          </ng-switch>
         </div>
       </ng-switch>
+      
+      <hr />
+      
+      <div ng-repeat="ci in text.comment_in_list">
+        {{ ci.type }} in text
+        <jskom:a text-no="{{ ci.text_no }}">{{ ci.text_no }}</jskom:a>
+        by {{ ci.author.pers_name }}
+      </div>
     </div>
+
   </div>
-  
-  <jskom:new-comment comment-to="text" visible="isCommentFormVisible"></jskom:new-comment>
+
+  <div>
+    <div class="form-actions">
+      <button class="btn" ng-disabled="isCommentFormVisible"
+              ng-click="isCommentFormVisible = true">
+        Comment
+      </button>
+      
+      <div class="pull-right">
+        <ng-switch on="text.is_unread">
+          <div ng-switch-default>
+            <button class="btn btn-mini btn-success" ng-click="markAsRead()"
+                    ng-disabled="readmarkIsLoading">
+              Mark as read
+            </button>
+            <button class="btn btn-mini btn-info" ng-click="markAsUnread()"
+                    ng-disabled="readmarkIsLoading">
+              Mark as unread
+            </button>
+          </div>
+          <div ng-switch-when="true">
+            <span class="label label-info">Unread</span>
+            <button class="btn btn-mini btn-success" ng-click="markAsRead()"
+                    ng-disabled="readmarkIsLoading">
+              Mark as read
+            </button>
+          </div>
+          <div ng-switch-when="false">
+            <span class="label label-success">Read</span>
+            <button class="btn btn-mini btn-info" ng-click="markAsUnread()"
+                    ng-disabled="readmarkIsLoading">
+              Mark as unread
+            </button>
+          </div>
+        </ng-switch>
+      </div>
+    </div>
+    
+    <jskom:new-comment comment-to="text" visible="isCommentFormVisible"></jskom:new-comment>
+  </div>
 </div>

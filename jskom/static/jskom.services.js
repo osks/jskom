@@ -271,13 +271,30 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('textsService', [
-    '$http', 'httpkomServer',
-    function($http, httpkomServer) {
+    '$log', '$http', 'httpkomServer',
+    function($log, $http, httpkomServer) {
       var config = { withCredentials: true };
+      
+      var enhanceText = function(text) {
+        var mimeType = Mimeparse.parseMimeType(text.content_type);
+        text._type = mimeType[0];
+        
+        if (text.type == 'image') {
+          text._image_url = httpkomServer + '/texts/' + text.text_no + '/body';
+        } else {
+          text._image_url = null;
+        }
+        
+        return text;
+      };
       
       return {
         getText: function(textNo) {
-          return $http.get(httpkomServer + '/texts/' + textNo, config);
+          var p = $http.get(httpkomServer + '/texts/' + textNo, config);
+          return p.success(function(data) {
+            data = enhanceText(data);
+            return p;
+          });
         },
         
         createText: function(text) {
