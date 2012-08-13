@@ -103,7 +103,9 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       keybindingService.bindLocal('R', 'Refresh', function(e) {
         $scope.$apply(function() {
-          $scope.load();
+          if (!$scope.isLoading) {
+            $scope.load();
+          }
         });
       });
       
