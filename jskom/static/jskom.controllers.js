@@ -218,7 +218,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
             success(function(data) {
               $log.log("TextCtrl - markAsRead(" + text.text_no + ") - success");
               $scope.readmarkIsLoading = false;
-              text.is_unread = false;
+              text._is_unread = false;
             }).
             error(function(data, status) {
               $log.log("TextCtrl - markAsRead(" + text.text_no + ") - error");
@@ -236,7 +236,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
             success(function(data) {
               $log.log("TextCtrl - markAsUnread(" + text.text_no + ") - success");
               $scope.readmarkIsLoading = false;
-              text.is_unread = true;
+              text._is_unread = true;
             }).
             error(function(data, status) {
               $log.log("TextCtrl - markAsUnread(" + text.text_no + ") - error");
@@ -281,7 +281,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         readMarkingsService.createGlobalReadMarking(text.text_no).
           success(function(data) {
             $log.log("ReaderCtrl - markAsRead(" + text.text_no + ") - success");
-            text.is_unread = false;
+            text._is_unread = false;
           }).
           error(function(data, status) {
             $log.log("ReaderCtrl - markAsRead(" + text.text_no + ") - error");
@@ -380,6 +380,15 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
           } else {
             $scope.readNext();
             return false;
+          }
+        });
+      });
+      
+      keybindingService.bindLocal('e', 'Set unread', function(e) {
+        $scope.$apply(function() {
+          if ($scope.conf) {
+            var confNo = $scope.conf.conf_no;
+            $location.path("/conferences/" + confNo + "/set-unread");
           }
         });
       });
