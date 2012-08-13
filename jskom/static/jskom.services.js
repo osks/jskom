@@ -279,7 +279,7 @@ angular.module('jskom.services', ['jskom.settings']).
         var mimeType = Mimeparse.parseMimeType(text.content_type);
         text._type = mimeType[0];
         
-        if (text.type == 'image') {
+        if (text._type == 'image') {
           text._image_url = httpkomServer + '/texts/' + text.text_no + '/body';
         } else {
           text._image_url = null;
