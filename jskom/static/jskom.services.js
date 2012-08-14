@@ -363,32 +363,53 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('readQueueService', [
-    '$log', 'readMarkingsService',
-    function($log, readMarkingsService) {
+    '$log', '$q', 'readMarkingsService',
+    function($log, $q, readMarkingsService) {
       
       return {
-        getReadQueueForConference: function(confNo, successFn, errorFn) {
-          var readQueue = new ReadQueue();
+        getReadQueueForConference: function(confNo) {
+          var deferred = $q.defer();
+          var promise = deferred.promise;
+          
+          promise.success = function(fn) {
+            promise.then(function(response) {
+              fn(response.data, response.status, response.headers, response.config);
+            });
+            return promise;
+          };
+          
+          promise.error = function(fn) {
+            promise.then(null, function(response) {
+              fn(response.data, response.status, response.headers, response.config);
+            });
+            return promise;
+          };
           
           readMarkingsService.getReadMarkingsForUnreadInConference(confNo).
             success(function(data, status, headers, config) {
-              // data.rms
               var textNos = _.map(data.rms, function(rm) {
                 return rm.text_no;
               });
+              var readQueue = new ReadQueue();
               readQueue.add(textNos);
               
-              if (successFn) {
-                successFn(data, status, headers, config);
-              }
+              deferred.resolve({
+                data: readQueue,
+                status: status,
+                headers: headers,
+                config: config
+              });
             }).
             error(function(data, status, headers, config) {
-              if (errorFn) {
-                errorFn(data, status, headers, config);
-              }
+              deferred.reject({
+                data: data,
+                status: status,
+                headers: headers,
+                config: config
+              });
             });
           
-          return readQueue;
+          return promise;
         }
       };
     }

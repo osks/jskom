@@ -1,7 +1,21 @@
 <span ng-hide="readQueue">Loading...</span>
 <div ng-show="readQueue">
+  <div class="btn-group pull-right">
+    <button class="btn"
+            ng-disabled="!hasPrevious()"
+            ng-click="previous()">
+      <i class="icon-chevron-up"></i>
+    </button>
+    <button class="btn"
+            ng-disabled="!hasNext()"
+            ng-click="next()">
+      <i class="icon-chevron-down"></i>
+    </button>
+  </div>
+  
   <h3><em>{{ readQueue.size() }}</em> unread texts in <em>{{ conf.name }}</em></h3>
   
+  <!--<pre>{{ getTextNos() }}</pre>-->
   <br />
   
   <span ng-show="textIsLoading">Loading...</span>

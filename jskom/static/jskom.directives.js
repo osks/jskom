@@ -108,7 +108,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             $event.stopPropagation();
             $event.preventDefault();
             
-            $log.log("jskomA - click() - iAttrs.href: " + iAttrs.href);
+            //$log.log("jskomA - click() - iAttrs.href: " + iAttrs.href);
             
             if (scope.textNo) {
               scope.$emit(textEmit, scope.textNo, iAttrs.href);
