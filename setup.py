@@ -10,5 +10,5 @@ setup(
     packages=['jskom'],
     include_package_data=True,
     zip_safe=False,
-    install_requires=['Flask', 'Flask-Assets', 'webassets', 'cssmin']
+    install_requires=['Flask>=0.9', 'Flask-Assets', 'webassets', 'cssmin']
 )
