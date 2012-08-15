@@ -291,10 +291,12 @@ angular.module('jskom.services', ['jskom.settings']).
       return {
         getText: function(textNo) {
           var p = $http.get(httpkomServer + '/texts/' + textNo, config);
-          return p.success(function(data) {
+          p.success(function(data) {
             data = enhanceText(data);
+            $log.log("enhanced text: " + data.text_no);
             return p;
           });
+          return p;
         },
         
         createText: function(text) {
