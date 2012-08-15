@@ -48,19 +48,16 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       $scope.load = function() {
         $scope.unreadConfs = [];
         $scope.isLoading = true;
-        var p = conferencesService.getUnreadConferences();
-        p.success(function(data) {
-          $log.log("UnreadConfsCtrl - getUnreadConferences() - success");
-          $scope.isLoading = false;
-          $scope.unreadConfs = data.confs;
-          return p;
-        }).error(function(data, status) {
-          $log.log("UnreadConfsCtrl - getUnreadConferences() - error");
-          $scope.isLoading = false;
-          messagesService.showMessage('error', 'Failed to get unread conferences.', data);
-          return p;
-        });
-        return p;
+        return conferencesService.getUnreadConferences().
+          success(function(data) {
+            $log.log("UnreadConfsCtrl - getUnreadConferences() - success");
+            $scope.isLoading = false;
+            $scope.unreadConfs = data.confs;
+          }).error(function(data, status) {
+            $log.log("UnreadConfsCtrl - getUnreadConferences() - error");
+            $scope.isLoading = false;
+            messagesService.showMessage('error', 'Failed to get unread conferences.', data);
+          });
       };
       $scope.load();
       
@@ -286,21 +283,19 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       };
       
       var getText = function(textNo) {
-        var p = textsService.getText(textNo);
-        p.success(function(data) {
-          $log.log("ReaderTextCtrl - getText(" + textNo + ") - success");
-          return p;
-        }).error(function(data, status) {
-          $log.log("ReaderTextCtrl - getText(" + textNo + ") - error");
-          if (status == 404) {
-            messagesService.showMessage('error', 'No such text',
-                                        'No text with number: ' + data.error_status);
-          } else {
-            messagesService.showMessage('error', 'Failed to get text.', data);
-          }
-          return p;
-        });
-        return p;
+        return textsService.getText(textNo).
+          success(function(data) {
+            $log.log("ReaderTextCtrl - getText(" + textNo + ") - success");
+          }).
+          error(function(data, status) {
+            $log.log("ReaderTextCtrl - getText(" + textNo + ") - error");
+            if (status == 404) {
+              messagesService.showMessage('error', 'No such text',
+                                          'No text with number: ' + data.error_status);
+            } else {
+              messagesService.showMessage('error', 'Failed to get text.', data);
+            }
+          });
       };
       
       var markAsRead = function(text) {
@@ -317,16 +312,14 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       var showText = function(textNo) {
         $scope.textIsLoading = true;
-        var p = getText(textNo);
-        p.success(function(text) {
-          $scope.textIsLoading = false;
-          $scope.buffer.append(text, true);
-          return p;
-        }).error(function () {
-          $scope.textIsLoading = false;
-          return p;
-        });
-        return p;
+        return getText(textNo).
+          success(function(text) {
+            $scope.textIsLoading = false;
+            $scope.buffer.append(text, true);
+          }).
+          error(function () {
+            $scope.textIsLoading = false;
+          });
       };
       
       var unreadQueueWatcher = null
