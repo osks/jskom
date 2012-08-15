@@ -1,5 +1,5 @@
-<span ng-hide="readQueue">Loading...</span>
-<div ng-show="readQueue">
+<span ng-hide="unreadQueue">Loading...</span>
+<div ng-show="unreadQueue">
   <div class="btn-group pull-right">
     <button class="btn"
             ng-disabled="!hasPrevious()"
@@ -13,7 +13,7 @@
     </button>
   </div>
   
-  <h3><em>{{ readQueue.size() }}</em> unread texts in <em>{{ conf.name }}</em></h3>
+  <h3><em>{{ unreadQueue.size() }}</em> unread in <em>{{ conf.name }}</em></h3>
   
   <!--<pre>{{ getTextNos() }}</pre>-->
   <br />
@@ -27,7 +27,7 @@
     <div class="pull-right">
       <button class="btn btn-primary" id="read-next"
               ng-click="readNext()">
-        Next unread text
+        Next unread
       </button>
     </div>
   </div>

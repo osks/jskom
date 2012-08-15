@@ -181,8 +181,8 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
     }
   ]).
   controller('ShowTextCtrl', [
-    '$scope', '$routeParams', '$log', '$window', 'textsService',
-    function($scope, $routeParams, $log, $window, textsService) {
+    '$scope', '$routeParams', '$log', '$window', 'textsService', 'messagesService',
+    function($scope, $routeParams, $log, $window, textsService, messagesService) {
       $scope.textIsLoading = false;
       var showText = function(textNo) {
         $scope.textIsLoading = true;
@@ -266,11 +266,11 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
   ]).
   controller('ReaderCtrl', [
     '$scope', '$routeParams', '$log', '$window', '$location',
-    'readQueueService', 'messagesService', 'conferencesService', 'textsService',
-    'pageTitleService', 'keybindingService', 'readMarkingsService',
+    'messagesService', 'conferencesService', 'textsService',
+    'pageTitleService', 'keybindingService', 'readMarkingsService', 'unreadQueueFactory',
     function($scope, $routeParams, $log, $window, $location,
-             readQueueService, messagesService, conferencesService, textsService,
-             pageTitleService, keybindingService, readMarkingsService) {
+             messagesService, conferencesService, textsService,
+             pageTitleService, keybindingService, readMarkingsService, unreadQueueFactory) {
       var getText = function(textNo) {
         var p = textsService.getText(textNo);
         p.success(function(data) {
@@ -326,20 +326,21 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         return p;
       };
       
-      var readQueueWatcher = null
-      var getReadQueue = function(confNo) {
-        if (readQueueWatcher) {
-          readQueueWatcher();
+      var unreadQueueWatcher = null
+      var getUnreadQueue = function(confNo) {
+        if (unreadQueueWatcher) {
+          unreadQueueWatcher();
         }
         
-        readQueueService.getReadQueueForConference(confNo).
-          success(function(readQueue) {
-            $log.log("ReaderCtrl - getReadQueueForConference(" + confNo + ") - success");
-            $scope.readQueue = readQueue;
+        readMarkingsService.getReadMarkingsForUnreadInConference(confNo).
+          success(function(data) {
+            $log.log("ReaderCtrl - getUnreadQueue(" + confNo + ") - success");
+            var unreadQueue = unreadQueueFactory.create(data.rms);
+            $scope.unreadQueue = unreadQueue;
             
-            readQueueWatcher = $scope.$watch(
-              'readQueue.current()', function(newTextNo, oldTextNo) {
-                $log.log("ReaderCtrl - watch(readQueue.current()): " + newTextNo);
+            unreadQueueWatcher = $scope.$watch(
+              'unreadQueue.current()', function(newTextNo, oldTextNo) {
+                $log.log("ReaderCtrl - watch(unreadQueue.current()): " + newTextNo);
                 if (newTextNo) {
                   showText(newTextNo).success(function(text) {
                     markAsRead(text);
@@ -348,16 +349,16 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
               });
           }).
           error(function(data, status) {
-            $log.log("ReaderCtrl - getReadQueueForConference(" + confNo + ") - error");
+            $log.log("ReaderCtrl - getUnreadQueue(" + confNo + ") - error");
             messagesService.showMessage('error', 'Failed to get unread texts.', data);
           });
       };
-      getReadQueue($routeParams.confNo);
+      getUnreadQueue($routeParams.confNo);
       
       $scope.textIsLoading = false;
       $scope.texts = [];
       $scope.textsIndex = null;
-      $scope.readQueue = null;
+      $scope.unreadQueue = null;
       
       /*$scope.getTextNos = function() {
         return _.map($scope.texts, function(text) {
@@ -405,11 +406,11 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       });
       
       $scope.readNext = function() {
-        if ($scope.readQueue) {
-          if ($scope.readQueue.isEmpty()) {
+        if ($scope.unreadQueue) {
+          if ($scope.unreadQueue.isEmpty()) {
             $location.path('/');
           } else {
-            $scope.readQueue.moveNext();
+            $scope.unreadQueue.moveNext();
           }
         }
       };

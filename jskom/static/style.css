@@ -22,6 +22,14 @@
     width: 75%;
 }
 
+.jskomNoWrap {
+    white-space: nowrap;
+}
+
+.jskomCapitalize {
+    text-transform: capitalize;
+}
+
 @media (max-width: 979px) and (min-width: 768px) {
     .jskomTextForm select.jskomRecipientType {
         width: 60px;
@@ -40,6 +48,16 @@
 }
 
 @media (max-width: 480px) {
+    body {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+    
+    .navbar-fixed-top .navbar-inner, .navbar-fixed-bottom .navbar-inner {
+        padding: 10px;
+    }
+    
+
     .jskomTextForm select.jskomRecipientType {
         width: 50px;
         display: inline-block;

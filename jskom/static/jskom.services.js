@@ -362,54 +362,98 @@ angular.module('jskom.services', ['jskom.settings']).
       };
     }
   ]).
-  factory('readQueueService', [
-    '$log', '$q', 'readMarkingsService',
-    function($log, $q, readMarkingsService) {
+  factory('unreadQueueFactory', [
+    '$log',
+    function($log) {
+      var UnreadQueue = function() {
+        this._currentTextNo = null;
+        this._currentThreadStack = [];
+        this._unreadTextNos = [];
+      };
+      
+      _.extend(UnreadQueue.prototype, {
+        add: function(unreadTextNos) {
+          this._unreadTextNos = _.union(this._unreadTextNos, unreadTextNos);
+          this._unreadTextNos.sort();
+          
+          if (this._currentTextNo == null && this._unreadTextNos.length > 0) {
+            this.moveNext();
+          }
+        },
+        
+        current: function() {
+          return this._currentTextNo;
+        },
+        
+        isEmpty: function() {
+          return !(this.size() > 0);
+        },
+        
+        size: function() {
+          // should we include currentTextNo or not? currently we don't,
+          // because it is assumed to be read.
+          return this._unreadTextNos.length;
+        },
+        
+        moveNext: function() {
+          // Algorithm:
+          // 
+          // We use a stack to store the parts of the thread we don't
+          // visit this time. Because we are not traversing the entire
+          // tree at this time, we need to remember texts (branches)
+          // further up in the tree, so we know where to continue when
+          // the current branch ends.
+          // 
+          // If there are textNos on the stack: pop to get the new textNo.
+          // 
+          // Else: find new thread start by selecting the unread textNo
+          // with lowest text number.
+          // 
+          // For the new text, push all unread comments onto the stack, in
+          // reverse order.
+          
+          var nextTextNo = null;
+          if (this._currentThreadStack.length > 0) {
+            // We still have texts to read in this thread
+            nextTextNo = this._currentThreadStack.pop();
+            this._unreadTextNos = _.without(this._unreadTextNos, nextTextNo);
+            this._unreadTextNos.sort(); // todo: do we need to sort it here?
+            $log.log("UnreadQueue:moveNext() - pop:ed " + nextTextNo + " from stack.")
+          } else {
+            // No more textNos in this thread, find new thread
+            
+            if (this._unreadTextNos.length > 0) {
+              // We have unread texts, find new thread start by taking the
+              // lowest text number.
+              // Since this._unreadTextNos is sorted, we just shift.
+              nextTextNo = this._unreadTextNos.shift();
+              $log.log("UnreadQueue:moveNext() - found new thread in " + nextTextNo);
+            } else {
+              // No unread texts
+              nextTextNo = null;
+              $log.log("UnreadQueue:moveNext() - no unread textNos.")
+            }
+          }
+          
+          if (nextTextNo == null) {
+            // Nothing to read, set currentTextNo to null
+            this._currentTextNo = null;
+          } else {
+            this._currentTextNo = nextTextNo;
+          }
+        }
+      });
       
       return {
-        getReadQueueForConference: function(confNo) {
-          var deferred = $q.defer();
-          var promise = deferred.promise;
-          
-          promise.success = function(fn) {
-            promise.then(function(response) {
-              fn(response.data, response.status, response.headers, response.config);
-            });
-            return promise;
-          };
-          
-          promise.error = function(fn) {
-            promise.then(null, function(response) {
-              fn(response.data, response.status, response.headers, response.config);
-            });
-            return promise;
-          };
-          
-          readMarkingsService.getReadMarkingsForUnreadInConference(confNo).
-            success(function(data, status, headers, config) {
-              var textNos = _.map(data.rms, function(rm) {
+        create: function(readMarkings) {
+          var unreadQueue = new UnreadQueue();
+          if (readMarkings) {
+            var textNos = _.map(readMarkings, function(rm) {
                 return rm.text_no;
-              });
-              var readQueue = new ReadQueue();
-              readQueue.add(textNos);
-              
-              deferred.resolve({
-                data: readQueue,
-                status: status,
-                headers: headers,
-                config: config
-              });
-            }).
-            error(function(data, status, headers, config) {
-              deferred.reject({
-                data: data,
-                status: status,
-                headers: headers,
-                config: config
-              });
             });
-          
-          return promise;
+            unreadQueue.add(textNos);
+          }
+          return unreadQueue;
         }
       };
     }
