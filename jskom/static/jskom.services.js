@@ -362,6 +362,114 @@ angular.module('jskom.services', ['jskom.settings']).
       };
     }
   ]).
+  factory('textBufferFactory', [
+    '$log',
+    function($log) {
+      var TextBuffer = function(capacity) {
+        this._capacity = capacity;
+        this._items = [];
+        this._index = null;
+      };
+      
+      _.extend(TextBuffer.prototype, {
+        size: function() {
+          return this._items.length;
+        },
+        
+        append: function(text, moveIndexToAppendedText) {
+          this._items.push({
+            text: text,
+            isUnseen: true
+          });
+          if (moveIndexToAppendedText) {
+            this._index = this._items.length-1;
+          }
+          if (this._index == null) {
+            this._index = 0;
+          }
+          this._trim();
+          this._seeCurrent();
+        },
+        
+        currentText: function() {
+          if (this._index == null) {
+            return null;
+          } else {
+            return this._items[this._index].text;
+          }
+        },
+        
+        hasPrevious: function() {
+          if (this._index > 0) {
+            return true;
+          }
+          return false;
+        },
+        
+        previous: function() {
+          if (this.hasPrevious()) {
+            --this._index;
+            this._seeCurrent();
+          }
+        },
+        
+        hasNext: function() {
+          if (this._index < this._items.length-1) {
+            return true;
+          }
+          return false;
+        },
+        
+        next: function() {
+          if (this.hasNext()) {
+            ++this._index;
+            this._seeCurrent();
+          }
+        },
+        
+        hasUnseen: function() {
+          return _.any(this._items, function(item) {
+            return item.isUnseen;
+          });
+        },
+        
+        nextUnseen: function() {
+          if (this.hasUnseen()) {
+            var firstUnseen = _.find(this._items, function(item) {
+              return item.isUnseen;
+            });
+            this._index = _.indexOf(this._items, firstUnseen);
+            this._seeCurrent();
+          }
+        },
+        
+        _seeCurrent: function() {
+          // We should update isUnseen everytime we modify the
+          // index. The reason why we don't update isUnseen when
+          // current() is fetched is that we expect it to be watched
+          // and we don't want to modify any variable there.
+          this._items[this._index].isUnseen = false;
+        },
+        
+        _trim: function() {
+          if (this._items.length > this.capacity) {
+            this._items.shift();
+            // If the index pointed at the first item (0) and it was
+            // removed; tough luck... keep the index 0.
+            if (this._index > 0) {
+              --this._index;
+            }
+          }
+        }
+      });
+      
+      return {
+        create: function(capacity) {
+          return new TextBuffer(capacity);
+        }
+      };
+    }
+  ]).
   factory('unreadQueueFactory', [
     '$log',
     function($log) {

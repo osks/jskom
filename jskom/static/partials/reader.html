@@ -2,32 +2,36 @@
 <div ng-show="unreadQueue">
   <div class="btn-group pull-right">
     <button class="btn"
-            ng-disabled="!hasPrevious()"
-            ng-click="previous()">
+            ng-disabled="!buffer.hasPrevious()"
+            ng-click="buffer.previous()">
       <i class="icon-chevron-up"></i>
     </button>
     <button class="btn"
-            ng-disabled="!hasNext()"
-            ng-click="next()">
+            ng-class="{ 'btn btn-info': buffer.hasUnseen(), 'btn': !buffer.hasUnseen() }"
+            ng-disabled="!buffer.hasNext()"
+            ng-click="buffer.next()">
       <i class="icon-chevron-down"></i>
     </button>
   </div>
   
   <h3><em>{{ unreadQueue.size() }}</em> unread in <em>{{ conf.name }}</em></h3>
   
-  <!--<pre>{{ getTextNos() }}</pre>-->
   <br />
   
   <span ng-show="textIsLoading">Loading...</span>
-  <div jskom-text="text"></div>
+  <jskom:text></jskom:text>
   
   <div>
     <a href="/" class="btn">Back to conference list</a>
     
     <div class="pull-right">
       <button class="btn btn-primary" id="read-next"
-              ng-click="readNext()">
-        Next unread
+              ng-click="readNext()" ng-disabled="textIsLoading">
+        <span ng-show="buffer.hasUnseen()">Show next</span>
+        <span ng-hide="buffer.hasUnseen()">
+          <span ng-show="unreadQueue.isEmpty()">To conference list</span>
+          <span ng-hide="unreadQueue.isEmpty()">Show next unread</span>
+        </span>
       </button>
     </div>
   </div>

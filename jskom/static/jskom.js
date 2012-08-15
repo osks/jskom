@@ -4,18 +4,6 @@
 
 (function($) {
 
-  var jskom;    
-  jskom = window.jskom = {
-    Log: {
-      debug: function() {
-        if (window.console && console.log) {
-          console.log.apply(console, arguments);
-        }
-      }
-    },
-    
-  };
-  
   var checkBrowser = function() {
     var supported = true;
     var ul = $("<ul></ul>");

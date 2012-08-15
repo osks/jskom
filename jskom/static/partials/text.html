@@ -26,9 +26,6 @@
       <button ng-click="textMode = 'raw'" class="btn">
         <i class="icon-align-justify"></i>
       </button>
-      <!--<button ng-click="textMode = 'html'" class="btn">
-          <i class="icon-picture"></i>
-      </button>-->
     </div>
     
     <div >
@@ -68,32 +65,36 @@
       </button>
       
       <div class="pull-right">
-        <ng-switch on="text._is_unread">
-          <div ng-switch-default>
-            <button class="btn btn-mini btn-success" ng-click="markAsRead()"
-                    ng-disabled="readmarkIsLoading">
-              Mark as read
-            </button>
-            <button class="btn btn-mini btn-info" ng-click="markAsUnread()"
-                    ng-disabled="readmarkIsLoading">
-              Mark as unread
-            </button>
-          </div>
-          <div ng-switch-when="true">
-            <span class="label label-info">Unread</span>
-            <button class="btn btn-mini btn-success" ng-click="markAsRead()"
-                    ng-disabled="readmarkIsLoading">
-              Mark as read
-            </button>
-          </div>
-          <div ng-switch-when="false">
-            <span class="label label-success">Read</span>
-            <button class="btn btn-mini btn-info" ng-click="markAsUnread()"
-                    ng-disabled="readmarkIsLoading">
-              Mark as unread
-            </button>
-          </div>
-        </ng-switch>
+        <div class="btn-group">
+          <button class="btn dropdown-toggle" data-toggle="dropdown">
+            Commands
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="#" ng-click="showCommented()"
+                 ng-hide="showCommented == null">Show commented</a>
+            </li>
+            <li>
+              <a href="#" ng-click="showAllComments()"
+                 ng-hide="showAllComments == null">Show all comments</a>
+            </li>
+            <li ng-hide="text._is_unread == false">
+              <a href="#" ng-click="markAsRead()"
+                 ng-disabled="readmarkIsLoading">Mark as read</a>
+            </li>
+            <li ng-hide="text._is_unread == true">
+              <a href="#" ng-click="markAsUnread()"
+                 ng-disabled="readmarkIsLoading">Mark as unread</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="pull-right">
+        <span class="label label-info" ng-show="text._is_unread == true">Unread</span>
+        <span class="label label-success" ng-show="text._is_unread == false">Read</span>
+        &nbsp;
       </div>
     </div>
     

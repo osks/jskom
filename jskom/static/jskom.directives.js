@@ -121,16 +121,16 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
     }
   ]).
   directive('jskomText', [
-    // Example: <div jskom-text="text"></div>
+    // Example: <jskom:text></jskom:text>
+    
+    // This basically just does what ng-include do, but without
+    // creating a new scope.
     
     '$log',
     function($log) {
       return {
-        restrict: 'A',
+        restrict: 'E',
         templateUrl: '/static/partials/text.html',
-        scope: {
-          text: '=jskomText'
-        },
         link: function(scope, iElement, iAttrs, controller) {
         }
       };
