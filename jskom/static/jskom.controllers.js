@@ -183,22 +183,22 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       $scope.textIsLoading = false;
       var showText = function(textNo) {
         $scope.textIsLoading = true;
-        textsService.getText(textNo).
-          success(function(data) {
+        textsService.getText(textNo).then(
+          function(response) {
             $log.log("ShowTextCtrl - getText(" + textNo + ") - success");
             $scope.textIsLoading = false;
-            $scope.text = data;
+            $scope.text = response.data;
             angular.element($window).scrollTop(0);
-          }).
-          error(function(data, status) {
+          },
+          function(response) {
             $log.log("ShowTextCtrl - getText(" + textNo + ") - error");
             $scope.textIsLoading = false;
             $scope.text = null;
-            if (status == 404) {
+            if (response.status == 404) {
               messagesService.showMessage('error', 'No such text',
-                                          'No text with number: ' + data.error_status);
+                                          'No text with number: ' + response.data.error_status);
             } else {
-              messagesService.showMessage('error', 'Failed to get text.', data);
+              messagesService.showMessage('error', 'Failed to get text.', response.data);
             }
           });
       };
@@ -283,19 +283,20 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       };
       
       var getText = function(textNo) {
-        return textsService.getText(textNo).
-          success(function(data) {
+        return textsService.getText(textNo).then(
+          function(response) {
             $log.log("ReaderTextCtrl - getText(" + textNo + ") - success");
-            $log.log(data);
-          }).
-          error(function(data, status) {
+            return response;
+          },
+          function(response) {
             $log.log("ReaderTextCtrl - getText(" + textNo + ") - error");
             if (status == 404) {
               messagesService.showMessage('error', 'No such text',
-                                          'No text with number: ' + data.error_status);
+                                          'No text with number: ' + response.data.error_status);
             } else {
-              messagesService.showMessage('error', 'Failed to get text.', data);
+              messagesService.showMessage('error', 'Failed to get text.', response.data);
             }
+            return response;
           });
       };
       
@@ -313,13 +314,15 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       var showText = function(textNo) {
         $scope.textIsLoading = true;
-        return getText(textNo).
-          success(function(text) {
+        return getText(textNo).then(
+          function(response) {
             $scope.textIsLoading = false;
-            $scope.buffer.append(text, true);
-          }).
-          error(function () {
+            $scope.buffer.append(response.data, true);
+            return response;
+          },
+          function (response) {
             $scope.textIsLoading = false;
+            return response;
           });
       };
       
@@ -339,8 +342,8 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
               'unreadQueue.current()', function(newTextNo, oldTextNo) {
                 $log.log("ReaderCtrl - watch(unreadQueue.current()): " + newTextNo);
                 if (newTextNo) {
-                  showText(newTextNo).success(function(text) {
-                    markAsRead(text);
+                  showText(newTextNo).then(function(response) {
+                    markAsRead(response.data);
                   });
                 }
               });
@@ -426,8 +429,8 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
           showText(_.first($scope.text.comment_to_list).text_no);
           
           _.each(_.rest($scope.text.comment_to_list), function(ct) {
-            getText(ct.text_no).success(function(text) {
-              $scope.buffer.append(text, false);
+            getText(ct.text_no).then(function(response) {
+              $scope.buffer.append(response.data, false);
             });
           });
         }
@@ -439,8 +442,8 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
           showText(_.first($scope.text.comment_in_list).text_no);
           
           _.each(_.rest($scope.text.comment_in_list), function(ci) {
-            getText(ci.text_no).success(function(text) {
-              $scope.buffer.append(text, false);
+            getText(ci.text_no).then(function(response) {
+              $scope.buffer.append(response.data, false);
             });
           });
         }
