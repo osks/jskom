@@ -286,6 +286,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         return textsService.getText(textNo).
           success(function(data) {
             $log.log("ReaderTextCtrl - getText(" + textNo + ") - success");
+            $log.log(data);
           }).
           error(function(data, status) {
             $log.log("ReaderTextCtrl - getText(" + textNo + ") - error");
