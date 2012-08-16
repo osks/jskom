@@ -24,6 +24,8 @@
 
 .jskomNoWrap {
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .jskomCapitalize {
@@ -53,8 +55,9 @@
         padding-left: 10px;
     }
     
-    .navbar-fixed-top .navbar-inner, .navbar-fixed-bottom .navbar-inner {
-        padding: 10px;
+    .navbar-fixed-top, .navbar-fixed-bottom {
+        margin-right: -10px;
+        margin-left: -10px;
     }
     
 

@@ -396,14 +396,16 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       getUnreadQueue($routeParams.confNo);
       
       $scope.readNext = function() {
-        if ($scope.buffer.hasUnseen()) {
-          $scope.buffer.nextUnseen();
-        } else {
-          if ($scope.unreadQueue) {
-            if ($scope.unreadQueue.isEmpty()) {
-              $location.path('/');
-            } else {
-              $scope.unreadQueue.moveNext();
+        if (!$scope.textIsLoading) {
+          if ($scope.buffer.hasUnseen()) {
+            $scope.buffer.nextUnseen();
+          } else {
+            if ($scope.unreadQueue) {
+              if ($scope.unreadQueue.isEmpty()) {
+                $location.path('/');
+              } else {
+                $scope.unreadQueue.moveNext();
+              }
             }
           }
         }

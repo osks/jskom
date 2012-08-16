@@ -5,12 +5,10 @@
   </h4>
   
   <div>
-    <div ng-repeat="ct in text.comment_to_list">
-      <span class="jskomNoWrap">
-        <span class="jskomCapitalize">{{ ct.type }}</span> to
-        <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
-        by {{ ct.author.pers_name }}
-      </span>
+    <div class="jskomNoWrap" ng-repeat="ct in text.comment_to_list">
+      <span class="jskomCapitalize">{{ ct.type }}</span> to
+      <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
+      by {{ ct.author.pers_name }}
     </div>
     
     <div ng-repeat="r in text.recipient_list">
@@ -46,12 +44,10 @@
       
       <hr />
       
-      <div ng-repeat="ci in text.comment_in_list">
-        <span class="jskomNoWrap">
-          <span class="jskomCapitalize">{{ ci.type }}</span> in
-          <jskom:a text-no="{{ ci.text_no }}">{{ ci.text_no }}</jskom:a>
-          <span ng-show="ci.author.pers_name">by {{ ci.author.pers_name }}</span>
-        </span>
+      <div class="jskomNoWrap" ng-repeat="ci in text.comment_in_list">
+        <span class="jskomCapitalize">{{ ci.type }}</span> in
+        <jskom:a text-no="{{ ci.text_no }}">{{ ci.text_no }}</jskom:a>
+        <span ng-show="ci.author.pers_name">by {{ ci.author.pers_name }}</span>
       </div>
     </div>
 
