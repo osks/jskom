@@ -502,12 +502,13 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('unreadQueueFactory', [
-    '$log',
-    function($log) {
+    '$log', 'textsService',
+    function($log, textsService) {
       var UnreadQueue = function() {
         this._currentTextNo = null;
         this._currentThreadStack = [];
         this._unreadTextNos = [];
+        this._prefetchCount = 3;
       };
       
       _.extend(UnreadQueue.prototype, {
@@ -556,7 +557,7 @@ angular.module('jskom.services', ['jskom.settings']).
             // We still have texts to read in this thread
             nextTextNo = this._currentThreadStack.pop();
             this._unreadTextNos = _.without(this._unreadTextNos, nextTextNo);
-            this._unreadTextNos.sort(); // todo: do we need to sort it here?
+            this._unreadTextNos.sort(); // todo: do we really need to sort it here?
             $log.log("UnreadQueue:moveNext() - pop:ed " + nextTextNo + " from stack.")
           } else {
             // No more textNos in this thread, find new thread
@@ -578,8 +579,52 @@ angular.module('jskom.services', ['jskom.settings']).
             // Nothing to read, set currentTextNo to null
             this._currentTextNo = null;
           } else {
-            this._currentTextNo = nextTextNo;
+            // Start fetching the new current text, and when we have
+            // fetched the text: Push all comments onto the stack, in
+            // reverse order. Update this._currentTextNo *after* we
+            // have fetched the text.
+            
+            var self = this;
+            textsService.getText(nextTextNo).then(
+              function(response) {
+                self._currentTextNo = nextTextNo;
+                
+                var comments = _.clone(response.data.comment_in_list);
+                if (comments) {
+                  comments.reverse();
+                  _.each(comments, function(comment) {
+                    self._currentThreadStack.push(comment.text_no);
+                  });
+                }
+
+                // Simple (stupid) prefetch of texts on the thread
+                // stack, we wait for the fetch so we can consider the
+                // new text's comments. ("last" because we pop from
+                // the end of the array)
+                _.each(_.last(self._currentThreadStack, self._prefetchCount),
+                       function(textNo) {
+                         $log.log("UnreadQueue:moveNext() - prefetching comment " +
+                                  textNo);
+                         // We don't use the text here, instead we
+                         // rely on the text to be stored in the
+                         // cache. If there is no cache: this will
+                         // make things even slower!
+                         textsService.getText(textNo);
+                       });
+                
+              });
           }
+          
+          // Simple (stupid) prefetch of the texts with low text
+          // numbers ("thread starts"), no need to wait for fetching
+          // of the new text.
+          _.each(_.first(this._unreadTextNos, this._prefetchCount), function(textNo) {
+            $log.log("UnreadQueue:moveNext() - prefetching thread start " + textNo);
+            // We don't use the text here, instead we rely on the text
+            // to be stored in the cache. If there is no cache: this
+            // will make things even slower!
+            textsService.getText(textNo);
+          });
         }
       });
       
