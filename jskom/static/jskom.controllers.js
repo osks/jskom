@@ -367,7 +367,9 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       $scope.$watch('buffer.currentText()', function(newCurrentText) {
         $scope.text = newCurrentText;
-        angular.element($window).scrollTop(60);
+        if (!isScrolledIntoView(angular.element('#jskomBelowText'))) {
+          angular.element($window).scrollTop(60);
+        }
       });
       
       $scope.$watch('conf', function(newConf) {
@@ -472,7 +474,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         $scope.$apply(function() {
           if (e.which == 32) {
             // Check that the read next button is visible if we used space
-            if (isScrolledIntoView(angular.element('#read-next'))) {
+            if (isScrolledIntoView(angular.element('#jskomBelowText'))) {
               $scope.readNext();
               return false;
             }

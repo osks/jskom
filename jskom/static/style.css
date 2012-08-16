@@ -32,6 +32,12 @@
     text-transform: capitalize;
 }
 
+#jskomReaderControls  {
+    position: fixed;
+    margin-right: 0px;
+    margin-left: 0px;
+}
+
 @media (max-width: 979px) and (min-width: 768px) {
     .jskomTextForm select.jskomRecipientType {
         width: 60px;

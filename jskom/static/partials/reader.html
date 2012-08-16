@@ -20,12 +20,13 @@
   
   <span ng-show="textIsLoading">Loading...</span>
   <jskom:text></jskom:text>
+  <div id="jskomBelowText"></div>
   
-  <div>
+  <div class="visible-desktop">
     <a href="/" class="btn">Back to conference list</a>
     
     <div class="pull-right">
-      <button class="btn btn-primary" id="read-next"
+      <button class="btn btn-primary"
               ng-click="readNext()" ng-disabled="textIsLoading">
         <span ng-show="buffer.hasUnseen()">Show next</span>
         <span ng-hide="buffer.hasUnseen()">
@@ -33,6 +34,25 @@
           <span ng-hide="unreadQueue.isEmpty()">Show next unread</span>
         </span>
       </button>
+    </div>
+  </div>
+</div>
+
+<div id="jskomReaderControls" class="navbar navbar-fixed-bottom hidden-desktop">
+  <div class="navbar-inner">
+    <div class="container">
+      <a href="/" class="btn">Back to conference list</a>
+      
+      <div class="pull-right">
+        <button class="btn btn-primary"
+                ng-click="readNext()" ng-disabled="textIsLoading">
+          <span ng-show="buffer.hasUnseen()">Show next</span>
+          <span ng-hide="buffer.hasUnseen()">
+            <span ng-show="unreadQueue.isEmpty()">To conference list</span>
+            <span ng-hide="unreadQueue.isEmpty()">Show next unread</span>
+          </span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
