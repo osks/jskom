@@ -367,7 +367,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       $scope.$watch('buffer.currentText()', function(newCurrentText) {
         $scope.text = newCurrentText;
-        angular.element($window).scrollTop(0);
+        angular.element($window).scrollTop(60);
       });
       
       $scope.$watch('conf', function(newConf) {
