@@ -271,8 +271,10 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('textsService', [
-    '$log', '$http', 'httpkomServer',
-    function($log, $http, httpkomServer) {
+    '$log', '$http', '$q', '$cacheFactory', 'httpkomServer',
+    function($log, $http, $q, $cacheFactory, httpkomServer) {
+      
+      var cache = $cacheFactory('texts', { capacity: 100 });
       var config = { withCredentials: true };
       
       var enhanceText = function(text) {
@@ -290,15 +292,44 @@ angular.module('jskom.services', ['jskom.settings']).
       
       return {
         getText: function(textNo) {
-          return $http.get(httpkomServer + '/texts/' + textNo, config).
-            then(function(response) {
-              enhanceText(response.data);
-              return response;
-            });
+          textNo = textNo.toString();
+          var cachedResp = cache.get(textNo);
+          
+          if (cachedResp) {
+            $log.log("textsService - getText(" + textNo + ") - cached");
+            return cachedResp;
+          } else {
+            var deferred = $q.defer();
+            var promise = deferred.promise;
+            
+            $http.get(httpkomServer + '/texts/' + textNo, config).then(
+              function(response) {
+                $log.log("textsService - getText(" + textNo + ") - success");
+                enhanceText(response.data);
+                deferred.resolve(response);
+              },
+              function(response) {
+                $log.log("textsService - getText(" + textNo + ") - error");
+                cache.remove(textNo);
+                deferred.reject(response);
+              });
+            
+            cache.put(textNo, promise);
+            return promise;
+          }
         },
         
         createText: function(text) {
-          return $http.post(httpkomServer + '/texts/', text, config);
+          return $http.post(httpkomServer + '/texts/', text, config).then(
+            function(response) {
+              _.each(text.comment_to_list, function(commentedText) {
+                // Remove commented texts from the cache so we can
+                // fetch them with the new text in their
+                // comment_in_list.
+                cache.remove(commentedText.text_no.toString());
+              });
+              return response;
+            });
         }
       };
     }

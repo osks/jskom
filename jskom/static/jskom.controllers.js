@@ -163,16 +163,16 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       };
       
       $scope.createText = function() {
-        textsService.createText($scope.newText).
-          success(function(data) {
+        textsService.createText($scope.newText).then(
+          function(response) {
             $log.log("CreateTextCtrl - createText() - success");
             messagesService.showMessage('success', 'Successfully created text.',
-                                        'Text number ' + data.text_no + ' was created.');
-            $location.path('/texts/' + data.text_no);
-          }).
-          error(function(data, status) {
+                                        'Text number ' + response.data.text_no + ' was created.');
+            $location.path('/texts/' + response.data.text_no);
+          },
+          function(response) {
             $log.log("CreateTextCtrl - createText() - error");
-            messagesService.showMessage('error', 'Failed to create text.', data);
+            messagesService.showMessage('error', 'Failed to create text.', response.data);
           });
       };
     }
@@ -284,18 +284,9 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       var getText = function(textNo) {
         return textsService.getText(textNo).then(
+          null,
           function(response) {
-            $log.log("ReaderTextCtrl - getText(" + textNo + ") - success");
-            return response;
-          },
-          function(response) {
-            $log.log("ReaderTextCtrl - getText(" + textNo + ") - error");
-            if (status == 404) {
-              messagesService.showMessage('error', 'No such text',
-                                          'No text with number: ' + response.data.error_status);
-            } else {
-              messagesService.showMessage('error', 'Failed to get text.', response.data);
-            }
+            messagesService.showMessage('error', 'Failed to get text.', response.data);
             return response;
           });
       };

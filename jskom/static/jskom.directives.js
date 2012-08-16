@@ -331,13 +331,14 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             // comment.  With tab you can select the button and toggle
             // it even when the form is hidden.
             if (scope.isVisible) {
-              textsService.createText(scope.comment).
-                success(function(data) {
+              textsService.createText(scope.comment).then(
+                function(response) {
                   $log.log("jskomNewComment - createComment() - success");
                   messagesService.showMessage('success', 'Successfully created comment.',
-                                              'Text number ' + data.text_no + ' was created.');
+                                              'Text number ' + response.data.text_no +
+                                              ' was created.');
                   scope.cancel();
-            
+                  
                   if (event) {
                     // If we got the event param, we were called form
                     // the button and we want to blur (un-focus) the
@@ -346,10 +347,11 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
                     // having it focused.
                     angular.element(event.target).blur();
                   }
-                }).
-                error(function(data, status) {
+                },
+                function(response) {
                   $log.log("jskomNewComment - createComment() - error");
-                  messagesService.showMessage('error', 'Failed to create comment.', data);
+                  messagesService.showMessage('error', 'Failed to create comment.',
+                                              response.data);
                 });
             }
           };
