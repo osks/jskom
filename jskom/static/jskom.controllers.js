@@ -367,7 +367,9 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       $scope.$watch('buffer.currentText()', function(newCurrentText) {
         $scope.text = newCurrentText;
-        if (!isScrolledIntoView(angular.element('#jskomBelowText'))) {
+        if (angular.element('#jskomNavBar').css('position') == 'fixed') {
+          angular.element($window).scrollTop(0);
+        } else {
           angular.element($window).scrollTop(60);
         }
       });
@@ -456,33 +458,30 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       keybindingService.bindLocal(',', 'Show commented', function() {
         $scope.$apply(function() {
           $scope.showCommented();
-        }, 'keydown');
+        });
         return false;
       });
       
       // 'å a k' works really bad sometimes, probably because of
       // requiring keypress events (doesn't matter if you specify
       // 'keydown' or not).
-      /*keybindingService.bindLocal(['å a k'], 'Show all comments', function() {
+      /*keybindingService.bindLocal('å a k', 'Show all comments', function() {
         $scope.$apply(function() {
           $scope.showAllComments();
-        }, 'keydown');
+        });
         return false;
       });*/
       
-      keybindingService.bindLocal(['space'], 'Read next unread text', function(e) {
-        $scope.$apply(function() {
-          if (e.which == 32) {
+      keybindingService.bindLocal('space', 'Read next unread text', function(e) {
+        if (isScrolledIntoView(angular.element('#jskomBelowText'))) {
+          $scope.$apply(function() {
             // Check that the read next button is visible if we used space
-            if (isScrolledIntoView(angular.element('#jskomBelowText'))) {
-              $scope.readNext();
-              return false;
-            }
-          } else {
             $scope.readNext();
-            return false;
-          }
-        });
+          });
+          return false;
+        } else {
+          return true;
+        }
       });
       
       keybindingService.bindLocal('e', 'Set unread...', function(e) {
