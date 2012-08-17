@@ -228,9 +228,14 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           }
         ],
         link: function(scope, iElement, iAttrs) {
-          var lookupElement = iElement.find('.jskomConfInputLookup');
+          var lookupInputEl = iElement.find('.jskomConfInputLookup input');
+          var lookupButtonEl = iElement.find('.jskomConfInputLookup button');
+          var confNameInputEl = iElement.find('.jskomConfInputConfName input');
+          var confNameButtonEl = iElement.find('.jskomConfInputConfName button');
+          var matchesInputEl = iElement.find('.jskomConfInputMatches select');
+          var matchesButtonEl = iElement.find('.jskomConfInputConfName button');
           
-          lookupElement.bind('blur', function(e) {
+          lookupInputEl.bind('blur', function(e) {
             //$log.log("<jskom:conf-input> - .confInputLookupName - blur");
             scope.getConf();
           });
@@ -244,18 +249,31 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           
           var delayedResizePromise = null;
           var resize = function() {
-            //$log.log("<jskom:conf-input> - on(resize)");
-            var width = angular.element(iElement).width();
-            // 46 is the width of the button
-            angular.element(iElement).find('input').width(width-46);
-            angular.element(iElement).find('select').width(width-42);
+            //$log.log("<jskom:conf-input> - resize");
+            var elWidth = iElement.width();
+            
+            matchesInputEl.width(
+              elWidth - matchesButtonEl.outerWidth() -
+                (matchesInputEl.outerWidth() - matchesInputEl.width()) -
+                4);
+            
+            lookupInputEl.width(
+              elWidth - lookupButtonEl.outerWidth() -
+                (lookupInputEl.outerWidth() - lookupInputEl.width()) -
+                0);
+            
+            confNameInputEl.width(
+              elWidth - confNameButtonEl.outerWidth() -
+                (confNameInputEl.outerWidth() - confNameInputEl.width()) -
+                0);
+            
             delayedResizePromise = null;
           };
           angular.element($window).resize(function() {
             if (!delayedResizePromise) {
               delayedResizePromise = $timeout(function() {
                 resize();
-              }, 200);
+              }, 500);
             }
           });
           resize();
