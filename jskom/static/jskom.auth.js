@@ -66,9 +66,9 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
       };
   }]).
   controller('SessionCtrl', [
-    '$rootScope', '$scope', '$log',
+    '$rootScope', '$scope', '$log', '$location',
     'authService', 'messagesService', 'pageTitleService',
-    function($rootScope, $scope, $log,
+    function($rootScope, $scope, $log, $location,
              authService, messagesService, pageTitleService) {
       $scope.isLoading = false;
       var reset = function() {
@@ -137,6 +137,7 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
           success(function() {
             $scope.state = 'notLoggedIn';
             reset();
+            $location.path('/');
           }).
           error(function(data, status) {
             if (status == 404) {
