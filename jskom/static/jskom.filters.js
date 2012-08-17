@@ -2,16 +2,12 @@
 
 'use strict';
 
-angular.module('jskom.filters', ['jskom.services']);
-/*  filter('formatTextBody', [
-    '$log', 'htmlFormattingService',
-    function($log, htmlFormattingService) {
-      return function(rawBody) {
-        var escaped = htmlFormattingService.escapeHtml(rawBody);
-        escaped = htmlFormattingService.formatLineBreaks(escaped);
-        escaped = htmlFormattingService.linkify(escaped);
-        return escaped;
-      };
+angular.module('jskom.filters', ['jskom.templates']).
+  filter('jskomTemplate', [
+    'templatePath',
+    function(templatePath) {
+      return function(filename) {
+        return templatePath(filename);
+      }
     }
   ]);
-*/

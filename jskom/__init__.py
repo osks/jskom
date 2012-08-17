@@ -8,8 +8,12 @@ from flask.ext.assets import Environment, Bundle
 
 import version
 
+
 class default_settings:
     DEBUG = False
+    SEND_FILE_MAX_AGE_DEFAULT = 0
+    
+    STATIC_VERSION = ''
     
     # httpkom server, without trailing slash (example: 'http://localhost:5001')
     HTTPKOM_SERVER = 'http://localhost:5001'
@@ -79,4 +83,5 @@ def index(path):
     # path is for html5 push state
     return render_template('index.html',
                            version=version.__version__,
+                           static_version=app.config['STATIC_VERSION'],
                            httpkom_server=app.config['HTTPKOM_SERVER'])

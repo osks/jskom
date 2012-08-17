@@ -20,6 +20,14 @@
     <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}" />
     {%- endassets %}
     
+    {% assets "js_libs" %}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {%- endassets %}
+    
+    {% assets "js_angular" %}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {%- endassets %}
+    
     <title>jskom</title>
   </head>
   <body ng-controller="SessionCtrl">
@@ -57,7 +65,7 @@
               </li>
               
             </ul>
-            <div class="btn-group pull-right" id="menu-right">
+            <div class="btn-group pull-right" id="menu-right" ng-cloak>
               <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
                 <i class="icon-user"></i>
                 <span class="hidden-phone">{{ session.person.pers_name }}</span>
@@ -88,19 +96,19 @@
           
           <div ng-switch-when="loggedIn">
             <div class="span8">
-              <ng-include src="'/static/partials/messages.html'" ng-cloak></ng-include>
+              <ng-include src="'messages.html'|jskomTemplate"></ng-include>
               <ng-view ng-cloak></ng-view>
             </div>
             
             <div class="span3 offset1 hidden-phone">
-              <ng-include src="'/static/partials/help.html'" ng-cloak></ng-include>
+              <ng-include src="'help.html'|jskomTemplate"></ng-include>
             </div>
           </div>
           
           <div ng-switch-when="notLoggedIn">
             <div class="span6">
-              <ng-include src="'/static/partials/messages.html'" ng-cloak></ng-include>
-              <ng-include src="'/static/partials/login.html'"></ng-include>
+              <ng-include src="'messages.html'|jskomTemplate"></ng-include>
+              <ng-include src="'login.html'|jskomTemplate"></ng-include>
             </div>
           </div>
       
@@ -121,23 +129,23 @@
       </footer>
     </div>
     
-    {% assets "js_libs" %}
-    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-    {%- endassets %}
-    
     {% assets "js_bootstrap" %}
     <script type="text/javascript" src="{{ ASSET_URL }}"></script>
     {%- endassets %}
     
-    {% assets "js_angular" %}
-    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-    {%- endassets %}
-    
     <script type="text/javascript">
-      angular.module('jskom.settings', []).
-        value('httpkomServer', '{{ httpkom_server }}').
-        value('jskomName', 'jskom').
-        value('jskomVersion', '{{ version }}');
+      angular.module('jskom.settings', ['jskom.templates']).
+        constant('httpkomServer', '{{ httpkom_server }}').
+        constant('jskomName', 'jskom').
+        constant('jskomVersion', '{{ version }}').
+        config([
+          'templatePathProvider',
+          function(templatePathProvider) {
+            templatePathProvider.setUrlPrefix('{{ url_for('static', filename='partials/') }}');
+            templatePathProvider.setVersion('{{ static_version }}');
+          }
+        ]);
+  
     </script>
 
     {% assets "js_jskom" %}

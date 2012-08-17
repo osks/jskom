@@ -8,8 +8,8 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
     // Example:
     // <div jskom-bind-body="text.body"></div>
     
-    '$log', '$compile', '$filter', 'htmlFormattingService',
-    function($log, $compile, $filter, htmlFormattingService) {
+    '$log', '$compile', 'htmlFormattingService',
+    function($log, $compile, htmlFormattingService) {
       return {
         restrict: 'A',
         link: function(scope, iElement, iAttrs) {
@@ -19,7 +19,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
               str = "";
             }
             else if (_.isObject(value)) {
-              str = $filter('json')(value);
+              str = angular.toJson(value);
             } else {
               str = value.toString();
             }
@@ -36,8 +36,8 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
     // Example:
     // <span jskom-bind-linkified="text.body"></span>
     
-    '$log', '$compile', '$filter', 'htmlFormattingService',
-    function($log, $compile, $filter, htmlFormattingService) {
+    '$log', '$compile', 'htmlFormattingService',
+    function($log, $compile, htmlFormattingService) {
       return {
         restrict: 'A',
         link: function(scope, iElement, iAttrs) {
@@ -47,7 +47,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
               str = "";
             }
             else if (_.isObject(value)) {
-              str = $filter('json')(value);
+              str = angular.toJson(value);
             } else {
               str = value.toString();
             }
@@ -126,11 +126,11 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
     // This basically just does what ng-include do, but without
     // creating a new scope.
     
-    '$log',
-    function($log) {
+    '$log', 'templatePath',
+    function($log, templatePath) {
       return {
         restrict: 'E',
-        templateUrl: '/static/partials/text.html',
+        templateUrl: templatePath('text.html'),
         link: function(scope, iElement, iAttrs, controller) {
         }
       };
@@ -140,8 +140,10 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
     // Example:
     // <jskom:conf-input model="session.person.pers_no" only-pers></jskom:conf-input>
     
-    '$log', '$filter', '$window', '$timeout', 'conferencesService', 'messagesService',
-    function($log, $filter, $window, $timeout, conferencesService, messagesService) {
+    '$log', '$window', '$timeout',
+    'templatePath', 'conferencesService', 'messagesService',
+    function($log, $window, $timeout,
+             templatePath, conferencesService, messagesService) {
       var errorMsgText = function(wantPers, wantConfs) {
         if (!wantPers) {
           return "conference";
@@ -155,7 +157,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
       return {
         restrict: 'E',
         replace: true,
-        templateUrl: '/static/partials/conf_input.html',
+        templateUrl: templatePath('conf_input.html'),
         scope: {
           model: '=',
         },
@@ -186,7 +188,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             });
             
             scope.$watch('conf', function(newConf) {
-              //$log.log("<jskom:conf-input> - $watch(conf) - changed: " + $filter('json')(newConf));
+              //$log.log("<jskom:conf-input> - $watch(conf) - changed");
               if (newConf) {
                 scope.model = newConf.conf_no;
               } else {
@@ -285,8 +287,8 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
     // Example:
     //   <jskom:text-fields text="newComment"></jskom:text-fields>
     
-    '$log',
-    function($log) {
+    '$log', 'templatePath',
+    function($log, templatePath) {
       var recipientTypes = [
         { name: 'To', type: 'to' },
             { name: 'CC', type: 'cc' },
@@ -295,7 +297,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
       
       return {
         restrict: 'E',
-        templateUrl: '/static/partials/textform.html',
+        templateUrl: templatePath('textform.html'),
         scope: {
           text: '='
         },
@@ -313,8 +315,8 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
     // Example:
     //   <jskom:new-comment comment-to="text"></jskom:new-comment>
     
-    '$log', 'textsService', 'messagesService', 'keybindingService',
-    function($log, textsService, messagesService, keybindingService) {
+    '$log', 'templatePath', 'textsService', 'messagesService', 'keybindingService',
+    function($log, templatePath, textsService, messagesService, keybindingService) {
       var makeCommentTo = function(comment, commentedText) {
         comment.comment_to_list = [
           { type: 'comment', text_no: commentedText.text_no }
@@ -344,7 +346,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
       
       return {
         restrict: 'E',
-        templateUrl: '/static/partials/newcommentform.html',
+        templateUrl: templatePath('newcommentform.html'),
         scope: {
           isVisible: '=visible',
           commentedText: '=commentTo'
