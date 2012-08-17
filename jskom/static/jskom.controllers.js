@@ -265,9 +265,11 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
     '$scope', '$routeParams', '$log', '$window', '$location',
     'messagesService', 'conferencesService', 'textsService', 'textBufferFactory',
     'pageTitleService', 'keybindingService', 'readMarkingsService', 'unreadQueueFactory',
+    'sessionsService',
     function($scope, $routeParams, $log, $window, $location,
              messagesService, conferencesService, textsService, textBufferFactory,
-             pageTitleService, keybindingService, readMarkingsService, unreadQueueFactory) {
+             pageTitleService, keybindingService, readMarkingsService, unreadQueueFactory,
+             sessionsService) {
       var isScrolledIntoView = function(elem) {
         if (elem) {
           var docViewTop = angular.element($window).scrollTop();
@@ -338,6 +340,13 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
                   });
                 }
               });
+            
+            // If getting read markings succeeded, we know we are a
+            // member of the conference and can change the working
+            // conference to it.
+            sessionsService.changeConference(
+              sessionsService.getCurrentSessionId(),
+              confNo);
           }).
           error(function(data, status) {
             $log.log("ReaderCtrl - getUnreadQueue(" + confNo + ") - error");

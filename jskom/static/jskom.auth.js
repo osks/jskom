@@ -33,7 +33,7 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
     
     $httpProvider.responseInterceptors.push(interceptor);
   }]).
-  factory('authService', [
+  factory('sessionsService', [
     '$http', '$log', 'httpkomServer', 'jskomName', 'jskomVersion',
     function($http, $log, httpkomServer, jskomName, jskomVersion) {
       var config = { withCredentials: true };
@@ -62,24 +62,40 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
         getCurrentSession: function() {
           var sessionId = this.getCurrentSessionId();
           return this.getSession(sessionId);
+        },
+        
+        changeConference: function(sessionId, confNo) {
+          var data = { conf_no: parseInt(confNo) };
+          return $http.post(httpkomServer + '/sessions/' + sessionId + '/working-conference',
+                            data, config).
+            then(
+              function(response) {
+                $log.log("sessionsService - changeConference(" + confNo + ") - success");
+                return response;
+              },
+              function(response) {
+                $log.log("sessionsService - changeConference(" + confNo + ") - error");
+                return response;
+              }
+            );;
         }
       };
   }]).
   controller('SessionCtrl', [
     '$rootScope', '$scope', '$log', '$location',
-    'authService', 'messagesService', 'pageTitleService',
+    'sessionsService', 'messagesService', 'pageTitleService',
     function($rootScope, $scope, $log, $location,
-             authService, messagesService, pageTitleService) {
+             sessionsService, messagesService, pageTitleService) {
       $scope.isLoading = false;
       var reset = function() {
-        $scope.session = authService.newSession();
+        $scope.session = sessionsService.newSession();
       };
       
       var getCurrentSession = function() {
-        if (authService.getCurrentSessionId()) {
+        if (sessionsService.getCurrentSessionId()) {
           $scope.isLoading = true;
           $scope.state = '';
-          authService.getCurrentSession().
+          sessionsService.getCurrentSession().
             success(function(data) {
               $log.log("SessionCtrl - getCurrentSession() - success");
               $scope.isLoading = false;
@@ -100,7 +116,7 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
       
       var createSession = function() {
         $scope.isLoading = true;
-        authService.createSession($scope.session).
+        sessionsService.createSession($scope.session).
           success(function(data) {
             $log.log("SessionCtrl - login() - success");
             $scope.isLoading = false;
@@ -133,7 +149,7 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
       
       $scope.logout = function() {
         $log.log("SessionCtrl - logout()");
-        authService.destroySession(authService.getCurrentSessionId()).
+        sessionsService.destroySession(sessionsService.getCurrentSessionId()).
           success(function() {
             $scope.state = 'notLoggedIn';
             reset();
