@@ -140,8 +140,8 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
     // Example:
     // <jskom:conf-input model="session.person.pers_no" only-pers></jskom:conf-input>
     
-    '$log', '$filter', 'conferencesService', 'messagesService',
-    function($log, $filter, conferencesService, messagesService) {
+    '$log', '$filter', '$window', '$timeout', 'conferencesService', 'messagesService',
+    function($log, $filter, $window, $timeout, conferencesService, messagesService) {
       var errorMsgText = function(wantPers, wantConfs) {
         if (!wantPers) {
           return "conference";
@@ -159,15 +159,81 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
         scope: {
           model: '=',
         },
+        controller: [
+          '$scope',
+          function(scope) {
+            scope.isLoading = false;
+            scope.wantPers = true;
+            scope.wantConfs = true;
+            
+            scope.matches = [];
+            scope.lookup = '';
+            scope.conf = null;
+            
+            scope.$watch('model', function(newModel) {
+              //$log.log("<jskom:conf-input> - $watch(model) - changed: " + newModel);
+              
+              // We want to allow initialization by setting the
+              // conference number in the model from the start, but the
+              // model is also the currently selected conference - which
+              // is changed when using the control. Therefor we only
+              // look at the changed model value if scope.conf is not
+              // set (i.e. we haven't loaded the real conf data yet).
+              if (newModel && !scope.conf) {
+                scope.lookup = '#' + newModel;
+                scope.getConf();
+              }
+            });
+            
+            scope.$watch('conf', function(newConf) {
+              //$log.log("<jskom:conf-input> - $watch(conf) - changed: " + $filter('json')(newConf));
+              if (newConf) {
+                scope.model = newConf.conf_no;
+              } else {
+                scope.model = null;
+              }
+            });
+            
+            scope.clearMatching = function() {
+              scope.conf = null;
+              scope.matches = [];
+            };
+            
+            scope.getConf = function() {
+              if (scope.isLoading || !(scope.lookup && scope.lookup.length > 0)) {
+                return;
+              }
+              scope.isLoading = true;
+              conferencesService.lookupConferences(scope.lookup, scope.wantPers, scope.wantConfs).
+                success(function(data) {
+                  $log.log("<jskom:conf-input> - lookupConferences(" + scope.lookup + ") - success");
+                  scope.isLoading = false;
+                  scope.matches = data.confs;
+                  if (scope.matches.length > 0) {
+                    scope.conf = scope.matches[0];
+                  } else {
+                    messagesService.showMessage('error', 'Could not find any ' +
+                                                errorMsgText(scope.wantPers, scope.wantConfs) +
+                                                ' with that name.');
+                  }
+                }).
+                error(function(data) {
+                  $log.log("<jskom:conf-input> - lookupConferences(" + scope.lookup + ") - error");
+                  scope.isLoading = false;
+                  messagesService.showMessage('error', 'Failed to lookup ' + 
+                                              errorMsgText(scope.wantPers, scope.wantConfs) +
+                                              '.', data);
+                });
+            };
+          }
+        ],
         link: function(scope, iElement, iAttrs) {
           var lookupElement = iElement.find('.jskomConfInputLookup');
-          scope.isLoading = false;
-          scope.wantPers = true;
-          scope.wantConfs = true;
           
-          scope.matches = [];
-          scope.lookup = '';
-          scope.conf = null;
+          lookupElement.bind('blur', function(e) {
+            //$log.log("<jskom:conf-input> - .confInputLookupName - blur");
+            scope.getConf();
+          });
           
           if (('onlyPers' in iAttrs)) {
             scope.wantConfs = false;
@@ -176,66 +242,23 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             scope.wantPers = false;
           }
           
-          scope.$watch('model', function(newModel) {
-            //$log.log("<jskom:conf-input> - $watch(model) - changed: " + newModel);
-
-            // We want to allow initialization by setting the
-            // conference number in the model from the start, but the
-            // model is also the currently selected conference - which
-            // is changed when using the control. Therefor we only
-            // look at the changed model value if scope.conf is not
-            // set (i.e. we haven't loaded the real conf data yet).
-            if (newModel && !scope.conf) {
-              scope.lookup = '#' + newModel;
-              scope.getConf();
-            }
-          });
-          
-          lookupElement.bind('blur', function(e) {
-            //$log.log("<jskom:conf-input> - .confInputLookupName - blur");
-            scope.getConf();
-          });
-          
-          scope.clearMatching = function() {
-            scope.conf = null;
-            scope.matches = [];
+          var delayedResizePromise = null;
+          var resize = function() {
+            //$log.log("<jskom:conf-input> - on(resize)");
+            var width = angular.element(iElement).width();
+            // 46 is the width of the button
+            angular.element(iElement).find('input').width(width-46);
+            angular.element(iElement).find('select').width(width-42);
+            delayedResizePromise = null;
           };
-          
-          scope.$watch('conf', function(newConf) {
-            //$log.log("<jskom:conf-input> - $watch(conf) - changed: " + $filter('json')(newConf));
-            if (newConf) {
-              scope.model = newConf.conf_no;
-            } else {
-              scope.model = null;
+          angular.element($window).resize(function() {
+            if (!delayedResizePromise) {
+              delayedResizePromise = $timeout(function() {
+                resize();
+              }, 200);
             }
           });
-          
-          scope.getConf = function() {
-            if (scope.isLoading || !(scope.lookup && scope.lookup.length > 0)) {
-              return;
-            }
-            scope.isLoading = true;
-            conferencesService.lookupConferences(scope.lookup, scope.wantPers, scope.wantConfs).
-              success(function(data) {
-                $log.log("<jskom:conf-input> - lookupConferences(" + scope.lookup + ") - success");
-                scope.isLoading = false;
-                scope.matches = data.confs;
-                if (scope.matches.length > 0) {
-                  scope.conf = scope.matches[0];
-                } else {
-                  messagesService.showMessage('error', 'Could not find any ' +
-                                              errorMsgText(scope.wantPers, scope.wantConfs) +
-                                              ' with that name.');
-                }
-              }).
-              error(function(data) {
-                $log.log("<jskom:conf-input> - lookupConferences(" + scope.lookup + ") - error");
-                scope.isLoading = false;
-                messagesService.showMessage('error', 'Failed to lookup ' + 
-                                            errorMsgText(scope.wantPers, scope.wantConfs) +
-                                            '.', data);
-              });
-          };
+          resize();
         }
       };
     }
