@@ -84,7 +84,8 @@ angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
         }).
         when('/conferences/:confNo/unread/', {
           templateUrl: templatePathProvider.path('reader.html'),
-          controller: 'ReaderCtrl'
+          controller: 'ReaderCtrl',
+          reloadOnSearch: false
         }).
         when('/texts/new', {
           templateUrl: templatePathProvider.path('new_text.html'),
@@ -100,6 +101,6 @@ angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
     }
   ]).
   config(['$locationProvider', function($locationProvider) {  
-    $locationProvider.hashPrefix('');
     $locationProvider.html5Mode(true);
+    $locationProvider.hashPrefix('!');
   }]);

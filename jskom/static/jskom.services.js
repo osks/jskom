@@ -296,7 +296,7 @@ angular.module('jskom.services', ['jskom.settings']).
           var cachedResp = cache.get(textNo);
           
           if (cachedResp) {
-            $log.log("textsService - getText(" + textNo + ") - cached");
+            //$log.log("textsService - getText(" + textNo + ") - cached");
             return cachedResp;
           } else {
             var deferred = $q.defer();
@@ -393,117 +393,93 @@ angular.module('jskom.services', ['jskom.settings']).
       };
     }
   ]).
-  factory('textBufferFactory', [
-    '$log',
-    function($log) {
-      var TextBuffer = function(capacity) {
-        this._capacity = capacity;
-        this._items = [];
-        this._index = null;
-      };
-      
-      _.extend(TextBuffer.prototype, {
-        size: function() {
-          return this._items.length;
-        },
-        
-        append: function(text, moveIndexToAppendedText) {
-          this._items.push({
-            text: text,
-            isUnseen: true
-          });
-          if (moveIndexToAppendedText) {
-            this._index = this._items.length-1;
-          }
-          if (this._index == null) {
-            this._index = 0;
-          }
-          this._trim();
-          this._seeCurrent();
-        },
-        
-        currentText: function() {
-          if (this._index == null) {
-            return null;
-          } else {
-            return this._items[this._index].text;
-          }
-        },
-        
-        hasPrevious: function() {
-          if (this._index > 0) {
-            return true;
-          }
-          return false;
-        },
-        
-        previous: function() {
-          if (this.hasPrevious()) {
-            --this._index;
-            this._seeCurrent();
-          }
-        },
-        
-        hasNext: function() {
-          if (this._index < this._items.length-1) {
-            return true;
-          }
-          return false;
-        },
-        
-        next: function() {
-          if (this.hasNext()) {
-            ++this._index;
-            this._seeCurrent();
-          }
-        },
-        
-        hasUnseen: function() {
-          return _.any(this._items, function(item) {
-            return item.isUnseen;
-          });
-        },
-        
-        nextUnseen: function() {
-          if (this.hasUnseen()) {
-            var firstUnseen = _.find(this._items, function(item) {
-              return item.isUnseen;
-            });
-            this._index = _.indexOf(this._items, firstUnseen);
-            this._seeCurrent();
-          }
-        },
-        
-        _seeCurrent: function() {
-          // We should update isUnseen everytime we modify the
-          // index. The reason why we don't update isUnseen when
-          // current() is fetched is that we expect it to be watched
-          // and we don't want to modify any variable there.
-          this._items[this._index].isUnseen = false;
-        },
-        
-        _trim: function() {
-          if (this._items.length > this.capacity) {
-            this._items.shift();
-            // If the index pointed at the first item (0) and it was
-            // removed; tough luck... keep the index 0.
-            if (this._index > 0) {
-              --this._index;
-            }
-          }
-        }
-      });
-      
+  factory('readerService', [
+    '$log', 'readerFactory', 'readMarkingsService',
+    function($log, readerFactory, readMarkingsService) {
       return {
-        create: function(capacity) {
-          return new TextBuffer(capacity);
+        getReader: function(confNo) {
+          return readMarkingsService.getReadMarkingsForUnreadInConference(confNo).then(
+            function(response) {
+              var unreadQueue = readerFactory.createUnreadQueue(response.data.rms);
+              return readerFactory.createReader(unreadQueue);
+            });
         }
       };
     }
   ]).
-  factory('unreadQueueFactory', [
-    '$log', 'textsService',
-    function($log, textsService) {
+  factory('readerFactory', [
+    '$log', 'textsService', 'readMarkingsService',
+    function($log, textsService, readMarkingsService) {
+      var markAsRead = function(text) {
+        readMarkingsService.createGlobalReadMarking(text.text_no).
+          success(function(data) {
+            $log.log("readerFactory - markAsRead(" + text.text_no + ") - success");
+            text._is_unread = false;
+          }).
+          error(function(data, status) {
+            $log.log("readerFactory - markAsRead(" + text.text_no + ") - error");
+            messagesService.showMessage('error', 'Failed to mark text as read.', data);
+          });
+      };
+      
+      var Reader = function(unreadQueue) {
+        this._unreadQueue = unreadQueue;
+        this._pending = [];
+      };
+      
+      _.extend(Reader.prototype, {
+        unshiftPending: function() {
+          this._pending.unshift.apply(this._pending, arguments);
+        },
+        
+        pushPending: function() {
+          this._pending.push.apply(this._pending, arguments);
+        },
+        
+        shift: function() {
+          if (this._pending.length > 0) {
+            return textsService.getText(this._pending.shift()).then(
+              function(response) {
+                return response.data;
+              });
+              
+          } else {
+            return textsService.getText(this._unreadQueue.dequeue()).then(
+              function(response) {
+                response.data._is_unread = true;
+                markAsRead(response.data);
+                return response.data;
+              });
+          }
+        },
+        
+        hasPending: function() {
+          return this._pending.length > 0;
+        },
+        
+        hasUnread: function() {
+          return this.unreadSize() > 0;
+        },
+        
+        size: function() {
+          return this._pending.length + this._unreadQueue.size();
+        },
+        
+        pendingSize: function() {
+          return this._pending.length;
+        },
+        
+        unreadSize: function() {
+          return this._unreadQueue.size();
+        },
+        
+        isEmpty: function() {
+          return !(this.size() > 0);
+        }
+      });
+      
+      
+      
       var UnreadQueue = function() {
         this._currentTextNo = null;
         this._currentThreadStack = [];
@@ -512,7 +488,7 @@ angular.module('jskom.services', ['jskom.settings']).
       };
       
       _.extend(UnreadQueue.prototype, {
-        add: function(unreadTextNos) {
+        enqueue: function(unreadTextNos) {
           this._unreadTextNos = _.union(this._unreadTextNos, unreadTextNos);
           this._unreadTextNos.sort();
           
@@ -521,8 +497,14 @@ angular.module('jskom.services', ['jskom.settings']).
           }
         },
         
-        current: function() {
+        peek: function() {
           return this._currentTextNo;
+        },
+        
+        dequeue: function() {
+          var ret = this._currentTextNo;
+          this.moveNext();
+          return ret;
         },
         
         isEmpty: function() {
@@ -530,9 +512,11 @@ angular.module('jskom.services', ['jskom.settings']).
         },
         
         size: function() {
-          // should we include currentTextNo or not? currently we don't,
-          // because it is assumed to be read.
-          return this._unreadTextNos.length;
+          if (this._currentTextNo == null) {
+            return this._unreadTextNos.length;
+          } else {
+            return this._unreadTextNos.length + 1;
+          }
         },
         
         moveNext: function() {
@@ -581,14 +565,12 @@ angular.module('jskom.services', ['jskom.settings']).
           } else {
             // Start fetching the new current text, and when we have
             // fetched the text: Push all comments onto the stack, in
-            // reverse order. Update this._currentTextNo *after* we
-            // have fetched the text.
+            // reverse order.
             
+            this._currentTextNo = nextTextNo;
             var self = this;
             textsService.getText(nextTextNo).then(
               function(response) {
-                self._currentTextNo = nextTextNo;
-                
                 var comments = _.clone(response.data.comment_in_list);
                 if (comments) {
                   comments.reverse();
@@ -603,8 +585,7 @@ angular.module('jskom.services', ['jskom.settings']).
                 // the end of the array)
                 _.each(_.last(self._currentThreadStack, self._prefetchCount),
                        function(textNo) {
-                         $log.log("UnreadQueue:moveNext() - prefetching comment " +
-                                  textNo);
+                         //$log.log("UnreadQueue:moveNext() - prefetching comment " + textNo);
                          // We don't use the text here, instead we
                          // rely on the text to be stored in the
                          // cache. If there is no cache: this will
@@ -619,7 +600,7 @@ angular.module('jskom.services', ['jskom.settings']).
           // numbers ("thread starts"), no need to wait for fetching
           // of the new text.
           _.each(_.first(this._unreadTextNos, this._prefetchCount), function(textNo) {
-            $log.log("UnreadQueue:moveNext() - prefetching thread start " + textNo);
+            //$log.log("UnreadQueue:moveNext() - prefetching thread start " + textNo);
             // We don't use the text here, instead we rely on the text
             // to be stored in the cache. If there is no cache: this
             // will make things even slower!
@@ -629,13 +610,17 @@ angular.module('jskom.services', ['jskom.settings']).
       });
       
       return {
-        create: function(readMarkings) {
+        createReader: function(unreadQueue) {
+          return new Reader(unreadQueue);
+        },
+        
+        createUnreadQueue: function(readMarkings) {
           var unreadQueue = new UnreadQueue();
           if (readMarkings) {
             var textNos = _.map(readMarkings, function(rm) {
                 return rm.text_no;
             });
-            unreadQueue.add(textNos);
+            unreadQueue.enqueue(textNos);
           }
           return unreadQueue;
         }

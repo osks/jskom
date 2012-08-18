@@ -1,0 +1,12 @@
+<a href="/" class="btn">Back to conference list</a>
+
+<div class="pull-right">
+  <button class="btn btn-primary"
+          ng-click="readNext()" ng-disabled="textIsLoading">
+    <span ng-show="reader.hasPending()">Show next pending</span>
+    <span ng-hide="reader.hasPending()">
+      <span ng-show="reader.isEmpty()">To conference list</span>
+      <span ng-show="reader.hasUnread()">Show next unread</span>
+    </span>
+  </button>
+</div>

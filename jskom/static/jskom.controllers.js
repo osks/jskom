@@ -262,14 +262,18 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
     }
   ]).
   controller('ReaderCtrl', [
-    '$scope', '$routeParams', '$log', '$window', '$location',
-    'messagesService', 'conferencesService', 'textsService', 'textBufferFactory',
-    'pageTitleService', 'keybindingService', 'readMarkingsService', 'unreadQueueFactory',
+    '$scope', '$rootScope', '$routeParams', '$log', '$window', '$location',
+    'messagesService', 'conferencesService', 'textsService',
+    'pageTitleService', 'keybindingService', 'readMarkingsService', 'readerService',
     'sessionsService',
-    function($scope, $routeParams, $log, $window, $location,
-             messagesService, conferencesService, textsService, textBufferFactory,
-             pageTitleService, keybindingService, readMarkingsService, unreadQueueFactory,
+    function($scope, $rootScope, $routeParams, $log, $window, $location,
+             messagesService, conferencesService, textsService,
+             pageTitleService, keybindingService, readMarkingsService, readerService,
              sessionsService) {
+      $scope.textIsLoading = false;
+      $scope.text = null;
+      $scope.reader = null;
+      
       var isScrolledIntoView = function(elem) {
         if (elem) {
           var docViewTop = angular.element($window).scrollTop();
@@ -284,75 +288,42 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         }
       };
       
-      var getText = function(textNo) {
-        return textsService.getText(textNo).then(
-          null,
+      var setText = function(textPromise) {
+        $scope.textIsLoading = true;
+        textPromise.then(
+          function(text) {
+            $scope.textIsLoading = false;
+            $scope.text = text;
+            
+            if ($location.search.text != text.text_no) {
+              $location.search('text', text.text_no);
+            }
+            
+            // This is a bad way to do this.
+            if (angular.element('#jskomNavBar').css('position') == 'fixed') {
+              angular.element($window).scrollTop(0);
+            } else {
+              angular.element($window).scrollTop(60);
+            }
+          },
           function(response) {
+            $scope.textIsLoading = false;
             messagesService.showMessage('error', 'Failed to get text.', response.data);
-            return response;
-          });
-      };
-      
-      var markAsRead = function(text) {
-        readMarkingsService.createGlobalReadMarking(text.text_no).
-          success(function(data) {
-            $log.log("ReaderCtrl - markAsRead(" + text.text_no + ") - success");
-            text._is_unread = false;
-          }).
-          error(function(data, status) {
-            $log.log("ReaderCtrl - markAsRead(" + text.text_no + ") - error");
-            messagesService.showMessage('error', 'Failed to mark text as read.', data);
           });
       };
       
       var showText = function(textNo) {
-        $scope.textIsLoading = true;
-        return getText(textNo).then(
-          function(response) {
-            $scope.textIsLoading = false;
-            $scope.buffer.append(response.data, true);
-            return response;
-          },
-          function (response) {
-            $scope.textIsLoading = false;
-            return response;
-          });
+        if (textNo) {
+          setText(textsService.getText(textNo).then(
+            function(response) {
+              return response.data;
+            }));
+        }
       };
       
-      var unreadQueueWatcher = null
-      var getUnreadQueue = function(confNo) {
-        if (unreadQueueWatcher) {
-          unreadQueueWatcher();
-        }
-        
-        readMarkingsService.getReadMarkingsForUnreadInConference(confNo).
-          success(function(data) {
-            $log.log("ReaderCtrl - getUnreadQueue(" + confNo + ") - success");
-            var unreadQueue = unreadQueueFactory.create(data.rms);
-            $scope.unreadQueue = unreadQueue;
-            
-            unreadQueueWatcher = $scope.$watch(
-              'unreadQueue.current()', function(newTextNo, oldTextNo) {
-                $log.log("ReaderCtrl - watch(unreadQueue.current()): " + newTextNo);
-                if (newTextNo) {
-                  showText(newTextNo).then(function(response) {
-                    markAsRead(response.data);
-                  });
-                }
-              });
-            
-            // If getting read markings succeeded, we know we are a
-            // member of the conference and can change the working
-            // conference to it.
-            sessionsService.changeConference(
-              sessionsService.getCurrentSessionId(),
-              confNo);
-          }).
-          error(function(data, status) {
-            $log.log("ReaderCtrl - getUnreadQueue(" + confNo + ") - error");
-            messagesService.showMessage('error', 'Failed to get unread texts.', data);
-          });
-      };
+      $rootScope.$on('$routeUpdate', function(event) {
+        showText($routeParams.text);
+      });
       
       $scope.$on('jskom:a:text', function($event, textNo, href) {
         // When clicking on text links in the reader, we just show the
@@ -360,18 +331,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         // page.
         //$log.log("ReaderCtrl - on(jskom:a:text) - href - " + href);
         $event.stopPropagation();
-        if (!($scope.text && $scope.text.text_no == textNo)) {
-          showText(textNo);
-        }
-      });
-      
-      $scope.$watch('buffer.currentText()', function(newCurrentText) {
-        $scope.text = newCurrentText;
-        if (angular.element('#jskomNavBar').css('position') == 'fixed') {
-          angular.element($window).scrollTop(0);
-        } else {
-          angular.element($window).scrollTop(60);
-        }
+        showText(textNo);
       });
       
       $scope.$watch('conf', function(newConf) {
@@ -382,10 +342,15 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         }
       });
       
-      $scope.buffer = textBufferFactory.create(100);
-      $scope.text = null;
-      $scope.textIsLoading = false;
-      $scope.unreadQueue = null;
+      $scope.readNext = function() {
+        if (!$scope.textIsLoading) {
+          if ($scope.reader.isEmpty()) {
+            $location.path('/');
+          } else {
+            setText($scope.reader.shift());
+          }
+        }
+      };
       
       conferencesService.getConference($routeParams.confNo).
         success(function(data) {
@@ -397,61 +362,55 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
           messagesService.showMessage('error', 'Failed to get conference.', data);
         });
       
-      getUnreadQueue($routeParams.confNo);
-      
-      $scope.readNext = function() {
-        if (!$scope.textIsLoading) {
-          if ($scope.buffer.hasUnseen()) {
-            $scope.buffer.nextUnseen();
-          } else {
-            if ($scope.unreadQueue) {
-              if ($scope.unreadQueue.isEmpty()) {
-                $location.path('/');
-              } else {
-                $scope.unreadQueue.moveNext();
-              }
-            }
+      readerService.getReader($routeParams.confNo).then(
+        function(reader) {
+          var confNo = $routeParams.confNo;
+          $log.log("ReaderCtrl - getReader(" + confNo + ") - success");
+          
+          if ($routeParams.text) {
+            reader.unshiftPending($routeParams.text);
           }
-        }
-      };
-      
-      keybindingService.bindLocal('p', 'Show previous text', function() {
-        $scope.$apply(function() {
-          $scope.buffer.previous();
+          setText(reader.shift());
+          
+          // If getting the reader succeeded, we know we are a
+          // member of the conference and can change the working
+          // conference to it.
+          sessionsService.changeConference(
+            sessionsService.getCurrentSessionId(),
+            confNo);
+          
+          $scope.reader = reader;
+        },
+        function(response) {
+          var confNo = $routeParams.confNo;
+          $log.log("ReaderCtrl - getReader(" + confNo + ") - error");
+          messagesService.showMessage('error', 'Failed to get reader.', response.data);
+          return response;
         });
-        return false;
-      });
-      
-      keybindingService.bindLocal('n', 'Show next text', function() {
-        $scope.$apply(function() {
-          $scope.buffer.next();
-        });
-        return false;
-      });
       
       $scope.showCommented = function() {
         $log.log('ReaderCtrl - showCommented()');
         if ($scope.text && !_.isEmpty($scope.text.comment_to_list)) {
-          showText(_.first($scope.text.comment_to_list).text_no);
+          $scope.reader.unshiftPending.apply(
+            $scope.reader,
+            _.map($scope.text.comment_to_list, function(ct) {
+              return ct.text_no;
+            }));
           
-          _.each(_.rest($scope.text.comment_to_list), function(ct) {
-            getText(ct.text_no).then(function(response) {
-              $scope.buffer.append(response.data, false);
-            });
-          });
+          setText($scope.reader.shift());
         }
       };
       
       $scope.showAllComments = function() {
         $log.log('ReaderCtrl - showAllComments()');
         if ($scope.text && !_.isEmpty($scope.text.comment_in_list)) {
-          showText(_.first($scope.text.comment_in_list).text_no);
+          $scope.reader.unshiftPending.apply(
+            $scope.reader,
+            _.map($scope.text.comment_in_list, function(ci) {
+              return ci.text_no;
+            }));
           
-          _.each(_.rest($scope.text.comment_in_list), function(ci) {
-            getText(ci.text_no).then(function(response) {
-              $scope.buffer.append(response.data, false);
-            });
-          });
+          setText($scope.reader.shift());
         }
       };
       

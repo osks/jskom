@@ -1,21 +1,7 @@
-<span ng-hide="unreadQueue">Loading...</span>
-<div ng-show="unreadQueue">
-  <div class="btn-group pull-right">
-    <button class="btn"
-            ng-disabled="!buffer.hasPrevious()"
-            ng-click="buffer.previous()">
-      <i class="icon-chevron-up"></i>
-    </button>
-    <button class="btn"
-            ng-class="{ 'btn btn-info': buffer.hasUnseen(), 'btn': !buffer.hasUnseen() }"
-            ng-disabled="!buffer.hasNext()"
-            ng-click="buffer.next()">
-      <i class="icon-chevron-down"></i>
-    </button>
-  </div>
-  
+<span ng-hide="reader">Loading...</span>
+<div ng-show="reader">
   <h3>
-    <em>{{ unreadQueue.size() }}</em> unread in <em>{{ conf.name }}</em>
+    <em>{{ reader.unreadSize() }}</em> unread in <em>{{ conf.name }}</em>
   </h3>
   
   <br />
@@ -25,36 +11,14 @@
   <div id="jskomBelowText"></div>
   
   <div class="visible-desktop">
-    <a href="/" class="btn">Back to conference list</a>
-    
-    <div class="pull-right">
-      <button class="btn btn-primary"
-              ng-click="readNext()" ng-disabled="textIsLoading">
-        <span ng-show="buffer.hasUnseen()">Show next</span>
-        <span ng-hide="buffer.hasUnseen()">
-          <span ng-show="unreadQueue.isEmpty()">To conference list</span>
-          <span ng-hide="unreadQueue.isEmpty()">Show next unread</span>
-        </span>
-      </button>
-    </div>
+    <ng-include src="'reader_controls.html'|jskomTemplate"></ng-include>
   </div>
 </div>
 
 <div id="jskomReaderControls" class="navbar navbar-fixed-bottom hidden-desktop">
   <div class="navbar-inner">
     <div class="container">
-      <a href="/" class="btn">To conference list</a>
-      
-      <div class="pull-right">
-        <button class="btn btn-primary"
-                ng-click="readNext()" ng-disabled="textIsLoading">
-          <span ng-show="buffer.hasUnseen()">Show next</span>
-          <span ng-hide="buffer.hasUnseen()">
-            <span ng-show="unreadQueue.isEmpty()">To conference list</span>
-            <span ng-hide="unreadQueue.isEmpty()">Show next unread</span>
-          </span>
-        </button>
-      </div>
+      <ng-include src="'reader_controls.html'|jskomTemplate"></ng-include>
     </div>
   </div>
 </div>
