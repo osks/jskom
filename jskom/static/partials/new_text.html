@@ -4,10 +4,20 @@
   <form>
     <jskom:text-fields text="newText"></jskom:text-fields>
     
-    <div class="form-actions">
-      <div class="read-marking pull-right">
+    <div class="form-actions visible-desktop">
+      <div class="pull-right">
         <input type="submit" class="btn btn-primary" value="Post" ng-click="createText()"/>
       </div>
     </div>
   </form>
+</div>
+
+<div id="jskomFixedControlBar" class="navbar navbar-fixed-bottom hidden-desktop">
+  <div class="navbar-inner">
+    <div class="container">
+      <div class="pull-right">
+        <input type="submit" class="btn btn-primary" value="Post" ng-click="createText()"/>
+      </div>
+    </div>
+  </div>
 </div>

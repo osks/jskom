@@ -32,7 +32,7 @@
     text-transform: capitalize;
 }
 
-#jskomReaderControls  {
+#jskomFixedControlBar  {
     position: fixed;
     margin-right: 0px;
     margin-left: 0px;
