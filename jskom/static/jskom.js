@@ -88,7 +88,7 @@ angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
           reloadOnSearch: false
         }).
         when('/texts/new', {
-          templateUrl: templatePathProvider.path('new_text.html'),
+          templateUrl: templatePathProvider.path('newtext.html'),
           controller: 'NewTextCtrl'
         }).
         when('/texts/:textNo', {

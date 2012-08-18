@@ -1,5 +1,5 @@
-<h2>Login</h2>
-<form id="jskomLogin">
+<h3>Login</h3>
+<form>
   
   <label>Person name</label>
   <jskom:conf-input class="span6" model="session.person.pers_no" only-pers></jskom:conf-input>
@@ -7,7 +7,7 @@
   <label>Password</label>
   <input type="password" class="span6" ng-model="session.password" />
   
-  <div class="form-actions">
+  <div id="jskomControlBar" class="form-actions">
     <div class="pull-right">
       <button type="submit" class="btn btn-primary"
               ng-disabled="isLoading || !session.person.pers_no"
