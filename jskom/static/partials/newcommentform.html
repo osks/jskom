@@ -11,7 +11,8 @@
       
       <div class="pull-right">
         <input type="submit" class="btn btn-primary" value="Post"
-               ng-disabled="!isVisible || !comment" ng-click="createComment($event)"/>
+               ng-disabled="isCreatingComment || !isVisible || !comment"
+               ng-click="createComment($event)"/>
       </div>
     </div>
   </form>

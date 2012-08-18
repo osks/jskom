@@ -213,7 +213,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
     function($scope, $log, $window,
              httpkomServer, keybindingService, readMarkingsService, textsService,
              messagesService) {
-      $scope.isCommentFormVisisble = false;
+      $scope.isCommentFormVisible = false;
       $scope.readmarkIsLoading = false;
       $scope.textMode = "default";
       

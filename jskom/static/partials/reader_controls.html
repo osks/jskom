@@ -2,7 +2,7 @@
 
 <div class="pull-right">
   <button class="btn btn-primary"
-          ng-click="readNext()" ng-disabled="textIsLoading || isCommentFormVisible">
+          ng-click="readNext()" ng-disabled="textIsLoading">
     <span ng-show="reader.hasPending()">Show next pending</span>
     <span ng-hide="reader.hasPending()">
       <span ng-show="reader.isEmpty()">To conference list</span>

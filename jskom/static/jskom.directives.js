@@ -352,6 +352,8 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           commentedText: '=commentTo'
         },
         link: function(scope, iElement, iAttrs) {
+          scope.isCreatingComment = false;
+          
           scope.$watch('isVisible', function(newIsVisible) {
             if (newIsVisible) {
               // When it's time to show: create a new comment based on
@@ -373,10 +375,12 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             // Make sure the form is visible before creating the
             // comment.  With tab you can select the button and toggle
             // it even when the form is hidden.
-            if (scope.isVisible) {
+            if (scope.isVisible && !scope.isCreatingComment) {
+              scope.isCreatingComment = true;
               textsService.createText(scope.comment).then(
                 function(response) {
                   $log.log("jskomNewComment - createComment() - success");
+                  scope.isCreatingComment = false;
                   messagesService.showMessage('success', 'Successfully created comment.',
                                               'Text number ' + response.data.text_no +
                                               ' was created.');
@@ -393,6 +397,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
                 },
                 function(response) {
                   $log.log("jskomNewComment - createComment() - error");
+                  scope.isCreatingComment = false;
                   messagesService.showMessage('error', 'Failed to create comment.',
                                               response.data);
                 });
