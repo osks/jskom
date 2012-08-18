@@ -32,7 +32,7 @@
     text-transform: capitalize;
 }
 
-@media (max-width: 979px) and (min-height: 350px) {
+@media (max-width: 979px) and (min-height: 300px) {
     #jskomControlBar  {
         display: block;
         position: fixed;
