@@ -1,14 +1,14 @@
 <div ng-controller="TextCtrl" ng-show="text">
   <h4 class="jskomNoWrap">
     <jskom:a text-no="{{ text.text_no }}">{{ text.text_no }}</jskom:a>
-    / {{ text.creation_time }} / {{ text.author.pers_name }}
+    / {{ text.creation_time }} / {{ text.author|personName }}
   </h4>
   
   <div>
     <div class="jskomNoWrap" ng-repeat="ct in text.comment_to_list">
       <span class="jskomCapitalize">{{ ct.type }}</span> to
       <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
-      by {{ ct.author.pers_name }}
+      by {{ ct.author|personName }}
     </div>
     
     <div ng-repeat="r in text.recipient_list">
@@ -47,7 +47,7 @@
       <div class="jskomNoWrap" ng-repeat="ci in text.comment_in_list">
         <span class="jskomCapitalize">{{ ci.type }}</span> in
         <jskom:a text-no="{{ ci.text_no }}">{{ ci.text_no }}</jskom:a>
-        <span ng-show="ci.author.pers_name">by {{ ci.author.pers_name }}</span>
+        by {{ ci.author|personName }}
       </div>
     </div>
 

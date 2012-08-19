@@ -10,4 +10,19 @@ angular.module('jskom.filters', ['jskom.templates']).
         return templatePath(filename);
       }
     }
+  ]).
+  filter('personName', [
+    function() {
+      return function(author) {
+        if (author) {
+          if (author.pers_no == 0) {
+            return "Anonymous person";
+          } else {
+            return author.pers_name;
+          }
+        } else {
+          return "";
+        }
+      }
+    }
   ]);
