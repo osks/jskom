@@ -93,7 +93,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       
       $scope.gotoFirstConference = function() {
-        $location.path("/conferences/" + _.first($scope.unreadConfs).conf_no + "/unread/");
+        $location.url("/conferences/" + _.first($scope.unreadConfs).conf_no + "/unread/");
       };
       
       keybindingService.bindLocal(['space'], 'Go to first conference', function(e) {
@@ -114,7 +114,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       keybindingService.bindLocal('e', 'Set unread...', function(e) {
         $scope.$apply(function() {
-          $location.path('/conferences/set-unread');
+          $location.url('/conferences/set-unread');
         });
       });
     }
@@ -138,7 +138,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
             $log.log("SetUnreadTextsCtrl - setNumberOfUnreadTexts() - success");
             $scope.isLoading = false;
             messagesService.showMessage('success', 'Successfully set number of unread texts.');
-            $location.path('/');
+            $location.url('/');
           }).
           error(function(data, status) {
             $log.log("SetUnreadTextsCtrl - setNumberOfUnreadTexts() - error");
@@ -168,7 +168,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
             $log.log("CreateTextCtrl - createText() - success");
             messagesService.showMessage('success', 'Successfully created text.',
                                         'Text number ' + response.data.text_no + ' was created.');
-            $location.path('/texts/' + response.data.text_no);
+            $location.url('/texts/' + response.data.text_no);
           },
           function(response) {
             $log.log("CreateTextCtrl - createText() - error");
@@ -345,7 +345,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       $scope.readNext = function() {
         if (!$scope.textIsLoading) {
           if ($scope.reader.isEmpty()) {
-            $location.path('/');
+            $location.url('/');
           } else {
             setText($scope.reader.shift());
           }
@@ -447,7 +447,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         $scope.$apply(function() {
           if ($scope.conf) {
             var confNo = $scope.conf.conf_no;
-            $location.path("/conferences/" + confNo + "/set-unread");
+            $location.url("/conferences/" + confNo + "/set-unread");
           }
         });
       });

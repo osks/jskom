@@ -73,13 +73,13 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
       $rootScope.$on(textEmit, function($event, textNo, href) {
         //$log.log("on(jskom:a:text) - href - " + href);
         $event.stopPropagation();
-        $location.path(href);
+        $location.url(href);
       });
       
       $rootScope.$on(confEmit, function($event, confNo, href) {
         //$log.log("on(jskom:a:conference) - href - " + href);
         $event.stopPropagation();
-        $location.path(href);
+        $location.url(href);
       });
       
       return {

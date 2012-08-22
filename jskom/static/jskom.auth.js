@@ -153,7 +153,7 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
           success(function() {
             $scope.state = 'notLoggedIn';
             reset();
-            $location.path('/');
+            $location.url('/');
           }).
           error(function(data, status) {
             if (status == 404) {
