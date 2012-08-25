@@ -7,13 +7,15 @@
   <label>Number of unread texts</label> 
   <input type="text" class="span8" name="unread" ng-model="noOfUnread" />
   
-  <div id="jskomControlBar" class="form-actions">
-    <div class="pull-right">
-      <button type="submit" class="btn btn-primary"
-              ng-disabled="isLoading || !confNo"
-              ng-click="setNumberOfUnreadTexts()">
-        Set unread
-      </button>
+  <div id="jskomControlBar" class="navbar">
+    <div class="navbar-inner">
+      <div class="pull-right">
+        <button type="submit" class="btn btn-primary"
+                ng-disabled="isLoading || !confNo"
+                ng-click="setNumberOfUnreadTexts()">
+          Set unread
+        </button>
+      </div>
     </div>
   </div>
 </form>

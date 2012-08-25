@@ -8,9 +8,8 @@
     
     <style>
       body {
-        /* 60px to make the container go all the way to the bottom of the topbar */
-        padding-top: 60px;
-        padding-bottom: 60px;
+        /* to make the container go all the way to the bottom of the fixed topbar */
+        padding-top: 40px;
       }
     </style>
     
@@ -28,63 +27,98 @@
     <script type="text/javascript" src="{{ ASSET_URL }}"></script>
     {%- endassets %}
     
+    {% assets "js_bootstrap" %}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {%- endassets %}
+    
     <title>jskom</title>
   </head>
   <body ng-controller="SessionCtrl">
-    {% raw %}
-    <div class="navbar navbar-fixed-top" id="jskomNavBar">
+    <div id="jskomTopBar" class="navbar navbar-fixed-top navbar-inverse">
       <div class="navbar-inner">
         <div class="container">
           <a class="brand" href="/">jskom</a>
           
-          <div ng-show="state == 'loggedIn'" ng-cloak>
-            <ul class="nav">
-              <li class="active">
-                <a class="home" href="/">Home</a>
-              </li>
-              <li class="hidden-phone">
-                <a class="new-text" href="/texts/new">New text</a>
-              </li>
-              <li class="hidden-phone">
-                <a class="new-text" href="/conferences/set-unread">Set unread</a>
-              </li>
-              
-              <li class="dropdown visible-phone" id="menu">
-                <a class="dropdown-toggle" data-toggle="dropdown" href="#menu">
-                  Menu
-                  <b class="caret"></b>
-                </a>
-                <ul class="dropdown-menu">
-                  <li>
-                    <a class="new-text" href="/texts/new">New text</a>
-                  </li>
-                  <li>
-                    <a class="new-text" href="/conferences/set-unread">Set unread</a>
-                  </li>
-                </ul>
-              </li>
-              
-            </ul>
-            <div class="btn-group pull-right" id="menu-right" ng-cloak>
-              <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-                <i class="icon-user"></i>
+          {% set navigation_texts = [
+          ('/texts/new', 'New text'),
+          ] %}
+
+          {% set navigation_confs = [
+          ('/conferences/set-unread', 'Set unread'),
+          ] %}
+          
+          <ul class="nav" ng-show="state == 'loggedIn'" ng-cloak>
+            <li>
+              <a class="home" href="/">Home</a>
+            </li>
+            
+            <li class="dropdown hidden-phone">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                Texts
+                <b class="caret"></b>
+              </a>
+              <ul class="dropdown-menu">
+                {% for item in navigation_texts %}
+                <li><a href="{{ item[0] }}">{{ item[1] }}</a></li>
+                {% endfor %}
+              </ul>
+            </li>
+            
+            <li class="dropdown hidden-phone">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                Conferences
+                <b class="caret"></b>
+              </a>
+              <ul class="dropdown-menu">
+                {% for item in navigation_confs %}
+                <li><a href="{{ item[0] }}">{{ item[1] }}</a></li>
+                {% endfor %}
+              </ul>
+            </li>
+            
+            <li class="dropdown visible-phone">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                Menu
+                <b class="caret"></b>
+              </a>
+              <ul class="dropdown-menu">
+                <li class="nav-header">Texts</li>
+                {% for item in navigation_texts %}
+                <li><a href="{{ item[0] }}">{{ item[1] }}</a></li>
+                {% endfor %}
+                
+                <li class="divider"></li>
+                
+                <li class="nav-header">Conferences</li>
+                {% for item in navigation_confs %}
+                <li><a href="{{ item[0] }}">{{ item[1] }}</a></li>
+                {% endfor %}
+              </ul>
+            </li>
+            
+          </ul>
+          
+          <ul class="nav pull-right" ng-show="state == 'loggedIn'" ng-cloak>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                {% raw %}
+                <i class="icon-user icon-white"></i>
                 <span class="hidden-phone">{{ session.person.pers_name }}</span>
-                <span class="caret"></span>
+                {% endraw %}
+                <b class="caret"></b>
               </a>
               <ul class="dropdown-menu">
                 <li><a ng-click="logout()" href="#">Logout</a></li>
               </ul>
-            </div>
-          </div>
+            </li>
+          </ul>
           
         </div>
       </div>
     </div>
-    {% endraw %}
     
     <div class="container">
       
-      {% raw %}
       <div class="row">
         <ng-switch on="state">
           
@@ -100,7 +134,7 @@
               <ng-view ng-cloak></ng-view>
             </div>
             
-            <div class="span3 offset1 hidden-phone">
+            <div class="span4 hidden-phone">
               <ng-include src="'help.html'|jskomTemplate"></ng-include>
             </div>
           </div>
@@ -114,17 +148,15 @@
       
         </ng-switch>
       </div>
-      {% endraw %}
-
-      <div class="jskomControlBar">
-        <!-- Placeholder. To get less flickering between change of
-        controls between pages. -->
-      </div>
-
       
       <hr />
       <footer>
-        <p>
+        {% raw %}
+        <p ng-show="state == 'loggedIn'" ng-cloak>
+          Logged in as: <em>{{ session.person.pers_name }}</em>
+        </p>
+        {% endraw %}
+        <p style="display: inline-block;">
           <a href="https://github.com/osks/jskom">jskom</a>
           &copy; <a href="mailto:oskar@osd.se">Oskar Skoog</a> 2012
           <span ng-cloak>
@@ -134,10 +166,6 @@
         </p>
       </footer>
     </div>
-    
-    {% assets "js_bootstrap" %}
-    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-    {%- endassets %}
     
     <script type="text/javascript">
       angular.module('jskom.settings', ['jskom.templates']).

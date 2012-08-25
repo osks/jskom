@@ -1,8 +1,8 @@
 <div ng-controller="TextCtrl" ng-show="text">
-  <h4 class="jskomNoWrap">
+  <strong class="jskomNoWrap">
     <jskom:a text-no="{{ text.text_no }}">{{ text.text_no }}</jskom:a>
     / {{ text.creation_time }} / {{ text.author|personName }}
-  </h4>
+  </strong>
   
   <div>
     <div class="jskomNoWrap" ng-repeat="ct in text.comment_to_list">

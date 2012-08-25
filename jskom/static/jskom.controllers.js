@@ -300,10 +300,12 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
             }
             
             // This is a bad way to do this.
-            if (angular.element('#jskomNavBar').css('position') == 'fixed') {
+            // We do this because .navbar-fixed-top changes from fixed
+            // to static based on media queries.
+            if (angular.element('.navbar-fixed-top').css('position') == 'fixed') {
               angular.element($window).scrollTop(0);
             } else {
-              angular.element($window).scrollTop(60);
+              angular.element($window).scrollTop(40);
             }
           },
           function(response) {
