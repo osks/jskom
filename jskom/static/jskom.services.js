@@ -335,8 +335,8 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('conferencesService', [
-    '$http', 'httpkomServer',
-    function($http, httpkomServer) {
+    '$http', '$log', 'httpkomServer',
+    function($http, $log, httpkomServer) {
       var config = { withCredentials: true };
       
       return {
@@ -345,25 +345,48 @@ angular.module('jskom.services', ['jskom.settings']).
                            _.extend({
                              params: {
                                "name": name,
-                               "want_pers": wantPers,
-                               "want_confs": wantConfs
+                               "want-pers": wantPers,
+                               "want-confs": wantConfs
                              }
                            }, config));
         },
         
-        getConference: function(confNo) {
-          return $http.get(httpkomServer + '/conferences/' + confNo, config);
+        getConference: function(confNo, micro) {
+          if (arguments.length < 2) {
+            micro = true;
+          }
+          return $http.get(httpkomServer + '/conferences/' + confNo,
+                           _.extend({ params: { "micro": micro } }, config));
         },
-
-        getUnreadConferences: function() {
-          return $http.get(httpkomServer + '/conferences/unread/', config);
-        },
-        
+      };
+    }
+  ]).
+  factory('membershipsService', [
+    '$http', 'httpkomServer',
+    function($http, httpkomServer) {
+      var config = { withCredentials: true };
+      
+      return {
         setNumberOfUnreadTexts: function(confNo, noOfUnread) {
           var data = { no_of_unread: parseInt(noOfUnread) };
-          return $http.post(httpkomServer + '/conferences/' + confNo + '/no-of-unread',
+          return $http.post(httpkomServer + '/persons/current/memberships/' + confNo,
                             data, config);
-        }
+        },
+        
+        getMembership: function(persNo, confNo, wantUnread) {
+          return $http.get(httpkomServer + '/persons/' + persNo + '/memberships/' + confNo,
+                           _.extend({ params: { "want-unread": wantUnread } }, config));
+        },
+        
+        getMemberships: function(persNo, onlyUnread, wantUnread) {
+          return $http.get(httpkomServer + '/persons/' + persNo + '/memberships/',
+                           _.extend({
+                             params: {
+                               "want-unread": wantUnread,
+                               "unread": onlyUnread,
+                             }
+                           }, config));
+        },
       };
     }
   ]).
@@ -373,14 +396,6 @@ angular.module('jskom.services', ['jskom.settings']).
       var config = { withCredentials: true };
       
       return {
-        getReadMarkingsForUnreadInConference: function(confNo) {
-          var cfg = _.clone(config);
-          return $http.get(httpkomServer + '/conferences/' + confNo +
-                           '/read-markings/?unread=true', cfg);
-        },
-        
-        // createLocalReadMarking: function(confNo, localTextNo) {},
-        
         createGlobalReadMarking: function(textNo) {
           return $http.put(httpkomServer +
                            '/texts/' + textNo + '/read-marking', null, config);
@@ -394,13 +409,13 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('readerService', [
-    '$log', 'readerFactory', 'readMarkingsService',
-    function($log, readerFactory, readMarkingsService) {
+    '$log', 'readerFactory', 'membershipsService',
+    function($log, readerFactory, membershipsService) {
       return {
-        getReader: function(confNo) {
-          return readMarkingsService.getReadMarkingsForUnreadInConference(confNo).then(
+        getReader: function(confNo, persNo) {
+          return membershipsService.getMembership(persNo, confNo, true).then(
             function(response) {
-              var unreadQueue = readerFactory.createUnreadQueue(response.data.rms);
+              var unreadQueue = readerFactory.createUnreadQueue(response.data.unread_texts);
               return readerFactory.createReader(unreadQueue);
             });
         }
@@ -614,12 +629,9 @@ angular.module('jskom.services', ['jskom.settings']).
           return new Reader(unreadQueue);
         },
         
-        createUnreadQueue: function(readMarkings) {
+        createUnreadQueue: function(textNos) {
           var unreadQueue = new UnreadQueue();
-          if (readMarkings) {
-            var textNos = _.map(readMarkings, function(rm) {
-                return rm.text_no;
-            });
+          if (textNos) {
             unreadQueue.enqueue(textNos);
           }
           return unreadQueue;

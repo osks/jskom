@@ -1,0 +1,101 @@
+<span ng-hide="conf">Loading...</span>
+<div ng-show="conf">
+  <h3>Conference: <em>{{ conf.name }}</em></h3>
+
+  <ul id="jskomConfTabs" class="nav nav-tabs">
+    <li class="active"><a data-target="#membership" data-toggle="tab">Membership</a></li>
+    <li><a data-target="#details" data-toggle="tab">Details</a></li>
+  </ul>
+
+  <div id="jskomConfTabsContent" class="tab-content">
+    <div class="tab-pane active" id="membership">
+      <ng-switch on="isMember">
+        <div ng-switch-default>Loading...</div>
+        <div ng-switch-when="true">
+          <p>
+            <strong>You are a member of this conference.</strong>
+          </p>
+          <table class="table table-bordered">
+            <tr>
+              <td>Joined</td>
+              <td>{{membership.added_at}}</td>
+            </tr>
+            <tr>
+              <td>Last time read</td>
+              <td>{{membership.last_time_read}}</td>
+            </tr>
+            <tr>
+              <td>Number of unread texts</td>
+              <td>{{membership.no_of_unread}}</td>
+            </tr>
+            <tr ng-hide="membership.added_by.pers_no == session.person.pers_no">
+              <td><em>Added by</em></td>
+              <td><em>{{membership.added_by|personName}}</em></td>
+            </tr>
+          </table>
+          <button class="btn">Leave conference</button>
+        </div>
+        <div ng-switch-when="false">
+          <ng-switch on="conf.type.rd_prot">
+            <div ng-switch-when="0">
+              <p>
+                <strong>You are not a member of this conference.</strong>
+              </p>
+              <button class="btn" ng-click="join()">Join conference</button>
+            </div>
+            <div ng-switch-when="1">
+              <p>
+                <strong>Closed conference</strong>
+              </p>
+            </div>
+          </ng-switch>
+        </div>
+      </ng-switch>
+    </div>
+    
+    <div class="tab-pane" id="details">
+      <table class="table table-bordered">
+        <tr>
+          <td>Conference number</td>
+          <td>{{conf.conf_no}}</td>
+        </tr>
+        <tr>
+          <td>Creation time</td>
+          <td>{{conf.creation_time}}</td>
+        </tr>
+        <tr>
+          <td>Creator</td>
+          <td>{{conf.creator|personName}}</td>
+        </tr>
+        <tr>
+          <td>Supervisor</td>
+          <td>{{conf.supervisor|personName}}</td>
+        </tr>
+        <tr>
+          <td>Presentation</td>
+          <td>
+            <span ng-switch="conf.presentation">
+              <jskom:a text-no="{{ conf.presentation }}" ng-switch-default>
+                {{ conf.presentation }}
+              </jskom:a>
+              <em ng-switch-when="0">No presentation</em>
+            </span>
+          </td>
+        </tr> 
+        <tr>
+          <td>Number of members</td>
+          <td>{{conf.no_of_members}}</td>
+        </tr>
+        <tr>
+          <td>Number of texts</td>
+          <td>{{conf.no_of_texts}}</td>
+        </tr>
+        <tr>
+          <td>Last written</td>
+          <td>{{conf.last_written}}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+</div>

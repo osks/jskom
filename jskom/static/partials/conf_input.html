@@ -2,22 +2,21 @@
   <div ng-hide="matches" class="input-append jskomConfInputLookup">
     <input type="text"
            ng-disabled="conf"
-           ng-model="lookup" 
-           /><button
-                type="button" class="btn btn-info" tabindex="-1"
-                ng-disabled="isLoading || lookup.length < 1" ng-readonly="isLoading"
-                ng-click="getConf()">
-      <i class="icon-search icon-white"></i>
+           ng-model="lookup" />
+    <button type="button" class="btn btn-info" tabindex="-1"
+            ng-disabled="isLoading || lookup.length < 1 || matches.length > 0"
+            ng-readonly="isLoading"
+            ng-click="getConf()">
+      <i class="icon-search icon-white" ng-class="getLoadingClass()"></i>
     </button>
   </div>
   
   <div ng-show="matches.length == 1" class="input-append jskomConfInputConfName">
     <input type="text" class="" tabindex="-1" readonly
            ng-disabled="!conf"
-           ng-model="conf.conf_name"
-           /><button
-                type="button" class="btn btn-warning"
-                ng-click="clearMatching()">
+           ng-model="conf.conf_name" />
+    <button type="button" class="btn btn-warning"
+            ng-click="clearMatching()">
       <i class="icon-remove icon-white"></i>
     </button>
   </div>

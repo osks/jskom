@@ -74,6 +74,10 @@ angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
           templateUrl: templatePathProvider.path('unreadconfs.html'),
           controller: 'UnreadConfsCtrl'
         }).
+        when('/conferences/go-to', {
+          templateUrl: templatePathProvider.path('gotoconf.html'),
+          controller: 'GoToConfCtrl'
+        }).
         when('/conferences/set-unread', {
           templateUrl: templatePathProvider.path('set_unread.html'),
           controller: 'SetUnreadTextsCtrl'
@@ -86,6 +90,10 @@ angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
           templateUrl: templatePathProvider.path('reader.html'),
           controller: 'ReaderCtrl',
           reloadOnSearch: false
+        }).
+        when('/conferences/:confNo', {
+          templateUrl: templatePathProvider.path('showconf.html'),
+          controller: 'ShowConfCtrl'
         }).
         when('/texts/new', {
           templateUrl: templatePathProvider.path('newtext.html'),

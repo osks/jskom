@@ -1,13 +1,15 @@
 <h3>Unread conferences</h3>
 
 <span ng-show="isLoading">Loading...</span>
-<span ng-hide="isLoading || unreadConfs">Nothing unread</span>
-<ul ng-show="unreadConfs">
-  <li ng-repeat="conf in unreadConfs">
+<span ng-hide="isLoading || unreadMemberships">Nothing unread</span>
+<ul ng-show="unreadMemberships">
+  <li ng-repeat="membership in unreadMemberships">
     <span>
-      <a href="/conferences/{{ conf.conf_no }}/unread/">{{ conf.name }}</a>
+      <a href="/conferences/{{ membership.conference.conf_no }}/unread/">
+        {{ membership.conference.conf_name }}
+      </a>
     </span>
-    (<span class="no_of_unread">{{ conf.no_of_unread }}</span>)
+    (<span class="no_of_unread">{{ membership.no_of_unread }}</span>)
   </li>
 </ul>
 
@@ -35,7 +37,7 @@
     
     <div class="pull-right">
       <button class="btn btn-primary"
-              ng-disabled="!(unreadConfs && unreadConfs.length > 0)"
+              ng-disabled="!(unreadMemberships && unreadMemberships.length > 0)"
               ng-click="gotoFirstConference()">
         Go to first
       </button>

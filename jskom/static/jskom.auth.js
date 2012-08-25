@@ -64,9 +64,10 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
           return this.getSession(sessionId);
         },
         
-        changeConference: function(sessionId, confNo) {
+        
+        changeConference: function(confNo) {
           var data = { conf_no: parseInt(confNo) };
-          return $http.post(httpkomServer + '/sessions/' + sessionId + '/working-conference',
+          return $http.post(httpkomServer + '/sessions/current/working-conference',
                             data, config).
             then(
               function(response) {

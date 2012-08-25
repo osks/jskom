@@ -1,0 +1,22 @@
+<h3>Go to conference</h3>
+
+<!--
+
+    https://github.com/angular/angular.js/issues/1238
+    Because of this bug, we don't use a form right now.
+ -->
+<!--<form>-->
+  <label>Conference</label>
+  <jskom:conf-input class="span8" model="confNo"></jskom:conf-input>
+  
+  <div id="jskomControlBar" class="navbar">
+    <div class="navbar-inner">
+      <div class="pull-right">
+        <button type="submit" class="btn btn-primary"
+                ng-click="goToConf()">
+          Go to conference
+        </button>
+      </div>
+    </div>
+  </div>
+<!--</form>-->

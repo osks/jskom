@@ -165,6 +165,19 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           '$scope',
           function(scope) {
             scope.isLoading = false;
+            // This function is because if we don't want to use
+            // ng-show/ng-hide on an extra icon in the button. If we have
+            // an extra icon, the width will be calculated wrong until
+            // angular has done the processing, so the conf input
+            // flickers.
+            scope.getLoadingClass = function() {
+              if (scope.isLoading) {
+                return 'icon-refresh';
+              } else {
+                return 'icon-search icon-white';
+              }
+            };
+            
             scope.wantPers = true;
             scope.wantConfs = true;
             
@@ -203,7 +216,9 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             };
             
             scope.getConf = function() {
-              if (scope.isLoading || !(scope.lookup && scope.lookup.length > 0)) {
+              if (scope.isLoading
+                  || !(scope.lookup && scope.lookup.length > 0)
+                  || scope.conf) {
                 return;
               }
               scope.isLoading = true;
@@ -211,7 +226,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
                 success(function(data) {
                   $log.log("<jskom:conf-input> - lookupConferences(" + scope.lookup + ") - success");
                   scope.isLoading = false;
-                  scope.matches = data.confs;
+                  scope.matches = data.conferences;
                   if (scope.matches.length > 0) {
                     scope.conf = scope.matches[0];
                   } else {
@@ -239,6 +254,12 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           var matchesInputEl = iElement.find('.jskomConfInputMatches select');
           var matchesButtonEl = iElement.find('.jskomConfInputMatches button');
           
+          angular.element(lookupInputEl).keydown(function(e) {
+            if (e.keyCode == 13) {
+              scope.getConf();
+            }
+          });
+          
           lookupInputEl.bind('blur', function(e) {
             //$log.log("<jskom:conf-input> - .confInputLookupName - blur");
             scope.getConf();
@@ -259,7 +280,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
               matchesInputEl.width(
                 elWidth - matchesButtonEl.outerWidth() -
                   (matchesInputEl.outerWidth() - matchesInputEl.width()) -
-                4);
+                  4);
             }
             
             if (lookupInputEl.is(':visible')) {
@@ -291,6 +312,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             });
           });
           resize();
+          scope.delayedResize();
         }
       };
     }

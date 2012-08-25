@@ -41,20 +41,26 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
   controller('UnreadConfsCtrl', [
     '$scope', '$http', '$location', '$log', '$timeout',
     'conferencesService', 'pageTitleService', 'messagesService', 'keybindingService',
+    'membershipsService',
     function($scope, $http, $location, $log, $timeout,
-             conferencesService, pageTitleService, messagesService, keybindingService) {
+             conferencesService, pageTitleService, messagesService, keybindingService,
+             membershipsService) {
       pageTitleService.set("Unread conferences");
       
       $scope.load = function() {
-        $scope.unreadConfs = [];
+        $scope.unreadMemberships = [];
         $scope.isLoading = true;
-        return conferencesService.getUnreadConferences().
+        return membershipsService.getMemberships($scope.session.person.pers_no, true, false).
           success(function(data) {
-            $log.log("UnreadConfsCtrl - getUnreadConferences() - success");
+            $log.log("UnreadConfsCtrl - getMemberships() - success");
             $scope.isLoading = false;
-            $scope.unreadConfs = data.confs;
+            var sortedMemberships = _.sortBy(data.memberships, function(ms) {
+              return ms.priority;
+            });
+            sortedMemberships.reverse();
+            $scope.unreadMemberships = sortedMemberships;
           }).error(function(data, status) {
-            $log.log("UnreadConfsCtrl - getUnreadConferences() - error");
+            $log.log("UnreadConfsCtrl - getMemberships() - error");
             $scope.isLoading = false;
             messagesService.showMessage('error', 'Failed to get unread conferences.', data);
           });
@@ -93,11 +99,14 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       
       $scope.gotoFirstConference = function() {
-        $location.url("/conferences/" + _.first($scope.unreadConfs).conf_no + "/unread/");
+        if ($scope.unreadMemberships.length > 0) {
+          $location.url("/conferences/" +
+                        _.first($scope.unreadMemberships).conference.conf_no + "/unread/");
+        }
       };
       
       keybindingService.bindLocal(['space'], 'Go to first conference', function(e) {
-        if (_.size($scope.unreadConfs) > 0) {
+        if (_.size($scope.unreadMemberships) > 0) {
           $scope.$apply(function() {
             $scope.gotoFirstConference();
           });
@@ -120,10 +129,10 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
     }
   ]).
   controller('SetUnreadTextsCtrl', [
-    '$scope', '$http', '$location', '$routeParams', '$log',
-    'conferencesService', 'pageTitleService', 'messagesService', 'keybindingService',
-    function($scope, $http, $location, $routeParams, $log,
-             conferencesService, pageTitleService, messagesService, keybindingService) {
+    '$scope', '$location', '$routeParams', '$log',
+    'membershipsService', 'pageTitleService', 'messagesService', 'keybindingService',
+    function($scope, $location, $routeParams, $log,
+             membershipsService, pageTitleService, messagesService, keybindingService) {
       pageTitleService.set("Set number of unread texts");
       
       $scope.confNo = $routeParams.confNo || null;
@@ -131,9 +140,8 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       $scope.isLoading = false;
       
       $scope.setNumberOfUnreadTexts = function() {
-        $log.log("SetUnreadTextsCtrl - setNumberOfUnreadTexts()");
         $scope.isLoading = true;
-        conferencesService.setNumberOfUnreadTexts($scope.confNo, $scope.noOfUnread).
+        membershipsService.setNumberOfUnreadTexts($scope.confNo, $scope.noOfUnread).
           success(function(data) {
             $log.log("SetUnreadTextsCtrl - setNumberOfUnreadTexts() - success");
             $scope.isLoading = false;
@@ -203,7 +211,8 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
           });
       };
       
-      showText($routeParams.textNo);
+      $scope.textNo = $routeParams.textNo;
+      showText($scope.textNo);
     }
   ]).
   controller('TextCtrl', [
@@ -259,6 +268,87 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
             });
         }
       };
+    }
+  ]).
+  controller('GoToConfCtrl', [
+    '$scope', '$location', '$log', 'pageTitleService',
+    function($scope, $location, $log, pageTitleService) {
+      pageTitleService.set("Go to conference");
+      
+      $scope.confNo = null;
+      $scope.goToConf = function() {
+        if ($scope.confNo) {
+          $location.path('/conferences/' + parseInt($scope.confNo));
+        }
+      };
+    }
+  ]).
+  controller('ShowConfCtrl', [
+    '$scope', '$routeParams', '$log', '$location',
+    'pageTitleService', 'conferencesService', 'keybindingService', 'messagesService',
+    'membershipsService',
+    function($scope, $routeParams, $log, $location,
+             pageTitleService, conferencesService, keybindingService, messagesService,
+             membershipsService) {
+      $scope.conf = null;
+      $scope.membership = null;
+      $scope.isMember = null;
+      
+      $scope.$watch('conf', function(newConf) {
+        if (newConf) {
+          pageTitleService.set(newConf.name);
+          
+          membershipsService.getMembership(
+            $scope.session.person.pers_no, newConf.conf_no, false).then(
+              function(response) {
+                $log.log("ShowConfCtrl - getMembership(..) - success");
+                $scope.membership = response.data;
+                $scope.isMember = true;
+              },
+              function(response) {
+                $log.log("ShowConfCtrl - getMembership(..) - error");
+                $scope.membership = null;
+                if (response.status == 404) {
+                  // NotMember
+                  $scope.isMember = false;
+                } else {
+                  $scope.isMember = null;
+                  messagesService.showMessage('error',
+                                              'Failed to get conference membership.',
+                                              response.data);
+                }
+              });
+        } else {
+          pageTitleService.set("");
+        }
+      });
+      
+      $scope.joinConf = function() {
+        // todo
+      };
+      
+      $scope.leaveConf = function() {
+        // todo
+      };
+      
+      conferencesService.getConference($routeParams.confNo, false).then(
+        function(response) {
+          $log.log("ShowConfCtrl - getConference(" + $routeParams.confNo + ") - success");
+          $scope.conf = response.data;
+        },
+        function(response) {
+          $log.log("ShowConfCtrl - getConference(" + $routeParams.confNo + ") - error");
+          messagesService.showMessage('error', 'Failed to get conference.', response.data);
+        });
+      
+      keybindingService.bindLocal('e', 'Set unread...', function(e) {
+        $scope.$apply(function() {
+          if ($scope.conf) {
+            var confNo = $scope.conf.conf_no;
+            $location.path("/conferences/" + confNo + "/set-unread");
+          }
+        });
+      });
     }
   ]).
   controller('ReaderCtrl', [
@@ -364,7 +454,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
           messagesService.showMessage('error', 'Failed to get conference.', data);
         });
       
-      readerService.getReader($routeParams.confNo).then(
+      readerService.getReader($routeParams.confNo, $scope.session.person.pers_no).then(
         function(reader) {
           var confNo = $routeParams.confNo;
           $log.log("ReaderCtrl - getReader(" + confNo + ") - success");
@@ -377,9 +467,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
           // If getting the reader succeeded, we know we are a
           // member of the conference and can change the working
           // conference to it.
-          sessionsService.changeConference(
-            sessionsService.getCurrentSessionId(),
-            confNo);
+          sessionsService.changeConference(confNo);
           
           $scope.reader = reader;
         },
