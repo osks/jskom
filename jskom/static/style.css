@@ -74,6 +74,9 @@ textarea {
     
     #jskomControlBar .navbar-inner {
         border-radius: 0;
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
     }
 }
 
