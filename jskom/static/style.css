@@ -114,8 +114,8 @@ textarea {
         padding-left: 10px;
     }
     
-    .navbar-fixed-top {
-        /* To counter the reduced body padding. Only needed for the fixed bar. */
+    .navbar-fixed-top, #jskomControlBar {
+        /* To counter the reduced body padding. (not needed for .navbar-static-top) */
         margin-left: -10px;
         margin-right: -10px;
     }
