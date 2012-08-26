@@ -165,7 +165,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       $scope.newText = {
         recipient_list: [{ type: 'to', conf_name: '' }],
-        content_type: 'text/x-kom-basic',
+        content_type: 'text/plain',
         subject: '',
         body: ''
       };

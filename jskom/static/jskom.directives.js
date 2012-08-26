@@ -368,7 +368,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
       var newComment = function(commentedText) {
         var comment = {
           recipient_list: [],
-          content_type: 'text/x-kom-basic',
+          content_type: 'text/plain',
           subject: '',
           body: ''
         };
