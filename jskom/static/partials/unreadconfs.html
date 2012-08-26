@@ -2,18 +2,33 @@
 
 <span ng-show="isLoading">Loading...</span>
 <span ng-hide="isLoading || unreadMemberships">Nothing unread</span>
-<ul ng-show="unreadMemberships">
-  <li ng-repeat="membership in unreadMemberships">
-    <span>
-      <a href="/conferences/{{ membership.conference.conf_no }}/unread/">
-        {{ membership.conference.conf_name }}
-      </a>
-    </span>
-    (<span class="no_of_unread">{{ membership.no_of_unread }}</span>)
-  </li>
-</ul>
 
-<p/>
+<table class="table table-striped" ng-show="unreadMemberships">
+  <thead>
+    <tr>
+      <th>Conference</th>
+      <th>Number of unread</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr ng-repeat="membership in unreadMemberships">
+      <td>
+        <a href="/conferences/{{ membership.conference.conf_no }}">
+          {{ membership.conference.conf_name }}
+        </a>
+      </td>
+      <td>
+        <span class="no_of_unread">{{ membership.no_of_unread }}</span>
+      </td>
+      <td>
+        <a class="btn" href="/conferences/{{ membership.conference.conf_no }}/unread/">
+          Read
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 <div id="jskomControlBar" class="navbar">
   <div class="navbar-inner">
@@ -38,8 +53,8 @@
     <div class="pull-right">
       <button class="btn btn-primary"
               ng-disabled="!(unreadMemberships && unreadMemberships.length > 0)"
-              ng-click="gotoFirstConference()">
-        Go to first
+              ng-click="readFirstConference()">
+        Read first
       </button>
     </div>
   </div>

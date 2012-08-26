@@ -12,7 +12,8 @@
     </div>
     
     <div ng-repeat="r in text.recipient_list">
-      <span class="jskomCapitalize">{{ r.type }}:</span> {{ r.conf_name }}
+      <span class="jskomCapitalize">{{ r.type }}:</span>
+      <a href="/conferences/{{r.conf_no}}">{{ r.conf_name }}</a>
     </div>
     
     <div>Subject: {{ text.subject }}</div>

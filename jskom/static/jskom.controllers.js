@@ -98,17 +98,17 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       $scope.enableAutoRefresh();
       
       
-      $scope.gotoFirstConference = function() {
+      $scope.readFirstConference = function() {
         if ($scope.unreadMemberships.length > 0) {
           $location.url("/conferences/" +
                         _.first($scope.unreadMemberships).conference.conf_no + "/unread/");
         }
       };
       
-      keybindingService.bindLocal(['space'], 'Go to first conference', function(e) {
+      keybindingService.bindLocal(['space'], 'Read first conference', function(e) {
         if (_.size($scope.unreadMemberships) > 0) {
           $scope.$apply(function() {
-            $scope.gotoFirstConference();
+            $scope.readFirstConference();
           });
         }
       });
@@ -295,26 +295,22 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       $scope.isJoining = false;
       $scope.isLeaving = false;
       $scope.membership = null;
-      $scope.isMember = null;
       
       var getMembership = function(persNo, confNo) {
         $scope.isLoadingMembership = true;
+        $scope.membership = null;
         membershipsService.getMembership(persNo, confNo, false).then(
             function(response) {
               $log.log("ShowConfCtrl - getMembership(" + persNo + ", " + confNo + ") - success");
               $scope.isLoadingMembership = false;
               $scope.membership = response.data;
-              $scope.isMember = true;
             },
             function(response) {
               $log.log("ShowConfCtrl - getMembership(" + persNo + ", " + confNo + ") - error");
               $scope.isLoadingMembership = false;
-              $scope.membership = null;
               if (response.data.error_code === 13) {
                 // NotMember
-                $scope.isMember = false;
               } else {
-                $scope.isMember = null;
                 messagesService.showMessage('error',
                                             'Failed to get conference membership.',
                                             response.data);
