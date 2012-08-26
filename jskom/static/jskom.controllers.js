@@ -546,5 +546,13 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
           }
         });
       });
+      
+      keybindingService.bindLocal('p', 'Browser history back', function(e) {
+        $window.history.back();
+      });
+      
+      keybindingService.bindLocal('n', 'Browser history forward', function(e) {
+        $window.history.forward();
+      });
     }
   ]);
