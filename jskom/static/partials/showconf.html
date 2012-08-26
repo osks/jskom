@@ -2,15 +2,12 @@
 <div ng-show="conf">
   <h3>Conference: <em>{{ conf.name }}</em></h3>
 
-  <div ng-hide="isLoadingMembership">
-    <div class="pull-right form-inline">
-      <label ng-show="conf.type.rd_prot == 1">
-        <strong>Closed conference</strong>
-      </label>
+  <div class="form-inline">
       <div class="btn-group">
         <button class="btn dropdown-toggle" data-toggle="dropdown"
                 ng-disabled="!membership && conf.type.rd_prot == 1">
-          Change membership
+          <span ng-hide="!membership && conf.type.rd_prot == 1">Change membership</span>
+          <span ng-show="!membership && conf.type.rd_prot == 1">Closed conference</span>
           <span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
@@ -22,14 +19,14 @@
           </li>
         </ul>
       </div>
-    </div>
-    
-    <h5>
-      <em ng-show="membership">You are a member of this conference.</em>
-      <em ng-hide="membership">You are not a member of this conference.</em>
-    </h5>
+      <label>
+        Status:
+        <em ng-show="membership">You are a member of this conference.</em>
+        <em ng-hide="membership">You are not a member of this conference.</em>
+      </label>
   </div>
   
+  <p />
   
   <ul id="jskomConfTabs" class="nav nav-tabs">
     <li class="active"><a data-target="#details" data-toggle="tab">Details</a></li>
@@ -54,10 +51,10 @@
           <th>Creator</th>
           <td>{{conf.creator|personName}}</td>
         </tr>
-        <!--<tr>
+        <tr>
           <th>Supervisor</th>
           <td>{{conf.supervisor|personName}}</td>
-        </tr>-->
+        </tr>
         <tr>
           <th>Presentation</th>
           <td>
@@ -80,6 +77,10 @@
         <tr>
           <th>Last written</th>
           <td>{{conf.last_written}}</td>
+        </tr>
+        <tr>
+          <th>Closed</th>
+          <td>{{conf.type.rd_prot}}</td>
         </tr>
       </table>
     </div>
