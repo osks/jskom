@@ -185,27 +185,26 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             scope.lookup = '';
             scope.conf = null;
             
-            scope.$watch('model', function(newModel) {
-              //$log.log("<jskom:conf-input> - $watch(model) - changed: " + newModel);
+            scope.$watch('model', function(newModel, oldModel) {
+              //$log.log("<jskom:conf-input> - $watch(model) - new: " + newModel);
+              //$log.log("<jskom:conf-input> - $watch(model) - old: " + oldModel);
               
-              // We want to allow initialization by setting the
-              // conference number in the model from the start, but the
-              // model is also the currently selected conference - which
-              // is changed when using the control. Therefor we only
-              // look at the changed model value if scope.conf is not
-              // set (i.e. we haven't loaded the real conf data yet).
-              if (newModel && !scope.conf) {
-                scope.lookup = '#' + newModel;
-                scope.getConf();
-              }
-            });
-            
-            scope.$watch('conf', function(newConf) {
-              //$log.log("<jskom:conf-input> - $watch(conf) - changed");
-              if (newConf) {
-                scope.model = newConf.conf_no;
-              } else {
-                scope.model = null;
+              if (newModel && newModel !== oldModel) {
+                // We got a new model (person number) that has
+                // changed from last time.
+                
+                var isModelInMatches = _.any(scope.matches, function (match) {
+                  return match.conf_no === newModel;
+                });
+                //$log.log("<jskom:conf-input> - $watch(model) - isInMatches: " + isModelInMatches);
+                if (!isModelInMatches) {
+                  // If the current set of matches doesn't include the new model
+                  // it has probably been changed from the "outside" and we should
+                  // do a new look-up. Assume it's a conf number.
+                  scope.clearMatching();
+                  scope.lookup = '#' + newModel;
+                  scope.getConf();
+                }
               }
             });
             
@@ -221,6 +220,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
                   || scope.conf) {
                 return;
               }
+              
               scope.isLoading = true;
               conferencesService.lookupConferences(scope.lookup, scope.wantPers, scope.wantConfs).
                 success(function(data) {
@@ -229,7 +229,10 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
                   scope.matches = data.conferences;
                   if (scope.matches.length > 0) {
                     scope.conf = scope.matches[0];
+                    scope.model = scope.conf.conf_no;
                   } else {
+                    scope.conf = null;
+                    scope.model = null;
                     messagesService.showMessage('error', 'Could not find any ' +
                                                 errorMsgText(scope.wantPers, scope.wantConfs) +
                                                 ' with that name.');
