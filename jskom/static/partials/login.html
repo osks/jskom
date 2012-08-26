@@ -1,19 +1,21 @@
-<h3>Login</h3>
-<form>
-  
+<h3>Log in</h3>
+
+<form ng-controller="LoginCtrl">
   <label>Person name</label>
   <jskom:conf-input class="span6" model="session.person.pers_no" only-pers></jskom:conf-input>
   
   <label>Password</label>
-  <input type="password" class="span6" ng-model="session.password" />
+  <input type="password" class="span6" ng-model="session.passwd" />
   
-  <div id="jskomControlBar" class="form-actions">
-    <div class="pull-right">
-      <button type="submit" class="btn btn-primary"
-              ng-disabled="isLoading || !session.person.pers_no"
-              ng-click="login()">
-        Login
-      </button>
+  <div class="jskomControlBar navbar">
+    <div class="navbar-inner">
+      <div class="pull-right">
+        <button type="submit" class="btn btn-primary"
+                ng-disabled="isLoggingIn || !session.person.pers_no"
+                ng-click="login()">
+          Log in
+        </button>
+      </div>
     </div>
   </div>
 </form>

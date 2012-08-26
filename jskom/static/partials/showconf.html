@@ -2,29 +2,6 @@
 <div ng-show="conf">
   <h3>Conference: <em>{{ conf.name }}</em></h3>
   
-  <div class="form-inline">
-      <div class="btn-group">
-        <button class="btn dropdown-toggle" data-toggle="dropdown"
-                ng-disabled="isJoining || isLeaving">
-          Change membership
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
-          <li ng-show="membership">
-            <a data-target="#" ng-click="leaveConf()">Leave</a>
-          </li>
-          <li ng-hide="membership">
-            <a data-target="#" ng-click="joinConf()">Join</a>
-          </li>
-        </ul>
-      </div>
-      <label>
-        Status:
-        <em ng-show="membership">You are a member of this conference.</em>
-        <em ng-hide="membership">You are not a member of this conference.</em>
-      </label>
-  </div>
-  
   <p />
   
   <ul id="jskomConfTabs" class="nav nav-tabs">
@@ -88,7 +65,43 @@
       <span ng-show="isLoadingMembership">Loading...</span>
       
       <div ng-hide="isLoadingMembership">
-        <span ng-hide="membership">Not a member.</span>
+        
+        
+        <div class="form-inline pull-right">
+          <label>
+            <em ng-show="membership">You are a member of this conference.</em>
+            <em ng-hide="membership">You are not a member of this conference.</em>
+          </label>
+          
+          <button class="btn" ng-disabled="isLeaving" ng-click="leaveConf()"
+                  ng-show="membership">
+            Leave
+          </button>
+          
+          <button class="btn" ng-disabled="isLeaving" ng-click="joinConf()"
+                  ng-hide="membership">
+            Join
+          </button>
+          
+          <div class="btn-group" ng-show="false">
+            <button class="btn dropdown-toggle" data-toggle="dropdown"
+                    ng-disabled="isJoining || isLeaving">
+              Change membership
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+              <li ng-show="membership">
+              </li>
+              <li ng-hide="membership">
+                <a data-target="#" ng-click="joinConf()">Join</a>
+              </li>
+            </ul>
+          </div>
+          
+        </div>
+        
+        <p class="clearfix"></p>
+        
         <table class="table" ng-show="membership">
           <tbody>
             <tr>

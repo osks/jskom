@@ -1,0 +1,25 @@
+<h3>Create person</h3>
+
+<form ng-controller="NewPersonCtrl">
+  
+  <label>Person name</label>
+  <input type="text" class="span6" ng-model="person.name" />
+  
+  <label>Password</label>
+  <input type="password" class="span6" ng-model="person.passwd" />
+
+  <label>Control question: {{question}}</label>
+  <input type="text" class="span6" ng-model="answer" />
+  
+  <div class="jskomControlBar navbar">
+    <div class="navbar-inner">
+      <div class="pull-right">
+        <button type="submit" class="btn btn-primary"
+                ng-disabled="isCreating || !person.name || !person.passwd || !answer"
+                ng-click="createPerson()">
+          Create
+        </button>
+      </div>
+    </div>
+  </div>
+</form>

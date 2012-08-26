@@ -38,8 +38,9 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
     function($http, $log, httpkomServer, jskomName, jskomVersion) {
       var config = { withCredentials: true };
       return {
-        newSession: function() {
-          return { person: { pers_name: '', pers_no: null }, password: '',
+        newSession: function(persNo) {
+          persNo = persNo || null;
+          return { person: { pers_name: '', pers_no: persNo }, passwd: '',
                    client: { name: jskomName, version: jskomVersion } };
         },
         
@@ -84,9 +85,9 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
   }]).
   controller('SessionCtrl', [
     '$rootScope', '$scope', '$log', '$location',
-    'sessionsService', 'messagesService', 'pageTitleService',
+    'sessionsService', 'messagesService',
     function($rootScope, $scope, $log, $location,
-             sessionsService, messagesService, pageTitleService) {
+             sessionsService, messagesService) {
       $scope.isLoading = false;
       var reset = function() {
         $scope.session = sessionsService.newSession();
@@ -107,46 +108,16 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
               $log.log("SessionCtrl - getCurrentSession() - error");
               $scope.isLoading = false;
               $scope.state = 'notLoggedIn';
-              pageTitleService.set("Login");
             });
         } else {
           $scope.state = 'notLoggedIn';
-          pageTitleService.set("Login");
         }
-      };
-      
-      var createSession = function() {
-        $scope.isLoading = true;
-        sessionsService.createSession($scope.session).
-          success(function(data) {
-            $log.log("SessionCtrl - login() - success");
-            $scope.isLoading = false;
-            $scope.state = 'loggedIn';
-            $scope.session = data;
-            messagesService.clearAll();
-            pageTitleService.set("");
-          }).
-          error(function(data) {
-            $log.log("SessionCtrl - login() - error");
-            $scope.isLoading = false;
-            $scope.state = 'notLoggedIn';
-            messagesService.showMessage('error', 'Failed to login.', data);
-          });
       };
       
       $rootScope.$on('event:loginRequired', function() {
         $log.log("SessionCtrl - event:loginRequired");
         $scope.state = 'notLoggedIn';
       });
-      
-      $scope.isLoading = false;
-      reset();
-      getCurrentSession();
-      
-      $scope.login = function() {
-        $log.log("SessionCtrl - login()");
-        createSession();
-      }
       
       $scope.logout = function() {
         $log.log("SessionCtrl - logout()");
@@ -163,6 +134,130 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
             } else {
               messagesService.showMessage('error', 'Error when logging out.');
             }
+          });
+      };
+      
+      $scope.$on('jskom:auth:login:success', function($event, session) {
+        $scope.state = 'loggedIn';
+        $scope.session = session;
+        messagesService.clearAll();
+      });
+      
+      $scope.$on('jskom:auth:login:failure', function($event) {
+        $scope.state = 'notLoggedIn';
+      });
+      
+      $scope.$on('jskom:auth:person:created', function($event, persNo) {
+        $scope.session = sessionsService.newSession(persNo);
+      });
+      
+      reset();
+      getCurrentSession();
+    }
+  ]).
+  controller('LoginTabsCtrl', [
+    '$scope', '$log', 'pageTitleService',
+    function($scope, $log, pageTitleService) {
+      $scope.loginActiveTab = 'login';
+      
+      $scope.selectTab = function(tab) {
+        $scope.loginActiveTab = tab;
+      };
+      
+      $scope.isTabActive = function(tab) {
+        if ($scope.loginActiveTab == tab) {
+          return 'active';
+        } else {
+          return '';
+        }
+      };
+      
+      $scope.$watch('loginActiveTab', function(newTab) {
+        if (newTab == 'login') {
+          pageTitleService.set("Log in");
+        } else if (newTab == 'create') {
+          pageTitleService.set("Create person");
+        } else {
+          pageTitleService.set("");
+        }
+        
+      });
+      
+      $scope.$on('jskom:auth:person:created', function($event, persNo) {
+        $scope.loginActiveTab = 'login';
+      });
+    }
+  ]).
+  controller('NewPersonCtrl', [
+    '$scope', '$log', '$location', 'personsService', 'messagesService', 'sessionsService',
+    function($scope, $log, $location, personsService, messagesService, sessionsService) {
+      var values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+      var pickRandom = function() {
+        return values[Math.floor(Math.random() * values.length)];
+      };
+      var newQuestion = function() {
+        $scope.v1 = pickRandom();
+        $scope.v2 = pickRandom();
+        $scope.question = 'what is ' + $scope.v1 + ' + ' + $scope.v2 + '?';
+        $scope.answer = '';
+      };
+      var checkAnswer = function() {
+        var answer = parseInt(jQuery.trim($scope.answer));
+        if (_.isNaN(answer)) {
+          return false;
+        }
+        
+        return (($scope.v1 + $scope.v2) == answer);
+      };
+      
+      newQuestion();
+      $scope.isCreating = false;
+      $scope.person = personsService.newPerson();
+      
+      $scope.createPerson = function() {
+        if (!checkAnswer()) {
+          messagesService.showMessage('error', 'The answer to the control question is wrong.');
+          newQuestion();
+          return;
+        }
+        
+        $scope.isCreating = true;
+        return personsService.createPerson($scope.person).then(
+          function(response) {
+            $log.log("NewPersonCtrl - createPerson() - success");
+            $scope.isCreating = false;
+            messagesService.showMessage('success', 'Successfully created person.');
+            $scope.$emit('jskom:auth:person:created', response.data.pers_no);
+            $scope.person = personsService.newPerson();
+          },
+          function(response) {
+            $log.log("NewPersonCtrl - createPerson() - error");
+            $scope.isCreating = false;
+            messagesService.showMessage('error', 'Failed to create person.', response.data);
+            newQuestion();
+          }
+        );
+      };
+    }
+  ]).
+  controller('LoginCtrl', [
+    '$scope', '$log', 'sessionsService', 'messagesService',
+    function($scope, $log, sessionsService, messagesService) {
+      $scope.isLoggingIn = false;
+      
+      $scope.login = function() {
+        $scope.isLoggingIn = true;
+        sessionsService.createSession($scope.session).then(
+          function(response) {
+            $log.log("LoginCtrl - login() - success");
+            $scope.$emit('jskom:auth:login:success', response.data);
+            $scope.isLoggingIn = false;
+          },
+          function(response) {
+            $log.log("LoginCtrl - login() - error");
+            messagesService.showMessage('error', 'Failed to login.', response.data);
+            $scope.$emit('jskom:auth:login:failure');
+            $scope.isLoggingIn = false;
           });
       };
     }

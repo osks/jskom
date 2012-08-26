@@ -39,10 +39,10 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
     }
   ]).
   controller('UnreadConfsCtrl', [
-    '$scope', '$http', '$location', '$log', '$timeout',
+    '$scope', '$location', '$log', '$timeout',
     'conferencesService', 'pageTitleService', 'messagesService', 'keybindingService',
     'membershipsService',
-    function($scope, $http, $location, $log, $timeout,
+    function($scope, $location, $log, $timeout,
              conferencesService, pageTitleService, messagesService, keybindingService,
              membershipsService) {
       pageTitleService.set("Unread conferences");

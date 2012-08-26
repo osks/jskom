@@ -361,6 +361,23 @@ angular.module('jskom.services', ['jskom.settings']).
       };
     }
   ]).
+  factory('personsService', [
+    '$http', 'httpkomServer',
+    function($http, httpkomServer) {
+      var config = { withCredentials: true };
+      
+      return {
+        newPerson: function() {
+          return { name: '', passwd: '' };
+        },
+        
+        createPerson: function(person) {
+          var data = { name: person.name, passwd: person.passwd };
+          return $http.post(httpkomServer + '/persons/', data, config);
+        }
+      };
+    }
+  ]).
   factory('membershipsService', [
     '$http', 'httpkomServer',
     function($http, httpkomServer) {
