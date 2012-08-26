@@ -70,7 +70,9 @@ textarea {
         margin-right: 0px;
         margin-left: 0px;
         margin-bottom: 0;
-        
+    }
+    
+    #jskomControlBar .navbar-inner {
         border-radius: 0;
     }
 }
