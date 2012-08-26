@@ -385,7 +385,10 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
             $scope.textIsLoading = false;
             $scope.text = text;
             
-            if ($location.search.text != text.text_no) {
+            if ($location.search().text != text.text_no) {
+              if ($location.search().text == null) {
+                $location.replace();
+              }
               $location.search('text', text.text_no);
             }
             
@@ -462,7 +465,9 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
           if ($routeParams.text) {
             reader.unshiftPending($routeParams.text);
           }
-          setText(reader.shift());
+          if (!reader.isEmpty()) {
+            setText(reader.shift());
+          }
           
           // If getting the reader succeeded, we know we are a
           // member of the conference and can change the working

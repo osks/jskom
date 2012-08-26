@@ -452,19 +452,21 @@ angular.module('jskom.services', ['jskom.settings']).
         },
         
         shift: function() {
-          if (this._pending.length > 0) {
+          if (this.hasPending()) {
             return textsService.getText(this._pending.shift()).then(
               function(response) {
                 return response.data;
               });
               
-          } else {
+          } else if (this.hasUnread()) {
             return textsService.getText(this._unreadQueue.dequeue()).then(
               function(response) {
                 response.data._is_unread = true;
                 markAsRead(response.data);
                 return response.data;
               });
+          } else {
+            return null;
           }
         },
         
