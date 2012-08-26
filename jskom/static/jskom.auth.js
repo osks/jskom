@@ -47,7 +47,7 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
           return $http.post(httpkomServer + '/sessions/', session, config);
         },
         
-        destroySession: function(sessionId) {
+        deleteSession: function(sessionId) {
           return $http.delete(httpkomServer + '/sessions/' + sessionId, config);
         },
         
@@ -150,7 +150,7 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
       
       $scope.logout = function() {
         $log.log("SessionCtrl - logout()");
-        sessionsService.destroySession(sessionsService.getCurrentSessionId()).
+        sessionsService.deleteSession(sessionsService.getCurrentSessionId()).
           success(function() {
             $scope.state = 'notLoggedIn';
             reset();

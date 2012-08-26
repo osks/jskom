@@ -9,7 +9,9 @@
 
   <div id="jskomConfTabsContent" class="tab-content">
     <div class="tab-pane active" id="membership">
-      <ng-switch on="isMember">
+      <span ng-show="isLoadingMembership">Loading...</span>
+      
+      <ng-switch on="isMember" ng-hide="isLoadingMembership">
         <div ng-switch-default>Loading...</div>
         <div ng-switch-when="true">
           <p>
@@ -25,6 +27,10 @@
               <td>{{membership.last_time_read}}</td>
             </tr>
             <tr>
+              <td>Priority</td>
+              <td>{{membership.priority}}</td>
+            </tr>
+            <tr>
               <td>Number of unread texts</td>
               <td>{{membership.no_of_unread}}</td>
             </tr>
@@ -33,7 +39,11 @@
               <td><em>{{membership.added_by|personName}}</em></td>
             </tr>
           </table>
-          <button class="btn">Leave conference</button>
+          <button class="btn"
+                  ng-disabled="isLeaving"
+                  ng-click="leaveConf()">
+            Leave conference
+          </button>
         </div>
         <div ng-switch-when="false">
           <ng-switch on="conf.type.rd_prot">
@@ -41,7 +51,11 @@
               <p>
                 <strong>You are not a member of this conference.</strong>
               </p>
-              <button class="btn" ng-click="join()">Join conference</button>
+              <button class="btn"
+                      ng-disabled="isJoining"
+                      ng-click="joinConf()">
+                Join conference
+              </button>
             </div>
             <div ng-switch-when="1">
               <p>

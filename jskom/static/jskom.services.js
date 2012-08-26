@@ -373,6 +373,17 @@ angular.module('jskom.services', ['jskom.settings']).
                             data, config);
         },
         
+        addMembership: function(persNo, confNo) {
+          var priority = 100;
+          return $http.put(httpkomServer + '/persons/' + persNo + '/memberships/' + confNo, null,
+                           _.extend({ params: { "priority": parseInt(priority) } }, config));
+        },
+        
+        deleteMembership: function(persNo, confNo) {
+          return $http.delete(httpkomServer + '/persons/' + persNo + '/memberships/' + confNo,
+                              config);
+        },
+        
         getMembership: function(persNo, confNo, wantUnread) {
           return $http.get(httpkomServer + '/persons/' + persNo + '/memberships/' + confNo,
                            _.extend({ params: { "want-unread": wantUnread } }, config));
@@ -401,7 +412,7 @@ angular.module('jskom.services', ['jskom.settings']).
                            '/texts/' + textNo + '/read-marking', null, config);
         },
         
-        destroyGlobalReadMarking: function(textNo) {
+        deleteGlobalReadMarking: function(textNo) {
           return $http.delete(httpkomServer +
                               '/texts/' + textNo + '/read-marking', config);
         },

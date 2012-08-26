@@ -255,7 +255,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         if ($scope.text) {
           var text = $scope.text;
           $scope.readmarkIsLoading = false;
-          readMarkingsService.destroyGlobalReadMarking(text.text_no).
+          readMarkingsService.deleteGlobalReadMarking(text.text_no).
             success(function(data) {
               $log.log("TextCtrl - markAsUnread(" + text.text_no + ") - success");
               $scope.readmarkIsLoading = false;
@@ -291,54 +291,84 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
              pageTitleService, conferencesService, keybindingService, messagesService,
              membershipsService) {
       $scope.conf = null;
+      $scope.isLoadingMembership = false;
+      $scope.isJoining = false;
+      $scope.isLeaving = false;
       $scope.membership = null;
       $scope.isMember = null;
       
-      $scope.$watch('conf', function(newConf) {
-        if (newConf) {
-          pageTitleService.set(newConf.name);
-          
-          membershipsService.getMembership(
-            $scope.session.person.pers_no, newConf.conf_no, false).then(
-              function(response) {
-                $log.log("ShowConfCtrl - getMembership(..) - success");
-                $scope.membership = response.data;
-                $scope.isMember = true;
-              },
-              function(response) {
-                $log.log("ShowConfCtrl - getMembership(..) - error");
-                $scope.membership = null;
-                if (response.status == 404) {
-                  // NotMember
-                  $scope.isMember = false;
-                } else {
-                  $scope.isMember = null;
-                  messagesService.showMessage('error',
-                                              'Failed to get conference membership.',
-                                              response.data);
-                }
-              });
-        } else {
-          pageTitleService.set("");
-        }
-      });
+      var getMembership = function(persNo, confNo) {
+        $scope.isLoadingMembership = true;
+        membershipsService.getMembership(persNo, confNo, false).then(
+            function(response) {
+              $log.log("ShowConfCtrl - getMembership(" + persNo + ", " + confNo + ") - success");
+              $scope.isLoadingMembership = false;
+              $scope.membership = response.data;
+              $scope.isMember = true;
+            },
+            function(response) {
+              $log.log("ShowConfCtrl - getMembership(" + persNo + ", " + confNo + ") - error");
+              $scope.isLoadingMembership = false;
+              $scope.membership = null;
+              if (response.data.error_code === 13) {
+                // NotMember
+                $scope.isMember = false;
+              } else {
+                $scope.isMember = null;
+                messagesService.showMessage('error',
+                                            'Failed to get conference membership.',
+                                            response.data);
+              }
+            });
+      };
       
       $scope.joinConf = function() {
-        // todo
+        var persNo = $scope.session.person.pers_no;
+        var confNo = $scope.conf.conf_no;
+        $scope.isJoining = true;
+        membershipsService.addMembership(persNo, confNo).then(
+          function(response) {
+            $log.log("ShowConfCtrl - addMembership(" + persNo + ", " + confNo + ") - success");
+            $scope.isJoining = false;
+            getMembership(persNo, confNo); // Refresh membership
+            messagesService.showMessage('success', 'Successfully joined conference.');
+          },
+          function(response) {
+            $log.log("ShowConfCtrl - addMembership(" + persNo + ", " + confNo + ") - error");
+            $scope.isJoining = false;
+            messagesService.showMessage('error', 'Failed to join conference.', response.data);
+          });
       };
       
       $scope.leaveConf = function() {
-        // todo
+        var persNo = $scope.session.person.pers_no;
+        var confNo = $scope.conf.conf_no;
+        $scope.isLeaving = true;
+        membershipsService.deleteMembership(persNo, confNo).then(
+          function(response) {
+            $log.log("ShowConfCtrl - deleteMembership(" + persNo + ", " + confNo + ") - success");
+            $scope.isLeaving = false;
+            getMembership(persNo, confNo); // Refresh membership
+            messagesService.showMessage('success', 'Successfully left conference.');
+          },
+          function(response) {
+            $log.log("ShowConfCtrl - deleteMembership(" + persNo + ", " + confNo + ") - error");
+            $scope.isLeaving = false;
+            messagesService.showMessage('error', 'Failed to leave conference.', response.data);
+          });
       };
       
       conferencesService.getConference($routeParams.confNo, false).then(
         function(response) {
           $log.log("ShowConfCtrl - getConference(" + $routeParams.confNo + ") - success");
           $scope.conf = response.data;
+          getMembership($scope.session.person.pers_no, $scope.conf.conf_no);
+          pageTitleService.set($scope.conf.name);
         },
         function(response) {
           $log.log("ShowConfCtrl - getConference(" + $routeParams.confNo + ") - error");
           messagesService.showMessage('error', 'Failed to get conference.', response.data);
+          pageTitleService.set("");
         });
       
       keybindingService.bindLocal('e', 'Set unread...', function(e) {
