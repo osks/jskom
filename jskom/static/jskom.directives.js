@@ -273,7 +273,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           }
           
           var resize = function() {
-            $log.log("<jskom:conf-input> - resize");
+            //$log.log("<jskom:conf-input> - resize");
             var elWidth = iElement.width();
             
             if (matchesInputEl.is(':visible')) {
