@@ -1,13 +1,12 @@
 <span ng-hide="conf">Loading...</span>
 <div ng-show="conf">
   <h3>Conference: <em>{{ conf.name }}</em></h3>
-
+  
   <div class="form-inline">
       <div class="btn-group">
         <button class="btn dropdown-toggle" data-toggle="dropdown"
-                ng-disabled="!membership && conf.type.rd_prot == 1">
-          <span ng-hide="!membership && conf.type.rd_prot == 1">Change membership</span>
-          <span ng-show="!membership && conf.type.rd_prot == 1">Closed conference</span>
+                ng-disabled="isJoining || isLeaving">
+          Change membership
           <span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
@@ -53,7 +52,7 @@
         </tr>
         <tr>
           <th>Supervisor</th>
-          <td>{{conf.supervisor|personName}}</td>
+          <td>{{conf.supervisor.conf_name}}</td>
         </tr>
         <tr>
           <th>Presentation</th>
