@@ -150,17 +150,16 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
       
       $scope.logout = function() {
         $log.log("SessionCtrl - logout()");
+        $scope.state = 'notLoggedIn';
+        reset();
         sessionsService.deleteSession(sessionsService.getCurrentSessionId()).
           success(function() {
-            $scope.state = 'notLoggedIn';
-            reset();
             $location.url('/');
           }).
           error(function(data, status) {
             if (status == 404) {
               // Session does not exist: we're not logged in.
               $scope.state = 'notLoggedIn';
-              reset();
             } else {
               messagesService.showMessage('error', 'Error when logging out.');
             }
