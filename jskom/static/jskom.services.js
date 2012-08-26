@@ -423,8 +423,8 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('readerFactory', [
-    '$log', 'textsService', 'readMarkingsService',
-    function($log, textsService, readMarkingsService) {
+    '$log', 'textsService', 'readMarkingsService', 'messagesService',
+    function($log, textsService, readMarkingsService, messagesService) {
       var markAsRead = function(text) {
         readMarkingsService.createGlobalReadMarking(text.text_no).
           success(function(data) {
