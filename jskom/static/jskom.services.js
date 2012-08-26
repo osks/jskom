@@ -599,14 +599,22 @@ angular.module('jskom.services', ['jskom.settings']).
             var self = this;
             textsService.getText(nextTextNo).then(
               function(response) {
-                var comments = _.clone(response.data.comment_in_list);
+                var comments = _.map(response.data.comment_in_list, function(text) {
+                  return text.text_no;
+                });
                 if (comments) {
-                  comments.reverse();
-                  _.each(comments, function(comment) {
-                    self._currentThreadStack.push(comment.text_no);
+                  // We filter instead of doing intersection because
+                  // we need to be sure that we preserve the order of
+                  // the comments.
+                  var unreadComments = _.filter(comments, function(textNo) {
+                    return _.include(self._unreadTextNos, textNo)
+                  });
+                  unreadComments.reverse();
+                  _.each(unreadComments, function(textNo) {
+                    self._currentThreadStack.push(textNo);
                   });
                 }
-
+                
                 // Simple (stupid) prefetch of texts on the thread
                 // stack, we wait for the fetch so we can consider the
                 // new text's comments. ("last" because we pop from

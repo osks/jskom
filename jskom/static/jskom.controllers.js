@@ -301,12 +301,12 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         $scope.membership = null;
         membershipsService.getMembership(persNo, confNo, false).then(
             function(response) {
-              $log.log("ShowConfCtrl - getMembership(" + persNo + ", " + confNo + ") - success");
+              $log.log("ShowConfCtrl - getMembership(" + confNo + ") - success");
               $scope.isLoadingMembership = false;
               $scope.membership = response.data;
             },
             function(response) {
-              $log.log("ShowConfCtrl - getMembership(" + persNo + ", " + confNo + ") - error");
+              $log.log("ShowConfCtrl - getMembership(" + confNo + ") - error");
               $scope.isLoadingMembership = false;
               if (response.data.error_code === 13) {
                 // NotMember
@@ -324,13 +324,13 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         $scope.isJoining = true;
         membershipsService.addMembership(persNo, confNo).then(
           function(response) {
-            $log.log("ShowConfCtrl - addMembership(" + persNo + ", " + confNo + ") - success");
+            $log.log("ShowConfCtrl - addMembership(" + confNo + ") - success");
             $scope.isJoining = false;
             getMembership(persNo, confNo); // Refresh membership
             messagesService.showMessage('success', 'Successfully joined conference.');
           },
           function(response) {
-            $log.log("ShowConfCtrl - addMembership(" + persNo + ", " + confNo + ") - error");
+            $log.log("ShowConfCtrl - addMembership(" + confNo + ") - error");
             $scope.isJoining = false;
             messagesService.showMessage('error', 'Failed to join conference.', response.data);
           });
@@ -342,13 +342,13 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         $scope.isLeaving = true;
         membershipsService.deleteMembership(persNo, confNo).then(
           function(response) {
-            $log.log("ShowConfCtrl - deleteMembership(" + persNo + ", " + confNo + ") - success");
+            $log.log("ShowConfCtrl - deleteMembership(" + confNo + ") - success");
             $scope.isLeaving = false;
             getMembership(persNo, confNo); // Refresh membership
             messagesService.showMessage('success', 'Successfully left conference.');
           },
           function(response) {
-            $log.log("ShowConfCtrl - deleteMembership(" + persNo + ", " + confNo + ") - error");
+            $log.log("ShowConfCtrl - deleteMembership(" + confNo + ") - error");
             $scope.isLeaving = false;
             messagesService.showMessage('error', 'Failed to leave conference.', response.data);
           });
