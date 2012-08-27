@@ -2,14 +2,17 @@
 
 <form ng-controller="NewPersonCtrl">
   
-  <label>Person name</label>
-  <input type="text" class="span6" ng-model="person.name" />
+  <label>Person name (use your full name, like &quot;Sven Svensson&quot;)</label>
+  <input type="text" class="span6" required ng-model="person.name" />
   
   <label>Password</label>
-  <input type="password" class="span6" ng-model="person.passwd" />
-
+  <input type="password" class="span6" required ng-model="person.passwd" />
+  
+  <label>Confirm password</label>
+  <input type="password" class="span6" required ng-model="confirmpasswd" />
+  
   <label>Control question: {{question}}</label>
-  <input type="text" class="span6" ng-model="answer" />
+  <input type="text" class="span6" required ng-model="answer" />
   
   <div class="jskomControlBar navbar">
     <div class="navbar-inner">

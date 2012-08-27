@@ -221,6 +221,11 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
           return;
         }
         
+        if ($scope.person.passwd != $scope.confirmpasswd) {
+          messagesService.showMessage('error', 'The confirmation password is not correct.');
+          return;
+        }
+        
         $scope.isCreating = true;
         return personsService.createPerson($scope.person).then(
           function(response) {
