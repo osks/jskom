@@ -7,24 +7,18 @@
   <thead>
     <tr>
       <th>Conference</th>
-      <th>Number of unread</th>
-      <th></th>
+      <th class="jskomAlignRight">Number of unread</th>
     </tr>
   </thead>
   <tbody>
     <tr ng-repeat="membership in unreadMemberships">
       <td>
-        <a href="/conferences/{{ membership.conference.conf_no }}">
+        <a href="/conferences/{{ membership.conference.conf_no }}/unread">
           {{ membership.conference.conf_name }}
         </a>
       </td>
-      <td>
-        <span class="no_of_unread">{{ membership.no_of_unread }}</span>
-      </td>
       <td class="jskomAlignRight">
-        <a class="btn" href="/conferences/{{ membership.conference.conf_no }}/unread/">
-          Read
-        </a>
+        <span class="no_of_unread">{{ membership.no_of_unread }}</span>
       </td>
     </tr>
   </tbody>
