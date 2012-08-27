@@ -63,6 +63,14 @@ textarea {
 }
 
 @media (max-width: 979px) and (min-height: 400px) {
+    /* Some min heights to allow for always filling the page on mobile.*/
+    body {
+        min-height: 400px;
+    }
+    body > .container > .row {
+        min-height: 220px;
+    }
+    
     body {
         /* To compensate for #jskomControlBar that we change to fixed now. */
         padding-bottom: 40px;
