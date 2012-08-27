@@ -215,17 +215,17 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
       $scope.person = personsService.newPerson();
       
       $scope.createPerson = function() {
-        if (!checkAnswer()) {
-          messagesService.showMessage('error', 'The answer to the control question is wrong.');
-          newQuestion();
-          return;
-        }
-        
         if ($scope.person.passwd != $scope.confirmpasswd) {
           messagesService.showMessage('error', 'The confirmation password is not correct.');
           return;
         }
         
+        if (!checkAnswer()) {
+          messagesService.showMessage('error', 'The answer to the control question is wrong.');
+          newQuestion();
+          return;
+        }
+                
         $scope.isCreating = true;
         return personsService.createPerson($scope.person).then(
           function(response) {
