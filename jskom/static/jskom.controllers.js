@@ -426,7 +426,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
             } else {
               angular.element($window).scrollTop(40);
             }*/
-            angular.element($window).scrollTop(0);
+            angular.element($window).scrollTop(1);
           },
           function(response) {
             $scope.textIsLoading = false;
