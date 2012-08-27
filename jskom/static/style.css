@@ -65,10 +65,10 @@ textarea {
 @media (max-width: 979px) and (min-height: 400px) {
     /* Some min heights to allow for always filling the page on mobile.*/
     body {
-        min-height: 500px;
+        min-height: 440px;
     }
     body > .container > .row {
-        min-height: 220px;
+        min-height: 250px;
     }
     
     body {
