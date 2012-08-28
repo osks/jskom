@@ -31,6 +31,10 @@
     <script type="text/javascript" src="{{ ASSET_URL }}"></script>
     {%- endassets %}
     
+    {% assets "js_jskom" %}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {%- endassets %}
+
     <title>jskom</title>
   </head>
   <body ng-controller="SessionCtrl">
@@ -129,7 +133,7 @@
             </div>
           </div>
           
-          <div ng-switch-when="loggedIn">
+          <div ng-switch-when="loggedIn" ng-cloak>
             <div class="span8">
               <ng-include src="'messages.html'|jskomTemplate"></ng-include>
               <ng-view ng-cloak></ng-view>
@@ -140,7 +144,7 @@
             </div>
           </div>
           
-          <div ng-switch-when="notLoggedIn" ng-controller="LoginTabsCtrl">
+          <div ng-switch-when="notLoggedIn" ng-controller="LoginTabsCtrl" ng-cloak>
             <div class="span6">
               <ng-include src="'messages.html'|jskomTemplate"></ng-include>
               
@@ -199,11 +203,6 @@
             templatePathProvider.setVersion('{{ static_version }}');
           }
         ]);
-  
     </script>
-
-    {% assets "js_jskom" %}
-    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-    {%- endassets %}
   </body>
 </html>

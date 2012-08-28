@@ -24,34 +24,34 @@
       </tr>
     </tbody>
   </table>
+</div>
 
-  <div id="jskomControlBar" class="navbar">
-    <div class="navbar-inner">
-      <button class="btn"
-              ng-disabled="isLoading"
-              ng-click="load()">
-        <i class="icon-refresh"></i>
+<div id="jskomControlBar" class="navbar">
+  <div class="navbar-inner">
+    <button class="btn"
+            ng-disabled="isLoading"
+            ng-click="load()">
+      <i class="icon-refresh"></i>
+    </button>
+    <span>
+      <button class="btn active"
+              ng-show="autoRefreshing"
+              ng-click="disableAutoRefresh()">
+        Auto-refresh: on
       </button>
-      <span>
-        <button class="btn active"
-                ng-show="autoRefreshing"
-                ng-click="disableAutoRefresh()">
-          Auto-refresh: on
-        </button>
-        <button class="btn"
-                ng-hide="autoRefreshing"
-                ng-click="enableAutoRefresh()">
-          Auto-refresh: off
-        </button>
-      </span>
-      
-      <div class="pull-right">
-        <button class="btn btn-primary"
-                ng-disabled="!(unreadMemberships && unreadMemberships.length > 0)"
-                ng-click="readFirstConference()">
-          Read first
-        </button>
-      </div>
+      <button class="btn"
+              ng-hide="autoRefreshing"
+              ng-click="enableAutoRefresh()">
+        Auto-refresh: off
+      </button>
+    </span>
+    
+    <div class="pull-right">
+      <button class="btn btn-primary"
+              ng-disabled="!(unreadMemberships && unreadMemberships.length > 0)"
+              ng-click="readFirstConference()">
+        Read first
+      </button>
     </div>
   </div>
 </div>
