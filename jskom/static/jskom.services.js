@@ -270,11 +270,23 @@ angular.module('jskom.services', ['jskom.settings']).
       };
     }
   ]).
-  factory('textsService', [
-    '$log', '$http', '$q', '$cacheFactory', 'httpkomServer',
-    function($log, $http, $q, $cacheFactory, httpkomServer) {
-      
+  service('textsCache', [
+    '$cacheFactory',
+    function($cacheFactory) {
       var cache = $cacheFactory('texts', { capacity: 100 });
+      return cache;
+    }
+  ]).
+  service('membershipsCache', [
+    '$cacheFactory',
+    function($cacheFactory) {
+      var cache = $cacheFactory('memberships', { capacity: 100 });
+      return cache;
+    }
+  ]).
+  factory('textsService', [
+    '$log', '$http', '$q', 'textsCache', 'httpkomServer',
+    function($log, $http, $q, textsCache, httpkomServer) {
       var config = { withCredentials: true };
       
       var enhanceText = function(text) {
@@ -293,7 +305,7 @@ angular.module('jskom.services', ['jskom.settings']).
       return {
         getText: function(textNo) {
           textNo = textNo.toString();
-          var cachedResp = cache.get(textNo);
+          var cachedResp = textsCache.get(textNo);
           
           if (cachedResp) {
             //$log.log("textsService - getText(" + textNo + ") - cached");
@@ -305,16 +317,16 @@ angular.module('jskom.services', ['jskom.settings']).
             $http.get(httpkomServer + '/texts/' + textNo, config).then(
               function(response) {
                 $log.log("textsService - getText(" + textNo + ") - success");
-                enhanceText(response.data);
+                response.data = enhanceText(response.data);
                 deferred.resolve(response);
               },
               function(response) {
                 $log.log("textsService - getText(" + textNo + ") - error");
-                cache.remove(textNo);
+                textsCache.remove(textNo);
                 deferred.reject(response);
               });
             
-            cache.put(textNo, promise);
+            textsCache.put(textNo, promise);
             return promise;
           }
         },
@@ -326,7 +338,7 @@ angular.module('jskom.services', ['jskom.settings']).
                 // Remove commented texts from the cache so we can
                 // fetch them with the new text in their
                 // comment_in_list.
-                cache.remove(commentedText.text_no.toString());
+                textsCache.remove(commentedText.text_no.toString());
               });
               return response;
             });
@@ -379,59 +391,231 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('membershipsService', [
-    '$http', 'httpkomServer',
-    function($http, httpkomServer) {
+    '$http', '$log', '$q', 'httpkomServer', 'membershipsCache', 'sessionsService',
+    function($http, $log, $q, httpkomServer, membershipsCache, sessionsService) {
       var config = { withCredentials: true };
       
+      var createResolvedPromiseFor = function(resolveArg) {
+        var deferred = $q.defer();
+        var promise = deferred.promise;
+        deferred.resolve(resolveArg);
+        return promise;
+      };
+      
+      var cacheKeyForUnread = function(persNo) {
+        return persNo + ":unread";
+      };
+      
+      var cacheKeyForConf = function(persNo, confNo) {
+        return persNo + ":" + confNo;
+      };
+      
+      var getCurrentPersNo = function() {
+        return sessionsService.getCurrentSession().person.pers_no;
+      };
+      
+      var clearCacheForPersonAndConf = function(persNo, confNo) {
+        // We can't remove non-existing items from $cacheFactory, it throws then.
+        var confKey = cacheKeyForConf(persNo, confNo);
+        if (!_.isUndefined(membershipsCache.get(confKey))) {
+          membershipsCache.remove(confKey);
+        }
+        
+        // also remove unread cache
+        var unreadKey = cacheKeyForUnread(persNo);
+        if (!_.isUndefined(membershipsCache.get(unreadKey))) {
+          membershipsCache.remove(unreadKey);
+        }
+      };
+      
+      var saveMembershipsInCache = function(persNo, memberships) {
+        _.each(memberships, function(membership) {
+          var cacheKey = cacheKeyForConf(persNo, membership.conference.conf_no);
+          var promise = createResolvedPromiseFor(membership);
+          membershipsCache.put(cacheKey, promise);
+        });
+      };
+      
       return {
+        clearCacheForConf: function(confNo) {
+          var confKey = cacheKeyForConf(getCurrentPersNo(), confNo);
+          if (!_.isUndefined(membershipsCache.get(confKey))) {
+            membershipsCache.remove(confKey);
+          }
+        },
+        
         setNumberOfUnreadTexts: function(confNo, noOfUnread) {
           var data = { no_of_unread: parseInt(noOfUnread) };
-          return $http.post(httpkomServer + '/persons/current/memberships/' + confNo,
-                            data, config);
+          return $http.post(httpkomServer + '/persons/current/memberships/' + confNo, data, config).
+            then(function(response) {
+              clearCacheForPersonAndConf(getCurrentPersNo(), confNo);
+              return response;
+            });
         },
         
-        addMembership: function(persNo, confNo) {
+        addMembership: function(confNo) {
+          return this.addMembershipForPerson(getCurrentPersNo());
+        },
+        
+        addMembershipForPerson: function(persNo, confNo) {
           var priority = 100;
           return $http.put(httpkomServer + '/persons/' + persNo + '/memberships/' + confNo, null,
-                           _.extend({ params: { "priority": parseInt(priority) } }, config));
+                           _.extend({ params: { "priority": parseInt(priority) } }, config)).
+            then(function(response) {
+              clearCacheForPersonAndConf(getCurrentPersNo(), confNo);
+              return response;
+            });
         },
         
-        deleteMembership: function(persNo, confNo) {
+        deleteMembership: function(confNo) {
+          return this.deleteMembershipForPerson(getCurrentPersNo(), confNo);
+        },
+        
+        deleteMembershipForPerson: function(persNo, confNo) {
           return $http.delete(httpkomServer + '/persons/' + persNo + '/memberships/' + confNo,
-                              config);
+                              config).
+            then(function(response) {
+              clearCacheForPersonAndConf(getCurrentPersNo(), confNo);
+              return response;
+            });
         },
         
-        getMembership: function(persNo, confNo, wantUnread) {
-          return $http.get(httpkomServer + '/persons/' + persNo + '/memberships/' + confNo,
-                           _.extend({ params: { "want-unread": wantUnread } }, config));
+        getMembership: function(confNo, options) {
+          return this.getMembershipForPerson(getCurrentPersNo(), confNo, options);
         },
         
-        getMemberships: function(persNo, onlyUnread, wantUnread) {
-          return $http.get(httpkomServer + '/persons/' + persNo + '/memberships/',
-                           _.extend({
-                             params: {
-                               "want-unread": wantUnread,
-                               "unread": onlyUnread,
-                             }
-                           }, config));
+        getMembershipForPerson: function(persNo, confNo, options) {
+          options = options || { cache: true };
+          
+          var cacheKey = cacheKeyForConf(persNo, confNo);
+          var cachedResp = membershipsCache.get(cacheKey);
+          
+          if (options.cache && cachedResp) {
+            $log.log('membershipsService - getMembership(' + confNo + ') - cached');
+            return cachedResp;
+          } else {
+            var deferred = $q.defer();
+            var promise = deferred.promise;
+            
+            var c = _.extend({ params: { "want-unread": true } }, config);
+            $http.get(httpkomServer + '/persons/' + persNo + '/memberships/' + confNo, c).then(
+              function(response) {
+                $log.log('membershipsService - getMembership(' + confNo + ') - success');
+                deferred.resolve(response.data);
+              },
+              function(response) {
+                $log.log('membershipsService - getMembership(' + confNo + ') - error');
+                membershipsCache.remove(cacheKey);
+                deferred.reject(response);
+              });
+            
+            membershipsCache.put(cacheKey, promise);
+            return promise;
+          }
+        },
+        
+        getUnreadMemberships: function(options) {
+          return this.getUnreadMembershipsForPerson(getCurrentPersNo(), options);
+        },
+        
+        getUnreadMembershipsForPerson: function(persNo, options) {
+          var deferred = $q.defer();
+          var promise = deferred.promise;
+          
+          var self = this;
+          this.getUnreadConfNosForPerson(persNo, options).then(
+            function(unreadConfNos) {
+              var promises = _.map(unreadConfNos, function(confNo) {
+                return self.getMembershipForPerson(persNo, confNo, options);
+              });
+              $q.all(promises).then(
+                function(memberships) {
+                  deferred.resolve(memberships);
+                },
+                function(rejection) {
+                  deferred.reject(rejection);
+                });
+            },
+            function(response) {
+              deferred.reject(response);
+            });
+          
+          return promise;
+        },
+        
+        getUnreadConfNos: function(options) {
+          return this.getUnreadConfNosForPerson(getCurrentPersNo(), options);
+        },
+        
+        getUnreadConfNosForPerson: function(persNo, options) {
+          options = options || { cache: true };
+
+          var cacheKey = cacheKeyForUnread(persNo);
+          var cachedResp = membershipsCache.get(cacheKey);
+          
+          if (options.cache && cachedResp) {
+            $log.log('membershipsService - getUnreadMemberships() - cached');
+            return cachedResp;
+          } else {
+            var deferred = $q.defer();
+            var promise = deferred.promise;
+            
+            var c = _.extend({ params: { "unread": true, "want-unread": true } }, config);
+            $http.get(httpkomServer + '/persons/' + persNo + '/memberships/', c).then(
+              function(response) {
+                $log.log('membershipsService - getUnreadMemberships() - success');
+                saveMembershipsInCache(persNo, response.data.memberships);
+                var unreadConfNos = _.map(response.data.memberships, function(membership) {
+                  return membership.conference.conf_no;
+                });
+                deferred.resolve(unreadConfNos);
+                //deferred.resolve(response);
+              },
+              function(response) {
+                $log.log('membershipsService - getUnreadMemberships() - error');
+                membershipsCache.remove(cacheKey);
+                deferred.reject(response);
+              });
+            
+            membershipsCache.put(cacheKey, promise);
+            return promise;
+          }
         },
       };
     }
   ]).
   factory('readMarkingsService', [
-    '$http', 'httpkomServer',
-    function($http, httpkomServer) {
+    '$http', 'httpkomServer', 'membershipsService',
+    function($http, httpkomServer, membershipsService) {
       var config = { withCredentials: true };
       
+      var clearCacheForRecipients = function(text) {
+        if (text) {
+          // Clear membership cache because marking texts as read/unread
+          // will make the data invalid.
+          _.each(text.recipient_list, function(recipient) {
+            membershipsService.clearCacheForConf(recipient.conf_no);
+          });
+        }
+      };
+      
       return {
-        createGlobalReadMarking: function(textNo) {
-          return $http.put(httpkomServer +
-                           '/texts/' + textNo + '/read-marking', null, config);
+        createGlobalReadMarking: function(text) {
+          return $http.put(httpkomServer + '/texts/' + text.text_no + '/read-marking', 
+                           null, config).then(
+                             function(response) {
+                               clearCacheForRecipients(text);
+                               return response;
+                             });
         },
         
-        deleteGlobalReadMarking: function(textNo) {
-          return $http.delete(httpkomServer +
-                              '/texts/' + textNo + '/read-marking', config);
+        deleteGlobalReadMarking: function(text) {
+          return $http.delete(httpkomServer + '/texts/' + text.text_no + '/read-marking',
+                              config).then(
+                                function(response) {
+                                  clearCacheForRecipients(text);
+                                  return response;
+                                });
         },
       };
     }
@@ -440,8 +624,8 @@ angular.module('jskom.services', ['jskom.settings']).
     '$log', 'readerFactory', 'membershipsService',
     function($log, readerFactory, membershipsService) {
       return {
-        getReader: function(confNo, persNo) {
-          return membershipsService.getMembership(persNo, confNo, true).then(
+        getReader: function(confNo) {
+          return membershipsService.getMembership(confNo).then(
             function(response) {
               var unreadQueue = readerFactory.createUnreadQueue(response.data.unread_texts);
               return readerFactory.createReader(unreadQueue);
@@ -454,14 +638,14 @@ angular.module('jskom.services', ['jskom.settings']).
     '$log', 'textsService', 'readMarkingsService', 'messagesService',
     function($log, textsService, readMarkingsService, messagesService) {
       var markAsRead = function(text) {
-        readMarkingsService.createGlobalReadMarking(text.text_no).
-          success(function(data) {
+        readMarkingsService.createGlobalReadMarking(text).then(
+          function(response) {
             $log.log("readerFactory - markAsRead(" + text.text_no + ") - success");
             text._is_unread = false;
-          }).
-          error(function(data, status) {
+          },
+          function(response) {
             $log.log("readerFactory - markAsRead(" + text.text_no + ") - error");
-            messagesService.showMessage('error', 'Failed to mark text as read.', data);
+            messagesService.showMessage('error', 'Failed to mark text as read.', response.data);
           });
       };
       

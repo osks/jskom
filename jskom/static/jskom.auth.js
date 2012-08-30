@@ -37,6 +37,8 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
     '$http', '$log', 'httpkomServer', 'jskomName', 'jskomVersion',
     function($http, $log, httpkomServer, jskomName, jskomVersion) {
       var config = { withCredentials: true };
+      var currentSession = null;
+      
       return {
         newSession: function(persNo) {
           persNo = persNo || null;
@@ -61,8 +63,11 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
         },
         
         getCurrentSession: function() {
-          var sessionId = this.getCurrentSessionId();
-          return this.getSession(sessionId);
+          return currentSession;
+        },
+        
+        setCurrentSession: function(session) {
+          currentSession = session;
         },
         
         
@@ -94,22 +99,23 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
       };
       
       var getCurrentSession = function() {
-        if (sessionsService.getCurrentSessionId()) {
+        var currentSessionId = sessionsService.getCurrentSessionId();
+        if (currentSessionId) {
           $scope.isLoading = true;
           $scope.state = '';
-          sessionsService.getCurrentSession().
-            success(function(data) {
+          sessionsService.getSession(currentSessionId).then(
+            function(response) {
               $log.log("SessionCtrl - getCurrentSession() - success");
+              $scope.$emit('jskom:auth:login:success', response.data);
               $scope.isLoading = false;
-              $scope.state = 'loggedIn';
-              $scope.session = data;
-            }).
-            error(function(data, status) {
+            },
+            function(response) {
               $log.log("SessionCtrl - getCurrentSession() - error");
               $scope.isLoading = false;
               $scope.state = 'notLoggedIn';
             });
         } else {
+          sessionsService.setCurrentSession(null);
           $scope.state = 'notLoggedIn';
         }
       };
@@ -138,6 +144,7 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
       };
       
       $scope.$on('jskom:auth:login:success', function($event, session) {
+        sessionsService.setCurrentSession(session);
         $scope.state = 'loggedIn';
         $scope.session = session;
         messagesService.clearAll();

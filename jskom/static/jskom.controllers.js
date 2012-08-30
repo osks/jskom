@@ -47,25 +47,30 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
              membershipsService) {
       pageTitleService.set("Unread conferences");
       
-      $scope.load = function() {
+      var sortMembershipsByPriority = function(memberships) {
+        var sortedMemberships = _.sortBy(memberships, function(ms) {
+          return ms.priority;
+        });
+        sortedMemberships.reverse();
+        return sortedMemberships;
+      };
+      
+      $scope.load = function(allowCache) {
         $scope.unreadMemberships = [];
         $scope.isLoading = true;
-        return membershipsService.getMemberships($scope.session.person.pers_no, true, false).
-          success(function(data) {
-            $log.log("UnreadConfsCtrl - getMemberships() - success");
+        return membershipsService.getUnreadMemberships({ cache: allowCache }).then(
+          function(memberships) {
+            $log.log("UnreadConfsCtrl - getUnreadMemberships() - success");
+            $scope.unreadMemberships = sortMembershipsByPriority(memberships);
             $scope.isLoading = false;
-            var sortedMemberships = _.sortBy(data.memberships, function(ms) {
-              return ms.priority;
-            });
-            sortedMemberships.reverse();
-            $scope.unreadMemberships = sortedMemberships;
-          }).error(function(data, status) {
-            $log.log("UnreadConfsCtrl - getMemberships() - error");
+          }, function(response) {
+            $log.log("UnreadConfsCtrl - getUnreadMemberships() - error");
             $scope.isLoading = false;
-            messagesService.showMessage('error', 'Failed to get unread conferences.', data);
+            messagesService.showMessage('error', 'Failed to get unread conferences.',
+                                        response.data);
           });
       };
-      $scope.load();
+      $scope.load(true);
       
       $scope.autoRefreshing = false;
       $scope.autoRefreshPromise = null;
@@ -74,10 +79,11 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         $scope.autoRefreshing = true;
         var scheduleReload = function() {
           $scope.autoRefreshPromise = $timeout(function() {
-            $scope.load().
-              success(function() {
+            $scope.load(false).then(
+              function() {
                 scheduleReload();
-              }).error(function() {
+              },
+              function() {
                 $scope.disableAutoRefresh();
               });
           }, 2*60*1000);
@@ -116,7 +122,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       keybindingService.bindLocal('R', 'Refresh', function(e) {
         $scope.$apply(function() {
           if (!$scope.isLoading) {
-            $scope.load();
+            $scope.load(false);
           }
         });
       });
@@ -141,17 +147,18 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       $scope.setNumberOfUnreadTexts = function() {
         $scope.isLoading = true;
-        membershipsService.setNumberOfUnreadTexts($scope.confNo, $scope.noOfUnread).
-          success(function(data) {
+        membershipsService.setNumberOfUnreadTexts($scope.confNo, $scope.noOfUnread).then(
+          function() {
             $log.log("SetUnreadTextsCtrl - setNumberOfUnreadTexts() - success");
             $scope.isLoading = false;
             messagesService.showMessage('success', 'Successfully set number of unread texts.');
             $location.url('/');
-          }).
-          error(function(data, status) {
+          },
+          function(response) {
             $log.log("SetUnreadTextsCtrl - setNumberOfUnreadTexts() - error");
             $scope.isLoading = false;
-            messagesService.showMessage('error', 'Failed to set number of unread texts.', data);
+            messagesService.showMessage('error', 'Failed to set number of unread texts.',
+                                        response.data);
           });
       };
     }
@@ -237,16 +244,16 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         if ($scope.text) {
           var text = $scope.text;
           $scope.readmarkIsLoading = true;
-          readMarkingsService.createGlobalReadMarking(text.text_no).
-            success(function(data) {
+          readMarkingsService.createGlobalReadMarking(text).then(
+            function(response) {
               $log.log("TextCtrl - markAsRead(" + text.text_no + ") - success");
               $scope.readmarkIsLoading = false;
               text._is_unread = false;
-            }).
-            error(function(data, status) {
+            },
+            function(response) {
               $log.log("TextCtrl - markAsRead(" + text.text_no + ") - error");
               $scope.readmarkIsLoading = false;
-              messagesService.showMessage('error', 'Failed to mark text as read.', data);
+              messagesService.showMessage('error', 'Failed to mark text as read.', response.data);
             });
         }
       };
@@ -255,16 +262,16 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         if ($scope.text) {
           var text = $scope.text;
           $scope.readmarkIsLoading = false;
-          readMarkingsService.deleteGlobalReadMarking(text.text_no).
-            success(function(data) {
+          readMarkingsService.deleteGlobalReadMarking(text).then(
+            function(response) {
               $log.log("TextCtrl - markAsUnread(" + text.text_no + ") - success");
               $scope.readmarkIsLoading = false;
               text._is_unread = true;
-            }).
-            error(function(data, status) {
+            },
+            function(response) {
               $log.log("TextCtrl - markAsUnread(" + text.text_no + ") - error");
               $scope.readmarkIsLoading = false;
-              messagesService.showMessage('error', 'Failed to mark text as read.', data);
+              messagesService.showMessage('error', 'Failed to mark text as read.', response.data);
             });
         }
       };
@@ -296,14 +303,14 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       $scope.isLeaving = false;
       $scope.membership = null;
       
-      var getMembership = function(persNo, confNo) {
+      var getMembership = function(confNo) {
         $scope.isLoadingMembership = true;
         $scope.membership = null;
-        membershipsService.getMembership(persNo, confNo, false).then(
-            function(response) {
+        membershipsService.getMembership(confNo).then(
+            function(membership) {
               $log.log("ShowConfCtrl - getMembership(" + confNo + ") - success");
               $scope.isLoadingMembership = false;
-              $scope.membership = response.data;
+              $scope.membership = membership;
             },
             function(response) {
               $log.log("ShowConfCtrl - getMembership(" + confNo + ") - error");
@@ -319,14 +326,13 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       };
       
       $scope.joinConf = function() {
-        var persNo = $scope.session.person.pers_no;
         var confNo = $scope.conf.conf_no;
         $scope.isJoining = true;
-        membershipsService.addMembership(persNo, confNo).then(
+        membershipsService.addMembership(confNo).then(
           function(response) {
             $log.log("ShowConfCtrl - addMembership(" + confNo + ") - success");
             $scope.isJoining = false;
-            getMembership(persNo, confNo); // Refresh membership
+            getMembership(confNo); // Refresh membership
             messagesService.showMessage('success', 'Successfully joined conference.');
           },
           function(response) {
@@ -337,14 +343,13 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       };
       
       $scope.leaveConf = function() {
-        var persNo = $scope.session.person.pers_no;
         var confNo = $scope.conf.conf_no;
         $scope.isLeaving = true;
-        membershipsService.deleteMembership(persNo, confNo).then(
+        membershipsService.deleteMembership(confNo).then(
           function(response) {
             $log.log("ShowConfCtrl - deleteMembership(" + confNo + ") - success");
             $scope.isLeaving = false;
-            getMembership(persNo, confNo); // Refresh membership
+            getMembership(confNo); // Refresh membership
             messagesService.showMessage('success', 'Successfully left conference.');
           },
           function(response) {
@@ -358,7 +363,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         function(response) {
           $log.log("ShowConfCtrl - getConference(" + $routeParams.confNo + ") - success");
           $scope.conf = response.data;
-          getMembership($scope.session.person.pers_no, $scope.conf.conf_no);
+          getMembership($scope.conf.conf_no);
           pageTitleService.set($scope.conf.name);
         },
         function(response) {
@@ -380,14 +385,15 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
   controller('ReaderCtrl', [
     '$scope', '$rootScope', '$routeParams', '$log', '$window', '$location',
     'messagesService', 'conferencesService', 'textsService',
-    'pageTitleService', 'keybindingService', 'readMarkingsService', 'readerService',
-    'sessionsService',
+    'pageTitleService', 'keybindingService', 'readerFactory',
+    'sessionsService', 'membershipsService',
     function($scope, $rootScope, $routeParams, $log, $window, $location,
              messagesService, conferencesService, textsService,
-             pageTitleService, keybindingService, readMarkingsService, readerService,
-             sessionsService) {
+             pageTitleService, keybindingService, readerFactory,
+             sessionsService, membershipsService) {
       $scope.textIsLoading = false;
       $scope.text = null;
+      $scope.readerIsLoading = false;
       $scope.reader = null;
       
       var isScrolledIntoView = function(elem) {
@@ -426,6 +432,8 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
             } else {
               angular.element($window).scrollTop(40);
             }*/
+            // If we scroll to 0, the android browser will show the
+            // toolbar/address field.
             angular.element($window).scrollTop(1);
           },
           function(response) {
@@ -458,7 +466,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       $scope.$watch('conf', function(newConf) {
         if (newConf) {
-          pageTitleService.set("Reading " + newConf.name);
+          pageTitleService.set("Reading " + newConf.conf_name);
         } else {
           pageTitleService.set("");
         }
@@ -474,41 +482,43 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         }
       };
       
-      conferencesService.getConference($routeParams.confNo).
-        success(function(data) {
-          $log.log("ReaderCtrl - getConference(" + $routeParams.confNo + ") - success");
-          $scope.conf = data;
-        }).
-        error(function(data, status) {
-          $log.log("ReaderCtrl - getConference(" + $routeParams.confNo + ") - error");
-          messagesService.showMessage('error', 'Failed to get conference.', data);
-        });
+      var getReader = function(confNo, allowCache) {
+        $scope.readerIsLoading = true;
+        membershipsService.getMembership(confNo, { cache: allowCache }).then(
+          function(membership) {
+            $log.log("ReaderCtrl - getReader(" + confNo + ") - success");
+            $scope.conf = membership.conference;
+            
+            var unreadQueue = readerFactory.createUnreadQueue(membership.unread_texts);
+            var reader = readerFactory.createReader(unreadQueue);
+            
+            if ($routeParams.text) {
+              reader.unshiftPending($routeParams.text);
+            }
+            if (!reader.isEmpty()) {
+              setText(reader.shift());
+            }
+            
+            // If getting the reader succeeded, we know we are a
+            // member of the conference and can change the working
+            // conference to it.
+            sessionsService.changeConference(confNo);
+            
+            $scope.reader = reader;
+            $scope.readerIsLoading = false;
+          },
+          function(response) {
+            $log.log("ReaderCtrl - getReader(" + confNo + ") - error");
+            $scope.readerIsLoading = false;
+            messagesService.showMessage('error', 'Failed to get reader.', response.data);
+          });
+      };
       
-      readerService.getReader($routeParams.confNo, $scope.session.person.pers_no).then(
-        function(reader) {
-          var confNo = $routeParams.confNo;
-          $log.log("ReaderCtrl - getReader(" + confNo + ") - success");
-          
-          if ($routeParams.text) {
-            reader.unshiftPending($routeParams.text);
-          }
-          if (!reader.isEmpty()) {
-            setText(reader.shift());
-          }
-          
-          // If getting the reader succeeded, we know we are a
-          // member of the conference and can change the working
-          // conference to it.
-          sessionsService.changeConference(confNo);
-          
-          $scope.reader = reader;
-        },
-        function(response) {
-          var confNo = $routeParams.confNo;
-          $log.log("ReaderCtrl - getReader(" + confNo + ") - error");
-          messagesService.showMessage('error', 'Failed to get reader.', response.data);
-          return response;
-        });
+      getReader($routeParams.confNo, true);
+      
+      $scope.refresh = function() {
+        getReader($routeParams.confNo, false);
+      };
       
       $scope.showCommented = function() {
         $log.log('ReaderCtrl - showCommented()');
@@ -535,6 +545,14 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
           setText($scope.reader.shift());
         }
       };
+      
+      keybindingService.bindLocal('R', 'Refresh', function(e) {
+        $scope.$apply(function() {
+          if (!$scope.readerisLoading) {
+            $scope.refresh();
+          }
+        });
+      });
       
       keybindingService.bindLocal(',', 'Show commented', function() {
         $scope.$apply(function() {

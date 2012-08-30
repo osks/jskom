@@ -1,7 +1,7 @@
 <span ng-hide="reader">Loading...</span>
 <div ng-show="reader">
   <h3 class="jskomNoWrap">
-    <em>{{ reader.unreadSize() }}</em> unread in <em>{{ conf.name }}</em>
+    <em>{{ reader.unreadSize() }}</em> unread in <em>{{ conf.conf_name }}</em>
   </h3>
   
   <span ng-show="textIsLoading">Loading...</span>
@@ -11,6 +11,12 @@
   
 <div id="jskomControlBar" class="navbar">
   <div class="navbar-inner">
+    <button class="btn"
+            ng-disabled="readerIsLoading"
+            ng-click="refresh()">
+      <i class="icon-refresh"></i>
+    </button>
+    
     <div class="pull-right">
       <button class="btn btn-primary"
               ng-click="readNext()" ng-disabled="!reader || textIsLoading">
