@@ -530,7 +530,11 @@ angular.module('jskom.services', ['jskom.settings']).
               });
               $q.all(promises).then(
                 function(memberships) {
-                  deferred.resolve(memberships);
+                  deferred.resolve(_.filter(memberships, function(membership) {
+                    // Filter out those with no unread. This can happen
+                    // because of caching.
+                    return membership.no_of_unread > 0;
+                  }));
                 },
                 function(rejection) {
                   deferred.reject(rejection);
