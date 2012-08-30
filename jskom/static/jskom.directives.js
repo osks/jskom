@@ -189,21 +189,20 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
               //$log.log("<jskom:conf-input> - $watch(model) - new: " + newModel);
               //$log.log("<jskom:conf-input> - $watch(model) - old: " + oldModel);
               
-              if (newModel && newModel !== oldModel) {
-                // We got a new model (person number) that has
-                // changed from last time.
-                
-                var isModelInMatches = _.any(scope.matches, function (match) {
-                  return match.conf_no === newModel;
-                });
-                //$log.log("<jskom:conf-input> - $watch(model) - isInMatches: " + isModelInMatches);
-                if (!isModelInMatches) {
-                  // If the current set of matches doesn't include the new model
-                  // it has probably been changed from the "outside" and we should
-                  // do a new look-up. Assume it's a conf number.
-                  scope.clearMatching();
-                  scope.lookup = '#' + newModel;
-                  scope.getConf();
+              if (newModel) {
+                if (newModel !== oldModel || scope.conf == null) {
+                  var isModelInMatches = _.any(scope.matches, function (match) {
+                    return match.conf_no === newModel;
+                  });
+                  //$log.log("<jskom:conf-input> - $watch(model) - isInMatches: " + isModelInMatches);
+                  if (!isModelInMatches) {
+                    // If the current set of matches doesn't include the new model
+                    // it has probably been changed from the "outside" and we should
+                    // do a new look-up. Assume it's a conf number.
+                    scope.clearMatching();
+                    scope.lookup = '#' + newModel;
+                    scope.getConf();
+                  }
                 }
               }
             });
