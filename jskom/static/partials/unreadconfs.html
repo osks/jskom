@@ -12,7 +12,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr ng-repeat="membership in unreadMemberships">
+      <tr ng-repeat="membership in unreadMemberships" ng-show="membership.no_of_unread > 0">
         <td>
           <a href="/conferences/{{ membership.conference.conf_no }}/unread">
             {{ membership.conference.conf_name }}
