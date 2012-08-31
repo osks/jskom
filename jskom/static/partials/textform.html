@@ -1,3 +1,10 @@
+<div ng-show="text.comment_to_list">
+  <div ng-repeat="commentTo in text.comment_to_list">
+    <!-- TODO: make this changeable. -->
+    <span class="jskomCapitalize">{{ commentTo.type }}</span> to {{ commentTo.text_no}}
+  </div>
+</div>
+
 <div class="jskomTextForm">
   <label>Recipients</label>
   

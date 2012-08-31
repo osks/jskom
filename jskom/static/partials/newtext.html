@@ -1,10 +1,14 @@
 <h3>New text</h3>
 
-<form>
+<form ng-show="newText">
   <jskom:text-fields text="newText"></jskom:text-fields>
   
   <div id="jskomControlBar" class="navbar">
     <div class="navbar-inner">
+      <button class="btn" ng-show="returnUrl" ng-click="goToReturnUrl()">
+        Cancel
+      </button>
+      
       <div class="pull-right">
         <input type="submit" class="btn btn-primary" value="Post" ng-click="createText()"/>
       </div>

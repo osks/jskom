@@ -56,15 +56,13 @@
 
   <div>
     <div class="form-actions">
-      <button class="btn" ng-disabled="isCommentFormVisible"
-              ng-click="isCommentFormVisible = true">
+      <button class="btn" ng-click="writeComment()">
         Comment
       </button>
       
       <div class="pull-right">
         <div class="btn-group">
-          <button class="btn dropdown-toggle" data-toggle="dropdown"
-                  ng-disabled="isCommentFormVisible">
+          <button class="btn dropdown-toggle" data-toggle="dropdown">
             Actions
             <span class="caret"></span>
           </button>
@@ -96,6 +94,5 @@
       </div>
     </div>
     
-    <jskom:new-comment comment-to="text" visible="isCommentFormVisible"></jskom:new-comment>
   </div>
 </div>

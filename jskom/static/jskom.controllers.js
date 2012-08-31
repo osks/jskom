@@ -169,24 +169,72 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
     function($scope, textsService, $log, $location,
              messagesService, pageTitleService, keybindingService) {
       pageTitleService.set("New text");
+      $scope.newText = null;
       
-      $scope.newText = {
-        recipient_list: [{ type: 'to', conf_name: '' }],
-        content_type: 'text/plain',
-        subject: '',
-        body: ''
+      var newEmptyText = function() {
+        return {
+          recipient_list: [],
+          content_type: 'text/plain',
+          subject: '',
+          body: ''
+        };
       };
+      
+      var makeCommentTo = function(comment, commentedText) {
+        comment.comment_to_list = [
+          { type: 'comment', text_no: commentedText.text_no }
+        ];
+        
+        comment.subject = commentedText.subject;
+        
+        _.each(commentedText.recipient_list, function(r) {
+          if (r.type == 'to') {
+            comment.recipient_list.push(_.clone(r));
+          }
+        });
+      };
+      
+      $scope.returnUrl = $location.search().returnUrl;
+      $scope.goToReturnUrl = function() {
+        $location.url($scope.returnUrl);
+      };
+      
+      if ($location.search().commentTo) {
+        var commentToTextNo = parseInt($location.search().commentTo)
+        
+        textsService.getText(commentToTextNo).then(
+          function(response) {
+            $log.log("NewTextCtrl - getText(" + commentToTextNo + ") - success");
+            
+            var newText = newEmptyText();
+            makeCommentTo(newText, response.data);
+            $scope.newText = newText;
+          },
+          function(response) {
+            $log.log("NewTextCtrl - getText(" + commentToTextNo + ") - error");
+            messagesService.showMessage('error', 'Failed to get text to comment.', response.data);
+          });
+      } else {
+        var newText = newEmptyText();
+        newText.recipient_list.push({ type: 'to', conf_name: '' });
+        $scope.newText = newText;
+      }
       
       $scope.createText = function() {
         textsService.createText($scope.newText).then(
           function(response) {
-            $log.log("CreateTextCtrl - createText() - success");
+            $log.log("NewTextCtrl - createText() - success");
             messagesService.showMessage('success', 'Successfully created text.',
                                         'Text number ' + response.data.text_no + ' was created.');
-            $location.url('/texts/' + response.data.text_no);
+            
+            if ($scope.returnUrl) {
+              $scope.goToReturnUrl();
+            } else {
+              $location.url('/texts/' + response.data.text_no);
+            }
           },
           function(response) {
-            $log.log("CreateTextCtrl - createText() - error");
+            $log.log("NewTextCtrl - createText() - error");
             messagesService.showMessage('error', 'Failed to create text.', response.data);
           });
       };
@@ -223,19 +271,28 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
     }
   ]).
   controller('TextCtrl', [
-    '$scope', '$log', '$window',
+    '$scope', '$log', '$window', '$location',
     'httpkomServer', 'keybindingService', 'readMarkingsService', 'textsService',
     'messagesService',
-    function($scope, $log, $window,
+    function($scope, $log, $window, $location,
              httpkomServer, keybindingService, readMarkingsService, textsService,
              messagesService) {
-      $scope.isCommentFormVisible = false;
       $scope.readmarkIsLoading = false;
       $scope.textMode = "default";
       
+      $scope.writeComment = function() {
+        if ($scope.text) {
+          var returnUrl = $location.url();
+          $location.url("/texts/new");
+          $location.replace();
+          $location.search({ returnUrl: returnUrl,
+                             commentTo: $scope.text.text_no });
+        }
+      };
+      
       keybindingService.bindLocal('k', 'Write comment', function(e) {
         $scope.$apply(function() {
-          $scope.isCommentFormVisible = true;
+          $scope.writeComment();
         });
         return false;
       });
