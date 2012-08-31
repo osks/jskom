@@ -5,12 +5,16 @@
   
   <div id="jskomControlBar" class="navbar">
     <div class="navbar-inner">
-      <button class="btn" ng-show="returnUrl" ng-click="goToReturnUrl()">
+      <button type="button" class="btn" ng-show="returnUrl" ng-click="goToReturnUrl()">
         Cancel
       </button>
       
       <div class="pull-right">
-        <input type="submit" class="btn btn-primary" value="Post" ng-click="createText()"/>
+        <button type="submit" class="btn btn-primary"
+                ng-disabled="isCreating"
+                ng-click="createText()">
+          Post
+        </button>
       </div>
     </div>
   </div>

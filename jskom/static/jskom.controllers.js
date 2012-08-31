@@ -221,12 +221,13 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       }
       
       $scope.createText = function() {
+        $scope.isCreating = true;
         textsService.createText($scope.newText).then(
           function(response) {
             $log.log("NewTextCtrl - createText() - success");
             messagesService.showMessage('success', 'Successfully created text.',
                                         'Text number ' + response.data.text_no + ' was created.');
-            
+            $scope.isCreating = false;
             if ($scope.returnUrl) {
               $scope.goToReturnUrl();
             } else {
@@ -236,6 +237,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
           function(response) {
             $log.log("NewTextCtrl - createText() - error");
             messagesService.showMessage('error', 'Failed to create text.', response.data);
+            $scope.isCreating = false;
           });
       };
     }
