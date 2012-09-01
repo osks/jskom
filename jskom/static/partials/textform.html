@@ -15,18 +15,13 @@
         <em>{{ commentTo.text_no }}</em>
       </div>
       
-      <p>
-        <div ng-repeat="recipient in text.recipient_list">
-          <span class="jskomCapitalize">{{ recipient.type }}:</span>
-          <em>{{ recipient.conf_name }}</em>
-        </div>
-      </p>
+      <div ng-repeat="recipient in text.recipient_list">
+        <span class="jskomCapitalize">{{ recipient.type }}:</span>
+        <em>{{ recipient.conf_name }}</em>
+      </div>
       
-      <p>
-        <span>Subject:</span> <em>{{ text.subject }}</em>
-      </p>
+      <span>Subject:</span> <em>{{ text.subject }}</em>
     </div>
-    
     
     <div class="tab-pane" id="advanced">
       <div ng-repeat="commentTo in text.comment_to_list">
