@@ -51,7 +51,12 @@ blockquote.jskomTextBody p article p {
     text-align: right !important;
 }
 
-textarea {
+.jskomTextForm .tab-content {
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 9px;
+}
+
+.jskomTextForm textarea {
     resize: vertical;
     min-height: 100px;
 }

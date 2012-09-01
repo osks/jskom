@@ -1,29 +1,29 @@
 <div class="jskomTextForm">
-  <ul id="jskomNewTextTabs" class="nav nav-tabs">
+  <ul class="nav nav-tabs">
     <li class="active"><a data-target="#simple" data-toggle="tab">Simple</a></li>
     <li><a data-target="#advanced" data-toggle="tab">Advanced</a></li>
   </ul>
   
-  <div id="jskomNewTextTabsContent" class="tab-content">
+  <div class="tab-content">
     
     <div class="tab-pane active" id="simple">
       <div ng-repeat="commentTo in text.comment_to_list">
-        <strong>
+        <span>
           <span class="jskomCapitalize">{{ commentTo.type }}</span>
           to: 
-        </strong>
-        {{ commentTo.text_no }}
+        </span>
+        <em>{{ commentTo.text_no }}</em>
       </div>
       
       <p>
         <div ng-repeat="recipient in text.recipient_list">
-          <strong class="jskomCapitalize">{{ recipient.type }}:</strong>
-          {{ recipient.conf_name }}
-      </div>
+          <span class="jskomCapitalize">{{ recipient.type }}:</span>
+          <em>{{ recipient.conf_name }}</em>
+        </div>
       </p>
       
       <p>
-        <strong>Subject:</strong> {{ text.subject }}
+        <span>Subject:</span> <em>{{ text.subject }}</em>
       </p>
     </div>
     

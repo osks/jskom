@@ -5,7 +5,7 @@
 <form ng-show="newText">
 
   <div ng-show="commentedText" ng-init="isCommentedTextVisible = false">
-    <div>
+    <p>
       <button class="btn btn-small dropup"
               ng-show="isCommentedTextVisible" ng-click="isCommentedTextVisible = false">
         Hide commented text<span class="caret"></span>
@@ -14,14 +14,12 @@
               ng-hide="isCommentedTextVisible" ng-click="isCommentedTextVisible = true">
         Show commmented text<span class="caret"></span>
       </button>
-    </div>
+    </p>
     
     <blockquote ng-show="isCommentedTextVisible" class="jskomTextBody">
       <p jskom-bind-body="commentedText.body"></p>
       <small>{{ commentedText.author|personName }}</small>
     </blockquote>
-    
-    <hr/>
   </div>
   
   <jskom:text-fields text="newText"></jskom:text-fields>
