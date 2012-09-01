@@ -90,6 +90,12 @@ angular.module('jskom.services', ['jskom.settings']).
         },
         
         formatLineBreaks: function(htmlStr) { 
+          // TODO: Implement a real re-formatter of text/x-kom-basic.
+          // Replacing two line-breaks with <p> doesn't work very well
+          // because people use line-breaks to format text, not only
+          // to wrap long lines.
+          
+          //return htmlStr.replace(/(\r?\n|\r){2}/g, "<p />");
           return htmlStr.replace(/\r?\n|\r/g, "<br/>");
         },
         
@@ -291,12 +297,12 @@ angular.module('jskom.services', ['jskom.settings']).
       
       var enhanceText = function(text) {
         var mimeType = Mimeparse.parseMimeType(text.content_type);
-        text._type = mimeType[0];
+        text.jskomBodyType = mimeType[0];
         
-        if (text._type == 'image') {
-          text._image_url = httpkomServer + '/texts/' + text.text_no + '/body';
+        if (text.jskomBodyType == 'image') {
+          text.jskomImageUrl = httpkomServer + '/texts/' + text.text_no + '/body';
         } else {
-          text._image_url = null;
+          text.jskomImageUrl = null;
         }
         
         return text;

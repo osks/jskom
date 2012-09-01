@@ -18,7 +18,8 @@
     
     <div>Subject: {{ text.subject }}</div>
     
-    <div class="btn-group pull-right" data-toggle="buttons-radio" ng-show="text._type == 'text'">
+    <div class="btn-group pull-right" data-toggle="buttons-radio"
+         ng-show="text.jskomBodyType == 'text'">
       <button ng-click="textMode = 'default'" class="btn active">
         <i class="icon-align-left"></i>
       </button>
@@ -27,16 +28,18 @@
       </button>
     </div>
     
-    <div >
+    <div>
       <hr />
-      <ng-switch on="text._type">
+      <ng-switch on="text.jskomBodyType">
         <div ng-switch-default>
           [unknown content-type: &quot;{{ text.content_type }}&quot;]
         </div>
-        <div ng-switch-when="image"><img ng-src="{{ text._image_url }}" /></div>
+        <div ng-switch-when="image"><img ng-src="{{ text.jskomImageUrl }}" /></div>
         <div ng-switch-when="text">
           <ng-switch on="textMode">
-            <div ng-switch-when="default" jskom-bind-body="text.body"></div>
+            <div class="jskomTextBody"
+                 ng-switch-when="default" jskom-bind-body="text.body">
+            </div>
             <pre ng-switch-when="raw" jskom-bind-body="text.body"></pre>
             <!--<div ng-switch-when="html" ng-bind-html="text.body"></div>-->
           </ng-switch>

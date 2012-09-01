@@ -274,6 +274,10 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             scope.wantPers = false;
           }
           
+          if (('autofocus' in iAttrs)) {
+            lookupInputEl.focus();
+          }
+          
           var resize = function() {
             //$log.log("<jskom:conf-input> - resize");
             var elWidth = iElement.width();
@@ -325,9 +329,14 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
     
     '$log', 'templatePath',
     function($log, templatePath) {
+      var commentTypes = [
+        { name: 'Comment', type: 'comment' },
+        { name: 'Footnote', type: 'footnote' }
+      ];
+      
       var recipientTypes = [
         { name: 'To', type: 'to' },
-            { name: 'CC', type: 'cc' },
+        { name: 'CC', type: 'cc' },
         { name: 'BCC', type: 'bcc' }
       ];
       
@@ -338,6 +347,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           text: '='
         },
         link: function(scope, iElement, iAttrs) {
+          scope.commentTypes = commentTypes;
           scope.recipientTypes = recipientTypes;
           
           scope.newRecipient = function() {

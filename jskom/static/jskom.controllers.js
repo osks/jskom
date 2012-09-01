@@ -170,6 +170,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
              messagesService, pageTitleService, keybindingService) {
       pageTitleService.set("New text");
       $scope.newText = null;
+      $scope.commentedText = null;
       
       var newEmptyText = function() {
         return {
@@ -208,7 +209,9 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
             
             var newText = newEmptyText();
             makeCommentTo(newText, response.data);
+            $scope.commentedText = response.data;
             $scope.newText = newText;
+            pageTitleService.set("New comment to " + $scope.commentedText.text_no);
           },
           function(response) {
             $log.log("NewTextCtrl - getText(" + commentToTextNo + ") - error");
@@ -286,7 +289,6 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         if ($scope.text) {
           var returnUrl = $location.url();
           $location.url("/texts/new");
-          $location.replace();
           $location.search({ returnUrl: returnUrl,
                              commentTo: $scope.text.text_no });
         }

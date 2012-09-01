@@ -1,3 +1,16 @@
+blockquote.jskomTextBody p {
+    font-size: 12px;
+    font-weight: normal;
+}
+
+blockquote.jskomTextBody p article p {
+    margin-bottom: 9px;
+}
+
+.jskomTextBody {
+    max-width: 600px;
+}
+
 .jskomConfInput {
     margin-bottom: 9px;
 }
@@ -119,6 +132,18 @@ textarea {
     .jskomTextForm select.jskomRecipientType {
         width: 50px;
         display: inline-block;
+    }
+    
+    .jskomTextForm .jskomCommentType select {
+        width: 100px;
+        display: inline-block;
+        margin-bottom: 9px;
+    }
+    
+    .jskomTextForm .jskomCommentType input {
+        width: 150px;
+        display: inline-block;
+        margin-bottom: 9px;
     }
 }
 

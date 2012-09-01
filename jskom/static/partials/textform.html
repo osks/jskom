@@ -1,11 +1,20 @@
-<div ng-show="text.comment_to_list">
-  <div ng-repeat="commentTo in text.comment_to_list">
-    <!-- TODO: make this changeable. -->
-    <span class="jskomCapitalize">{{ commentTo.type }}</span> to {{ commentTo.text_no}}
-  </div>
-</div>
-
 <div class="jskomTextForm">
+
+  <div ng-show="text.comment_to_list">
+    <div ng-repeat="commentTo in text.comment_to_list">
+      <fieldset class="row form-inline">
+        <div class="span8 jskomCommentType">
+          <select class="span2" ng-model="commentTo.type"
+                  ng-options="ct.type as ct.name for ct in commentTypes"></select>
+          to
+          <input type="text" class="span2" ng-model="commentTo.text_no" />
+        </div>
+      </fieldset>
+    </div>
+  </div>
+  
+  <p/>
+  
   <label>Recipients</label>
   
   <div ng-repeat="recipient in text.recipient_list">
@@ -21,7 +30,6 @@
         <jskom:conf-input class="span6" model="recipient.conf_no"></jskom:conf-input>
       </div>
     </fieldset>
-    <p />
   </div>
   
   <p/>
@@ -37,4 +45,4 @@
 <input class="span8" type="text" name="subject" ng-model="text.subject" />
 
 <label>Body</label>
-<textarea class="span8" name="body" ng-model="text.body"></textarea>
+<textarea class="span8" name="body" ng-model="text.body" autofocus></textarea>

@@ -177,16 +177,18 @@
       <footer>
         {% raw %}
         <p ng-show="state == 'loggedIn'" ng-cloak>
-          Logged in as: <em>{{ session.person.pers_name }}</em>
+          <small>Logged in as: <em>{{ session.person.pers_name }}</em></small>
         </p>
         {% endraw %}
         <p style="display: inline-block;">
-          <a href="https://github.com/osks/jskom">jskom</a>
-          &copy; <a href="mailto:oskar@osd.se">Oskar Skoog</a> 2012
-          <span ng-cloak>
-            {# This is in the jinja2 template, not Angular. #}
-            &#8212; version {{ version }}
-          </span>
+          <small>
+            <a href="https://github.com/osks/jskom">jskom</a>
+            &copy; <a href="mailto:oskar@osd.se">Oskar Skoog</a> 2012
+            <span ng-cloak>
+              {# This is in the jinja2 template, not Angular. #}
+              &#8212; version {{ version }}
+            </span>
+          </small>
         </p>
       </footer>
     </div>
