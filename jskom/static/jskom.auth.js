@@ -35,9 +35,17 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
   }]).
   factory('sessionsService', [
     '$http', '$log', 'httpkomServer', 'jskomName', 'jskomVersion',
-    function($http, $log, httpkomServer, jskomName, jskomVersion) {
+    'textsCache', 'membershipsCache',
+    function($http, $log, httpkomServer, jskomName, jskomVersion,
+             textsCache, membershipsCache) {
       var config = { withCredentials: true };
       var currentSession = null;
+      
+      var clearAllCaches = function() {
+        $log.log("sessionsService - clearing all caches");
+        textsCache.removeAll();
+        membershipsCache.removeAll();
+      };
       
       return {
         newSession: function(persNo) {
@@ -47,7 +55,11 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
         },
         
         createSession: function(session) {
-          return $http.post(httpkomServer + '/sessions/', session, config);
+          return $http.post(httpkomServer + '/sessions/', session, config).then(
+            function(response) {
+              clearAllCaches();
+              return response;
+            });
         },
         
         deleteSession: function(sessionId) {
@@ -129,16 +141,16 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
         $log.log("SessionCtrl - logout()");
         $scope.state = 'notLoggedIn';
         reset();
-        sessionsService.deleteSession(sessionsService.getCurrentSessionId()).
-          success(function() {
+        sessionsService.deleteSession(sessionsService.getCurrentSessionId()).then(
+          function() {
             $location.url('/');
-          }).
-          error(function(data, status) {
-            if (status == 404) {
+          },
+          function(response) {
+            if (response.status == 404) {
               // Session does not exist: we're not logged in.
               $scope.state = 'notLoggedIn';
             } else {
-              messagesService.showMessage('error', 'Error when logging out.');
+              messagesService.showMessage('error', 'Error when logging out.', response.data);
             }
           });
       };

@@ -421,7 +421,9 @@ angular.module('jskom.services', ['jskom.settings']).
       };
       
       var clearCacheForPersonAndConf = function(persNo, confNo) {
-        // We can't remove non-existing items from $cacheFactory, it throws then.
+        // We can't remove non-existing items from $cacheFactory (it
+        // throws then), so we need to check if they exist before
+        // removing them.
         var confKey = cacheKeyForConf(persNo, confNo);
         if (!_.isUndefined(membershipsCache.get(confKey))) {
           membershipsCache.remove(confKey);
