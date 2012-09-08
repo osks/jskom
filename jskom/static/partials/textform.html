@@ -1,12 +1,16 @@
 <div class="jskomTextForm">
   <ul class="nav nav-tabs">
-    <li class="active"><a data-target="#simple" data-toggle="tab">Simple</a></li>
-    <li><a data-target="#advanced" data-toggle="tab">Advanced</a></li>
+    <li ng-class="isTabActive('simple')">
+      <a data-target="#simple" data-toggle="tab">Simple</a>
+    </li>
+    <li ng-class="isTabActive('advanced')">
+      <a data-target="#advanced" data-toggle="tab">Complete</a>
+    </li>
   </ul>
   
   <div class="tab-content">
     
-    <div class="tab-pane active" id="simple">
+    <div class="tab-pane" id="simple" ng-class="isTabActive('simple')">
       <div ng-repeat="commentTo in text.comment_to_list">
         <span>
           <span class="jskomCapitalize">{{ commentTo.type }}</span>
@@ -23,7 +27,7 @@
       <span>Subject:</span> <em>{{ text.subject }}</em>
     </div>
     
-    <div class="tab-pane" id="advanced">
+    <div class="tab-pane" id="advanced" ng-class="isTabActive('advanced')">
       <div ng-repeat="commentTo in text.comment_to_list">
         <fieldset class="row form-inline">
           <div class="span8 jskomCommentType">

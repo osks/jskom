@@ -169,8 +169,24 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
     function($scope, textsService, $log, $location,
              messagesService, pageTitleService, keybindingService) {
       pageTitleService.set("New text");
-      $scope.newText = null;
+      $scope.text = null;
       $scope.commentedText = null;
+      $scope.activeTab = 'simple';
+      
+      $scope.commentTypes = [
+        { name: 'Comment', type: 'comment' },
+        { name: 'Footnote', type: 'footnote' }
+      ];
+      
+      $scope.recipientTypes = [
+        { name: 'To', type: 'to' },
+        { name: 'CC', type: 'cc' },
+        { name: 'BCC', type: 'bcc' }
+      ];
+      
+      $scope.newRecipient = function() {
+        return { type: 'to', conf_name: '' }
+      };
       
       var newEmptyText = function() {
         return {
@@ -195,6 +211,18 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         });
       };
       
+      $scope.selectTab = function(tab) {
+        $scope.activeTab = tab;
+      };
+      
+      $scope.isTabActive = function(tab) {
+        if ($scope.activeTab == tab) {
+          return 'active';
+        } else {
+          return '';
+        }
+      };
+
       $scope.returnUrl = $location.search().returnUrl;
       $scope.goToReturnUrl = function() {
         $location.url($scope.returnUrl);
@@ -202,6 +230,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       if ($location.search().commentTo) {
         var commentToTextNo = parseInt($location.search().commentTo)
+        $scope.activeTab = 'simple';
         
         textsService.getText(commentToTextNo).then(
           function(response) {
@@ -210,7 +239,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
             var newText = newEmptyText();
             makeCommentTo(newText, response.data);
             $scope.commentedText = response.data;
-            $scope.newText = newText;
+            $scope.text = newText;
             pageTitleService.set("New comment to " + $scope.commentedText.text_no);
           },
           function(response) {
@@ -219,13 +248,14 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
           });
       } else {
         var newText = newEmptyText();
-        newText.recipient_list.push({ type: 'to', conf_name: '' });
-        $scope.newText = newText;
+        newText.recipient_list.push($scope.newRecipient());
+        $scope.text = newText;
+        $scope.activeTab = 'advanced';
       }
       
       $scope.createText = function() {
         $scope.isCreating = true;
-        textsService.createText($scope.newText).then(
+        textsService.createText($scope.text).then(
           function(response) {
             $log.log("NewTextCtrl - createText() - success");
             messagesService.showMessage('success', 'Successfully created text.',

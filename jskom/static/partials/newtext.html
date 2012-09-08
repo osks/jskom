@@ -1,8 +1,8 @@
 <h3 ng-hide="commentedText">New text</h3>
 <h3 ng-show="commentedText">New comment to {{commentedText.text_no}}</h3>
 
-<span ng-hide="newText">Loading...</span>
-<form ng-show="newText">
+<span ng-hide="text">Loading...</span>
+<form ng-show="text">
 
   <div ng-show="commentedText" ng-init="isCommentedTextVisible = false">
     <p>
@@ -22,7 +22,7 @@
     </blockquote>
   </div>
   
-  <jskom:text-fields text="newText"></jskom:text-fields>
+  <ng-include src="'textform.html'|jskomTemplate"></ng-include>
   
   <div id="jskomControlBar" class="navbar">
     <div class="navbar-inner">

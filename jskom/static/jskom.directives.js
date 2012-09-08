@@ -322,38 +322,4 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
         }
       };
     }
-  ]).
-  directive('jskomTextFields', [
-    // Example:
-    //   <jskom:text-fields text="newComment"></jskom:text-fields>
-    
-    '$log', 'templatePath',
-    function($log, templatePath) {
-      var commentTypes = [
-        { name: 'Comment', type: 'comment' },
-        { name: 'Footnote', type: 'footnote' }
-      ];
-      
-      var recipientTypes = [
-        { name: 'To', type: 'to' },
-        { name: 'CC', type: 'cc' },
-        { name: 'BCC', type: 'bcc' }
-      ];
-      
-      return {
-        restrict: 'E',
-        templateUrl: templatePath('textform.html'),
-        scope: {
-          text: '='
-        },
-        link: function(scope, iElement, iAttrs) {
-          scope.commentTypes = commentTypes;
-          scope.recipientTypes = recipientTypes;
-          
-          scope.newRecipient = function() {
-            return { type: 'to', conf_name: '' }
-          };
-        }
-      };
-    }
   ]);
