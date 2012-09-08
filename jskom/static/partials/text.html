@@ -71,20 +71,18 @@
           </button>
           <ul class="dropdown-menu">
             <li>
-              <a href="#" ng-click="showCommented()"
-                 ng-hide="showCommented == null">Show commented</a>
+              <a ng-click="showCommented()" ng-hide="showCommented == null">Show commented</a>
             </li>
             <li>
-              <a href="#" ng-click="showAllComments()"
-                 ng-hide="showAllComments == null">Show all comments</a>
+              <a ng-click="showAllComments()" ng-hide="showAllComments == null">
+                Show all comments
+              </a>
             </li>
             <li ng-hide="text._is_unread == false">
-              <a href="#" ng-click="markAsRead()"
-                 ng-disabled="readmarkIsLoading">Mark as read</a>
+              <a ng-click="markAsRead()" ng-disabled="readmarkIsLoading">Mark as read</a>
             </li>
             <li ng-hide="text._is_unread == true">
-              <a href="#" ng-click="markAsUnread()"
-                 ng-disabled="readmarkIsLoading">Mark as unread</a>
+              <a ng-click="markAsUnread()" ng-disabled="readmarkIsLoading">Mark as unread</a>
             </li>
           </ul>
         </div>
