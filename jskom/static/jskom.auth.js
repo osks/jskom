@@ -3,43 +3,62 @@
 'use strict';
 
 angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
-  config(['$httpProvider', function($httpProvider) {
-    // Inspired by http://www.espeo.pl/2012/02/26/authentication-in-angularjs-application
-    
-    /**
-     * $http interceptor.
-     * On 401 response - it broadcasts 'event:loginRequired'.
-     */
-    var interceptor = ['$rootScope','$q', function(scope, $q) {
+  config([
+    '$httpProvider',
+    function($httpProvider) {
+      // Inspired by http://www.espeo.pl/2012/02/26/authentication-in-angularjs-application
       
-      function success(response) {
-        return response;
-      }
-      
-      function error(response) {
-        var status = response.status;
-        
-        if (status == 401) {
-          scope.$broadcast('event:loginRequired');
+      /**
+       * $http interceptor.
+       * On 401 response - it broadcasts 'event:loginRequired'.
+       */
+      var interceptor = [
+        '$rootScope','$q', '$log',
+        function($rootScope, $q, $log) {
+          function success(response) {
+            return response;
+          }
+          
+          function error(response) {
+            var status = response.status;
+            
+            if (status == 401) {
+              $rootScope.$broadcast('event:loginRequired');
+            } else if (status == 428) {
+              // TODO: It would be great if we could retry the failed
+              // request here! Or just have httpkom create a session on
+              // the fly.
+              
+              // The response has the config object, which is what we
+              // need to do the same request again, but requiring
+              // $http here makes it a circular dependency when
+              // AngularJS is constructing $http.
+              
+              // Check here (the linked github) for suggestion on how
+              // to solve the circular dependency.
+              // http://www.espeo.pl/2012/02/26/authentication-in-angularjs-application
+            }
+            return $q.reject(response);
+          }
+          
+          return function(promise) {
+            return promise.then(success, error);
+          }
         }
-        return $q.reject(response);
-      }
+      ];
       
-      return function(promise) {
-        return promise.then(success, error);
-      }
-      
-    }];
-    
-    $httpProvider.responseInterceptors.push(interceptor);
-  }]).
+      $httpProvider.responseInterceptors.push(interceptor);
+    }
+  ]).
   factory('sessionsService', [
     '$http', '$log', 'httpkomServer', 'jskomName', 'jskomVersion',
-    'textsCache', 'membershipsCache',
+    'textsCache', 'membershipsCache', 'messagesService',
     function($http, $log, httpkomServer, jskomName, jskomVersion,
-             textsCache, membershipsCache) {
+             textsCache, membershipsCache, messagesService) {
+      var clientInfo = { name: jskomName, version: jskomVersion };
       var config = { withCredentials: true };
-      var currentSession = null;
+      var currentSessionNo = null;
+      var currentPerson = null;
       
       var clearAllCaches = function() {
         $log.log("sessionsService - clearing all caches");
@@ -48,40 +67,77 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
       };
       
       return {
-        newSession: function(persNo) {
-          persNo = persNo || null;
-          return { person: { pers_name: '', pers_no: persNo }, passwd: '',
-                   client: { name: jskomName, version: jskomVersion } };
-        },
-        
-        createSession: function(session) {
-          return $http.post(httpkomServer + '/sessions/', session, config).then(
+        createSession: function() {
+          var data = { client: clientInfo };
+          return $http.post(httpkomServer + '/sessions/', data, config).then(
             function(response) {
               clearAllCaches();
               return response;
             });
         },
         
-        deleteSession: function(sessionId) {
-          return $http.delete(httpkomServer + '/sessions/' + sessionId, config);
+        deleteSession: function() {
+          var sessionNo = 0; // 0 means current session
+          return $http.delete(httpkomServer + '/sessions/' + sessionNo, config).then(
+            function(response) {
+              clearAllCaches();
+              return response;
+            });
         },
         
-        getSession: function(sessionId) {
+        // Not implemented in httpkom
+        /*getSession: function(sessionId) {
           return $http.get(httpkomServer + '/sessions/' + sessionId, config);
+        },*/
+        
+        getCurrentConnectionId: function() {
+          return $.cookie('connection_id');
         },
         
-        getCurrentSessionId: function() {
-          return $.cookie('session_id');
+        getCurrentSessionNo: function() {
+          return currentSessionNo;
         },
         
-        getCurrentSession: function() {
-          return currentSession;
+        setCurrentSessionNo: function(sessionNo) {
+          currentSessionNo = sessionNo;
         },
         
-        setCurrentSession: function(session) {
-          currentSession = session;
+        getCurrentPerson: function() {
+          return currentPerson;
         },
         
+        setCurrentPerson: function(person) {
+          currentPerson = person;
+        },
+        
+        
+        // Methods on current session:
+        
+        newPerson: function(persNo) {
+          persNo = persNo || null;
+          return { pers_name: '', pers_no: persNo, passwd: '' };
+        },
+        
+        whoAmI: function() {
+          return $http.get(httpkomServer + '/sessions/current/who-am-i', config);
+        },
+        
+        login: function(person) {
+          var data = { person: person };
+          return $http.post(httpkomServer + '/sessions/current/login', data, config).then(
+            function(response) {
+              clearAllCaches();
+              return response;
+            });
+        },
+        
+        logout: function() {
+          return $http.post(httpkomServer + '/sessions/current/logout', null, config).then(
+            function(response) {
+              clearAllCaches();
+              return response;
+            });
+        },
         
         changeConference: function(confNo) {
           var data = { conf_no: parseInt(confNo) };
@@ -96,7 +152,7 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
                 $log.log("sessionsService - changeConference(" + confNo + ") - error");
                 return response;
               }
-            );;
+            );
         }
       };
   }]).
@@ -107,28 +163,53 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
              sessionsService, messagesService) {
       $scope.isLoading = false;
       var reset = function() {
-        $scope.session = sessionsService.newSession();
+        $scope.person = sessionsService.newPerson();
+      };
+      
+      var connect = function() {
+        sessionsService.setCurrentSessionNo(null);
+        sessionsService.setCurrentPerson(null);
+        $scope.isLoading = true;
+        $scope.state = 'notLoggedIn';
+        return sessionsService.createSession().then(
+          function(response) {
+            $log.log("SessionCtrl - createSession() - success");
+            $scope.isLoading = false;
+          },
+          function(response) {
+            $log.log("SessionCtrl - createSession() - error");
+            messagesService.showMessage('error', 'Failed to connect to the LysKOM server.',
+                                        response.data);
+            $scope.isLoading = false;
+          });
       };
       
       var getCurrentSession = function() {
-        var currentSessionId = sessionsService.getCurrentSessionId();
-        if (currentSessionId) {
+        var currentConnectionId = sessionsService.getCurrentConnectionId();
+        if (currentConnectionId) {
           $scope.isLoading = true;
           $scope.state = '';
-          sessionsService.getSession(currentSessionId).then(
+          sessionsService.whoAmI().then(
             function(response) {
-              $log.log("SessionCtrl - getCurrentSession() - success");
-              $scope.$emit('jskom:auth:login:success', response.data);
+              $log.log("SessionCtrl - whoAmI() - success");
+              sessionsService.setCurrentSessionNo(response.data.session_no);
+              if (response.data.person) {
+                $scope.$emit('jskom:auth:login:success', response.data.person);
+              } else {
+                $scope.state = 'notLoggedIn';
+              }
               $scope.isLoading = false;
             },
             function(response) {
-              $log.log("SessionCtrl - getCurrentSession() - error");
-              $scope.isLoading = false;
+              $log.log("SessionCtrl - whoAmI() - error");
               $scope.state = 'notLoggedIn';
+              $scope.isLoading = false;
+              if (response.status == 428) {
+                connect();
+              }
             });
         } else {
-          sessionsService.setCurrentSession(null);
-          $scope.state = 'notLoggedIn';
+          connect();
         }
       };
       
@@ -141,24 +222,19 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
         $log.log("SessionCtrl - logout()");
         $scope.state = 'notLoggedIn';
         reset();
-        sessionsService.deleteSession(sessionsService.getCurrentSessionId()).then(
+        sessionsService.logout().then(
           function() {
             $location.url('/');
           },
           function(response) {
-            if (response.status == 404) {
-              // Session does not exist: we're not logged in.
-              $scope.state = 'notLoggedIn';
-            } else {
-              messagesService.showMessage('error', 'Error when logging out.', response.data);
-            }
+            messagesService.showMessage('error', 'Error when logging out.', response.data);
           });
       };
       
-      $scope.$on('jskom:auth:login:success', function($event, session) {
-        sessionsService.setCurrentSession(session);
+      $scope.$on('jskom:auth:login:success', function($event, person) {
+        sessionsService.setCurrentPerson(person);
         $scope.state = 'loggedIn';
-        $scope.session = session;
+        $scope.person = person;
         messagesService.clearAll();
       });
       
@@ -167,7 +243,7 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
       });
       
       $scope.$on('jskom:auth:person:created', function($event, persNo) {
-        $scope.session = sessionsService.newSession(persNo);
+        $scope.person = sessionsService.newPerson(persNo);
       });
       
       reset();
@@ -271,10 +347,10 @@ angular.module('jskom.auth', ['jskom.settings', 'jskom.services']).
       
       $scope.login = function() {
         $scope.isLoggingIn = true;
-        sessionsService.createSession($scope.session).then(
+        sessionsService.login($scope.person).then(
           function(response) {
             $log.log("LoginCtrl - login() - success");
-            $scope.$emit('jskom:auth:login:success', response.data);
+            $scope.$emit('jskom:auth:login:success', response.data.person);
             $scope.isLoggingIn = false;
           },
           function(response) {

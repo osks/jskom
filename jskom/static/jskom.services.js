@@ -417,7 +417,7 @@ angular.module('jskom.services', ['jskom.settings']).
       };
       
       var getCurrentPersNo = function() {
-        return sessionsService.getCurrentSession().person.pers_no;
+        return sessionsService.getCurrentPerson().pers_no;
       };
       
       var clearCacheForPersonAndConf = function(persNo, confNo) {

@@ -108,7 +108,7 @@
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                 {% raw %}
                 <i class="icon-user icon-white"></i>
-                <span class="hidden-phone">{{ session.person.pers_name }}</span>
+                <span class="hidden-phone">{{ person.pers_name }}</span>
                 {% endraw %}
                 <b class="caret"></b>
               </a>
@@ -177,7 +177,7 @@
       <footer>
         {% raw %}
         <p ng-show="state == 'loggedIn'" ng-cloak>
-          <small>Logged in as: <em>{{ session.person.pers_name }}</em></small>
+          <small>Logged in as: <em>{{ person.pers_name }}</em></small>
         </p>
         {% endraw %}
         <p style="display: inline-block;">
