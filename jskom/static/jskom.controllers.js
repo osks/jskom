@@ -2,11 +2,262 @@
 
 'use strict';
 
-angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
+angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.settings']).
+  controller('ConnectionsCtrl', [
+    '$scope', '$rootScope', '$log', '$location',
+    'connectionFactory', 'connectionsService', 'httpkom', 'messagesService', 'sessionsService',
+    function($scope, $rootScope, $log, $location,
+             connectionFactory, connectionsService, httpkom, messagesService, sessionsService) {
+      
+      // This is a work-around for Twitter Bootstrap dropdown plugin
+      // incompatibility with AngularJS. The dropdown plugin stops
+      // AngularJS from capturing link clicks, which causes page
+      // reloads. Angular in its turn stops the clicks from closing
+      // the dropdown when it updates the location. We want to do
+      // both!  TODO: Make a directive of this. This is the wrong
+      // place for this code.
+      jQuery('.dropdown').on('click', function(event) {
+        var url = jQuery(event.target).closest('a').attr('href');
+        if (url) {
+          $scope.$apply(function(scope) {
+            $location.url(url);
+          });
+        }
+        jQuery(this).removeClass('open');
+        event.preventDefault();
+      });
+      
+      
+      $scope.newConnection = function() {
+        connectionsService.newConnectionPromise().then(
+          function(conn) {
+            connectionsService.setCurrentConnection(conn);
+          },
+          function(response) {
+            $log.log("ConnectionsCtrl - newConnection() - error");
+            messagesService.showMessage('error', 'Failed to create new connection.',
+                                        response.data);
+          });
+      };
+      
+      $scope.selectConnection = function(conn) {
+        connectionsService.setCurrentConnection(conn);
+      };
+
+      $scope.$watch(connectionsService.getConnections, function(newConnections) {
+        $scope.connections = newConnections;
+      });
+      
+      $scope.$watch(connectionsService.getCurrentConnection, function(newCurrentConn, oldConn) {
+        if (newCurrentConn) {
+          $log.log("New current connection (" + newCurrentConn.id + ") - session: " +
+                   angular.toJson(newCurrentConn.session));
+          $scope.connection = newCurrentConn;
+        } else {
+          //$log.log("New current connection: " + newCurrentConn);
+          $scope.connection = null;
+        }
+        if (newCurrentConn !== oldConn) {
+          // New connection, reset URL.
+          $location.url('/');
+        }
+      });
+      
+      $scope.logout = function() {
+        // We don't actually logout, but rather delete the session
+        // directly instead.
+        sessionsService.deleteSession($scope.connection, 0).then(
+          function() {
+            $log.log("ConnectionsCtrl - logout() - success");
+            connectionsService.removeConnection($scope.connection);
+          },
+          function(response) {
+            $log.log("ConnectionsCtrl - logout() - error");
+            messagesService.showMessage('error', 'Error when logging out.', response.data);
+          });
+      };
+      
+      $scope.servers = null;
+      connectionsService.getServers().then(
+        function(servers) {
+          $log.log("ConnectionsCtrl - getServers() - success");
+          $scope.servers = servers;
+          if (!$scope.connection) {
+            $scope.newConnection();
+          }
+        },
+        function(response) {
+          $log.log("ConnectionsCtrl - getServers() - error");
+          messagesService.showMessage('error', 'Failed to get server list.', response.data);
+        });
+    }
+  ]).
+  controller('SessionCtrl', [
+    '$scope', '$log', '$location',
+    'messagesService', 'keybindingService',
+    function($scope, $log, $location,
+             messagesService, keybindingService) {
+      $scope.session = null;
+      $scope.$watch('connection', function(newConnection) {
+        if (newConnection) {
+          //$log.log("SessionCtrl - new session: " + angular.toJson(newConnection.session));
+          $scope.session = newConnection.session;
+        } else {
+          $scope.session = null;
+        }
+      });
+      
+      keybindingService.bindGlobal('i', 'New text...', function(e) {
+        $scope.$apply(function() {
+          $location.url('/texts/new');
+        });
+      });
+
+      keybindingService.bindGlobal('g', 'Go to conference...', function(e) {
+        $scope.$apply(function() {
+          $location.url('/conferences/go-to');
+        });
+      });
+    }
+  ]).
+  controller('LoginTabsCtrl', [
+    '$scope', '$log', 'pageTitleService', 'sessionsService',
+    function($scope, $log, pageTitleService, sessionsService) {
+      $scope.loginActiveTab = 'login';
+      
+      $scope.selectTab = function(tab) {
+        $scope.loginActiveTab = tab;
+      };
+      
+      $scope.isTabActive = function(tab) {
+        if ($scope.loginActiveTab == tab) {
+          return 'active';
+        } else {
+          return '';
+        }
+      };
+      
+      $scope.$watch('loginActiveTab', function(newTab) {
+        if (newTab == 'login') {
+          pageTitleService.set("Log in");
+        } else if (newTab == 'create') {
+          pageTitleService.set("Create person");
+        } else {
+          pageTitleService.set("");
+        }
+        
+      });
+      
+      $scope.person = sessionsService.newPerson();
+      $scope.$on('jskom:person:created', function($event, persNo) {
+        $scope.person = sessionsService.newPerson(persNo);
+        $scope.loginActiveTab = 'login';
+      });
+    }
+  ]).
+  controller('LoginCtrl', [
+    '$scope', '$log', 'sessionsService', 'messagesService', 'connectionsStorage',
+    function($scope, $log, sessionsService, messagesService, connectionsStorage) {
+      $scope.isLoggingIn = false;
+      
+      $scope.reset = function() {
+        $scope.isReseting = true;
+        sessionsService.deleteSession(
+          $scope.connection, $scope.connection.session.session_no).then(
+            function(response) {
+              $log.log("LoginCtrl - reset() - success");
+              $scope.person = sessionsService.newPerson();
+              $scope.isReseting = false;
+            },
+            function(response) {
+              $log.log("LoginCtrl - reset() - error");
+              messagesService.showMessage('error', 'Failed to reset login.', response.data);
+              $scope.isReseting = false;
+            });
+      };
+      
+      $scope.login = function() {
+        $scope.isLoggingIn = true;
+        sessionsService.login($scope.connection, $scope.person).then(
+          function(response) {
+            $log.log("LoginCtrl - login() - success");
+            $scope.isLoggingIn = false;
+          },
+          function(response) {
+            $log.log("LoginCtrl - login() - error");
+            messagesService.showMessage('error', 'Failed to login.', response.data);
+            $scope.isLoggingIn = false;
+          });
+      };
+    }
+  ]).
+  controller('NewPersonCtrl', [
+    '$scope', '$log', '$location',
+    'personsService', 'messagesService', 'sessionsService',
+    function($scope, $log, $location,
+             personsService, messagesService, sessionsService) {
+      var values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+      var pickRandom = function() {
+        return values[Math.floor(Math.random() * values.length)];
+      };
+      var newQuestion = function() {
+        $scope.v1 = pickRandom();
+        $scope.v2 = pickRandom();
+        $scope.question = 'what is ' + $scope.v1 + ' + ' + $scope.v2 + '?';
+        $scope.answer = '';
+      };
+      var checkAnswer = function() {
+        var answer = parseInt(jQuery.trim($scope.answer));
+        if (_.isNaN(answer)) {
+          return false;
+        }
+        
+        return (($scope.v1 + $scope.v2) == answer);
+      };
+      
+      newQuestion();
+      $scope.isCreating = false;
+      $scope.person = personsService.newPerson();
+      
+      $scope.createPerson = function() {
+        if ($scope.person.passwd != $scope.confirmpasswd) {
+          messagesService.showMessage('error', 'The confirmation password is not correct.');
+          return;
+        }
+        
+        if (!checkAnswer()) {
+          messagesService.showMessage('error', 'The answer to the control question is wrong.');
+          newQuestion();
+          return;
+        }
+                
+        $scope.isCreating = true;
+        return personsService.createPerson($scope.connection, $scope.person).then(
+          function(response) {
+            $log.log("NewPersonCtrl - createPerson() - success");
+            $scope.isCreating = false;
+            messagesService.showMessage('success', 'Successfully created person.');
+            $scope.$emit('jskom:person:created', response.data.pers_no);
+            $scope.person = personsService.newPerson();
+          },
+          function(response) {
+            $log.log("NewPersonCtrl - createPerson() - error");
+            $scope.isCreating = false;
+            messagesService.showMessage('error', 'Failed to create person.', response.data);
+            newQuestion();
+          }
+        );
+      };
+    }
+  ]).
   controller('MessagesCtrl', [
     '$scope', 'messagesService', '$log',
     function($scope, messagesService, $log) {
       $scope.messages = [];
+      
+      $scope.$watch('connection', function(newConnection) {
+        messagesService.clearAll();
+      });
       
       messagesService.onMessage(function(message) {
         $scope.messages.push(message);
@@ -39,10 +290,10 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
     }
   ]).
   controller('UnreadConfsCtrl', [
-    '$scope', '$location', '$log', '$timeout',
+    '$scope', '$location', '$log', '$timeout', '$q',
     'conferencesService', 'pageTitleService', 'messagesService', 'keybindingService',
     'membershipsService',
-    function($scope, $location, $log, $timeout,
+    function($scope, $location, $log, $timeout, $q,
              conferencesService, pageTitleService, messagesService, keybindingService,
              membershipsService) {
       pageTitleService.set("Unread conferences");
@@ -58,22 +309,21 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       $scope.load = function(allowCache) {
         $scope.unreadMemberships = [];
         $scope.isLoading = true;
-        return membershipsService.getUnreadMemberships({ cache: allowCache }).then(
-          function(memberships) {
-            $log.log("UnreadConfsCtrl - getUnreadMemberships() - success");
-            $scope.unreadMemberships = sortMembershipsByPriority(memberships);
-            $scope.isLoading = false;
-          }, function(response) {
-            $log.log("UnreadConfsCtrl - getUnreadMemberships() - error");
-            $scope.isLoading = false;
-            messagesService.showMessage('error', 'Failed to get unread conferences.',
-                                        response.data);
-          });
+        return membershipsService.getUnreadMemberships(
+          $scope.connection, { cache: allowCache }).then(
+            function(memberships) {
+              $log.log("UnreadConfsCtrl - getUnreadMemberships() - success");
+              $scope.unreadMemberships = sortMembershipsByPriority(memberships);
+              $scope.isLoading = false;
+            },
+            function(response) {
+              $log.log("UnreadConfsCtrl - getUnreadMemberships() - error");
+              $scope.isLoading = false;
+              messagesService.showMessage('error', 'Failed to get unread conferences.',
+                                          response.data);
+              return $q.reject(response);
+            });
       };
-      $scope.load(true);
-      
-      $scope.autoRefreshing = false;
-      $scope.autoRefreshPromise = null;
       $scope.enableAutoRefresh = function() {
         $log.log("UnreadConfsCtrl - enabling auto-refresh");
         $scope.autoRefreshing = true;
@@ -101,8 +351,17 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       $scope.$on('$destroy', function() {
         $scope.disableAutoRefresh();
       });
-      $scope.enableAutoRefresh();
       
+      // We watch the connection because this controller doesn't
+      // nesscerily get recreated when the connection changes (it is
+      // only recreated if the URL changes).
+      $scope.$watch('connection', function(newConnection) {
+        $scope.disableAutoRefresh();
+        if (newConnection) {
+          $scope.load(true);
+          $scope.enableAutoRefresh();
+        }
+      });
       
       $scope.readFirstConference = function() {
         if ($scope.unreadMemberships.length > 0) {
@@ -147,19 +406,20 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       $scope.setNumberOfUnreadTexts = function() {
         $scope.isLoading = true;
-        membershipsService.setNumberOfUnreadTexts($scope.confNo, $scope.noOfUnread).then(
-          function() {
-            $log.log("SetUnreadTextsCtrl - setNumberOfUnreadTexts() - success");
-            $scope.isLoading = false;
-            messagesService.showMessage('success', 'Successfully set number of unread texts.');
-            $location.url('/');
-          },
-          function(response) {
-            $log.log("SetUnreadTextsCtrl - setNumberOfUnreadTexts() - error");
-            $scope.isLoading = false;
-            messagesService.showMessage('error', 'Failed to set number of unread texts.',
-                                        response.data);
-          });
+        membershipsService.setNumberOfUnreadTexts(
+          $scope.connection, $scope.confNo, $scope.noOfUnread).then(
+            function() {
+              $log.log("SetUnreadTextsCtrl - setNumberOfUnreadTexts() - success");
+              $scope.isLoading = false;
+              messagesService.showMessage('success', 'Successfully set number of unread texts.');
+              $location.url('/');
+            },
+            function(response) {
+              $log.log("SetUnreadTextsCtrl - setNumberOfUnreadTexts() - error");
+              $scope.isLoading = false;
+              messagesService.showMessage('error', 'Failed to set number of unread texts.',
+                                          response.data);
+            });
       };
     }
   ]).
@@ -232,7 +492,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         var commentToTextNo = parseInt($location.search().commentTo)
         $scope.activeTab = 'simple';
         
-        textsService.getText(commentToTextNo).then(
+        textsService.getText($scope.connection, commentToTextNo).then(
           function(response) {
             $log.log("NewTextCtrl - getText(" + commentToTextNo + ") - success");
             
@@ -255,7 +515,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       $scope.createText = function() {
         $scope.isCreating = true;
-        textsService.createText($scope.text).then(
+        textsService.createText($scope.connection, $scope.text).then(
           function(response) {
             $log.log("NewTextCtrl - createText() - success");
             messagesService.showMessage('success', 'Successfully created text.',
@@ -281,7 +541,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       $scope.textIsLoading = false;
       var showText = function(textNo) {
         $scope.textIsLoading = true;
-        textsService.getText(textNo).then(
+        textsService.getText($scope.connection, textNo).then(
           function(response) {
             $log.log("ShowTextCtrl - getText(" + textNo + ") - success");
             $scope.textIsLoading = false;
@@ -335,7 +595,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         if ($scope.text) {
           var text = $scope.text;
           $scope.readmarkIsLoading = true;
-          readMarkingsService.createGlobalReadMarking(text).then(
+          readMarkingsService.createGlobalReadMarking($scope.connection, text).then(
             function(response) {
               $log.log("TextCtrl - markAsRead(" + text.text_no + ") - success");
               $scope.readmarkIsLoading = false;
@@ -353,7 +613,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
         if ($scope.text) {
           var text = $scope.text;
           $scope.readmarkIsLoading = false;
-          readMarkingsService.deleteGlobalReadMarking(text).then(
+          readMarkingsService.deleteGlobalReadMarking($scope.connection, text).then(
             function(response) {
               $log.log("TextCtrl - markAsUnread(" + text.text_no + ") - success");
               $scope.readmarkIsLoading = false;
@@ -397,7 +657,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       var getMembership = function(confNo) {
         $scope.isLoadingMembership = true;
         $scope.membership = null;
-        membershipsService.getMembership(confNo).then(
+        membershipsService.getMembership($scope.connection, confNo).then(
             function(membership) {
               $log.log("ShowConfCtrl - getMembership(" + confNo + ") - success");
               $scope.isLoadingMembership = false;
@@ -419,7 +679,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       $scope.joinConf = function() {
         var confNo = $scope.conf.conf_no;
         $scope.isJoining = true;
-        membershipsService.addMembership(confNo).then(
+        membershipsService.addMembership($scope.connection, confNo).then(
           function(response) {
             $log.log("ShowConfCtrl - addMembership(" + confNo + ") - success");
             $scope.isJoining = false;
@@ -436,7 +696,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       $scope.leaveConf = function() {
         var confNo = $scope.conf.conf_no;
         $scope.isLeaving = true;
-        membershipsService.deleteMembership(confNo).then(
+        membershipsService.deleteMembership($scope.connection, confNo).then(
           function(response) {
             $log.log("ShowConfCtrl - deleteMembership(" + confNo + ") - success");
             $scope.isLeaving = false;
@@ -450,7 +710,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
           });
       };
       
-      conferencesService.getConference($routeParams.confNo, false).then(
+      conferencesService.getConference($scope.connection, $routeParams.confNo, false).then(
         function(response) {
           $log.log("ShowConfCtrl - getConference(" + $routeParams.confNo + ") - success");
           $scope.conf = response.data;
@@ -535,7 +795,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       var showText = function(textNo) {
         if (textNo) {
-          setText(textsService.getText(textNo).then(
+          setText(textsService.getText($scope.connection, textNo).then(
             function(response) {
               return response.data;
             }));
@@ -575,13 +835,14 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
       
       var getReader = function(confNo, allowCache) {
         $scope.readerIsLoading = true;
-        membershipsService.getMembership(confNo, { cache: allowCache }).then(
+        membershipsService.getMembership($scope.connection, confNo, { cache: allowCache }).then(
           function(membership) {
             $log.log("ReaderCtrl - getReader(" + confNo + ") - success");
             $scope.conf = membership.conference;
             
-            var unreadQueue = readerFactory.createUnreadQueue(membership.unread_texts);
-            var reader = readerFactory.createReader(unreadQueue);
+            var unreadQueue = readerFactory.createUnreadQueue(
+              $scope.connection, membership.unread_texts);
+            var reader = readerFactory.createReader($scope.connection, unreadQueue);
             
             if ($routeParams.text) {
               reader.unshiftPending($routeParams.text);
@@ -593,7 +854,7 @@ angular.module('jskom.controllers', ['jskom.services', 'jskom.settings']).
             // If getting the reader succeeded, we know we are a
             // member of the conference and can change the working
             // conference to it.
-            sessionsService.changeConference(confNo);
+            sessionsService.changeConference($scope.connection, confNo);
             
             $scope.reader = reader;
             $scope.readerIsLoading = false;

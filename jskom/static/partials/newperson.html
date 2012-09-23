@@ -1,6 +1,10 @@
 <h3>Create person</h3>
 
 <form ng-controller="NewPersonCtrl">
+  <label>LysKOM server</label>
+  <select class="span6" ng-model="connection.serverId" ng-show="servers"
+          ng-disabled="connection.connectionId"
+          ng-options="sid as s|serverName for (sid, s) in servers"></select>
   
   <label>Person name (use your full name, like &quot;Sven Svensson&quot;)</label>
   <input type="text" class="span6" required ng-model="person.name" />

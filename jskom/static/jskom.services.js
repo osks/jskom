@@ -2,7 +2,7 @@
 
 'use strict';
 
-angular.module('jskom.services', ['jskom.settings']).
+angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
   factory('htmlFormattingService', [
     '$log',
     function($log) {
@@ -47,7 +47,7 @@ angular.module('jskom.services', ['jskom.settings']).
               tmpObj['<$' + i + '$>'] = replaceFunc(match);
               ++i;
             });
-            }
+          }
           return str;
         };
         
@@ -101,7 +101,7 @@ angular.module('jskom.services', ['jskom.settings']).
         
         linkifyUrls: function(htmlStr) {
           var replacer = function(match, p1) {
-            return '<a href="' + encodeURI(p1) + '">' + p1 + '</a>';
+            return '<a target="_blank" href="' + encodeURI(p1) + '">' + p1 + '</a>';
           };
           return htmlStr.replace(urlRegexp, replacer);
         },
@@ -276,25 +276,88 @@ angular.module('jskom.services', ['jskom.settings']).
       };
     }
   ]).
-  service('textsCache', [
-    '$cacheFactory',
-    function($cacheFactory) {
-      var cache = $cacheFactory('texts', { capacity: 100 });
-      return cache;
-    }
-  ]).
-  service('membershipsCache', [
-    '$cacheFactory',
-    function($cacheFactory) {
-      var cache = $cacheFactory('memberships', { capacity: 100 });
-      return cache;
+  factory('sessionsService', [
+    '$rootScope', '$log', '$q',
+    'messagesService', 'jskomName', 'jskomVersion',
+    function($rootScope, $log, $q,
+             messagesService, jskomName, jskomVersion) {
+      var clientInfo = { name: jskomName, version: jskomVersion };
+      
+      return {
+        createSession: function(conn) {
+          var request = { method: 'post', url: '/sessions/', data: { client: clientInfo } };
+          return conn.http(request).then(
+            function(response) {
+              if (response.headers('Httpkom-Connection')) {
+                conn.httpkomId = response.headers('Httpkom-Connection');
+                conn.session = response.data;
+                conn.clearAllCaches();
+                $rootScope.$broadcast('jskom:connection:changed', conn);
+              }
+              return response;
+            });
+        },
+        
+        deleteSession: function(conn, sessionNo) {
+          // sessionNo == 0 means current session
+          return conn.http({ method: 'delete', url: '/sessions/' + sessionNo }).then(
+            function(response) {
+              // Check if we deleted our own session
+              if (sessionNo == 0 || sessionNo == conn.session.session_no) {
+                conn.httpkomId = null;
+                conn.session = null;
+                conn.clearAllCaches();
+                $rootScope.$broadcast('jskom:connection:changed', conn);
+              }
+              return response;
+            });
+        },
+        
+        
+        // Methods on current session:
+        
+        whoAmI: function(conn) {
+          return conn.http({ method: 'get', url: '/sessions/current/who-am-i'});
+        },
+        
+        newPerson: function(persNo) {
+          persNo = persNo || null;
+          return { pers_name: '', pers_no: persNo, passwd: '' };
+        },
+        
+        login: function(conn, person) {
+          var request = { method: 'post', url: '/sessions/current/login',
+                          data: { person: person } };
+          return conn.http(request).then(
+            function(response) {
+              conn.session = response.data;
+              conn.clearAllCaches();
+              $rootScope.$broadcast('jskom:connection:changed', conn);
+              return response;
+            });
+        },
+        
+        logout: function(conn) {
+          return conn.http({ method: 'post', url: '/sessions/current/logout' }).then(
+            function(response) {
+              conn.session.person = null;
+              conn.clearAllCaches();
+              $rootScope.$broadcast('jskom:connection:changed', conn);
+              return response;
+            });
+        },
+        
+        changeConference: function(conn, confNo) {
+          var request = { method: 'post', url: '/sessions/current/working-conference',
+                          data: { conf_no: parseInt(confNo) }};
+          return conn.http(request);
+        }
+      };
     }
   ]).
   factory('textsService', [
-    '$log', '$http', '$q', 'textsCache', 'httpkomServer',
-    function($log, $http, $q, textsCache, httpkomServer) {
-      var config = { withCredentials: true };
-      
+    '$log', '$q', 'httpkomServer',
+    function($log, $q, httpkomServer) {
       var enhanceText = function(text) {
         var mimeType = Mimeparse.parseMimeType(text.content_type);
         text.jskomBodyType = mimeType[0];
@@ -309,9 +372,9 @@ angular.module('jskom.services', ['jskom.settings']).
       };
       
       return {
-        getText: function(textNo) {
+        getText: function(conn, textNo) {
           textNo = textNo.toString();
-          var cachedResp = textsCache.get(textNo);
+          var cachedResp = conn.textsCache.get(textNo);
           
           if (cachedResp) {
             //$log.log("textsService - getText(" + textNo + ") - cached");
@@ -320,7 +383,7 @@ angular.module('jskom.services', ['jskom.settings']).
             var deferred = $q.defer();
             var promise = deferred.promise;
             
-            $http.get(httpkomServer + '/texts/' + textNo, config).then(
+            conn.http({ method: 'get', url: '/texts/' + textNo }).then(
               function(response) {
                 $log.log("textsService - getText(" + textNo + ") - success");
                 response.data = enhanceText(response.data);
@@ -328,23 +391,23 @@ angular.module('jskom.services', ['jskom.settings']).
               },
               function(response) {
                 $log.log("textsService - getText(" + textNo + ") - error");
-                textsCache.remove(textNo);
+                conn.textsCache.remove(textNo);
                 deferred.reject(response);
               });
             
-            textsCache.put(textNo, promise);
+            conn.textsCache.put(textNo, promise);
             return promise;
           }
         },
         
-        createText: function(text) {
-          return $http.post(httpkomServer + '/texts/', text, config).then(
+        createText: function(conn, text) {
+          return conn.http({ method: 'post', url: '/texts/', data: text }).then(
             function(response) {
               _.each(text.comment_to_list, function(commentedText) {
                 // Remove commented texts from the cache so we can
                 // fetch them with the new text in their
                 // comment_in_list.
-                textsCache.remove(commentedText.text_no.toString());
+                conn.textsCache.remove(commentedText.text_no.toString());
               });
               return response;
             });
@@ -353,54 +416,46 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('conferencesService', [
-    '$http', '$log', 'httpkomServer',
-    function($http, $log, httpkomServer) {
-      var config = { withCredentials: true };
-      
+    '$log',
+    function($log) {
       return {
-        lookupConferences: function(name, wantPers, wantConfs) {
-          return $http.get(httpkomServer + '/conferences/',
-                           _.extend({
+        lookupConferences: function(conn, name, wantPers, wantConfs) {
+          return conn.http({ method: 'get', url: '/conferences/',
                              params: {
                                "name": name,
                                "want-pers": wantPers,
                                "want-confs": wantConfs
-                             }
-                           }, config));
+                             } });
         },
         
-        getConference: function(confNo, micro) {
+        getConference: function(conn, confNo, micro) {
           if (arguments.length < 2) {
             micro = true;
           }
-          return $http.get(httpkomServer + '/conferences/' + confNo,
-                           _.extend({ params: { "micro": micro } }, config));
+          return conn.http({ method: 'get', url: '/conferences/' + confNo,
+                             params: { "micro": micro } });
         },
       };
     }
   ]).
   factory('personsService', [
-    '$http', 'httpkomServer',
-    function($http, httpkomServer) {
-      var config = { withCredentials: true };
-      
+    '$log',
+    function($log) {
       return {
         newPerson: function() {
           return { name: '', passwd: '' };
         },
         
-        createPerson: function(person) {
+        createPerson: function(conn, person) {
           var data = { name: person.name, passwd: person.passwd };
-          return $http.post(httpkomServer + '/persons/', data, config);
+          return conn.http({ method: 'post', url: '/persons/', data: data });
         }
       };
     }
   ]).
   factory('membershipsService', [
-    '$http', '$log', '$q', 'httpkomServer', 'membershipsCache', 'sessionsService',
-    function($http, $log, $q, httpkomServer, membershipsCache, sessionsService) {
-      var config = { withCredentials: true };
-      
+    '$log', '$q', 'sessionsService',
+    function($log, $q, sessionsService) {
       var createResolvedPromiseFor = function(resolveArg) {
         var deferred = $q.defer();
         var promise = deferred.promise;
@@ -416,87 +471,76 @@ angular.module('jskom.services', ['jskom.settings']).
         return persNo + ":" + confNo;
       };
       
-      var getCurrentPersNo = function() {
-        return sessionsService.getCurrentPerson().pers_no;
-      };
-      
-      var clearCacheForPersonAndConf = function(persNo, confNo) {
-        // We can't remove non-existing items from $cacheFactory (it
-        // throws then), so we need to check if they exist before
-        // removing them.
+      var clearCacheForPersonAndConf = function(conn, persNo, confNo) {
         var confKey = cacheKeyForConf(persNo, confNo);
-        if (!_.isUndefined(membershipsCache.get(confKey))) {
-          membershipsCache.remove(confKey);
-        }
+        conn.membershipsCache.remove(confKey);
         
         // also remove unread cache
         var unreadKey = cacheKeyForUnread(persNo);
-        if (!_.isUndefined(membershipsCache.get(unreadKey))) {
-          membershipsCache.remove(unreadKey);
-        }
+        conn.membershipsCache.remove(unreadKey);
       };
       
-      var saveMembershipsInCache = function(persNo, memberships) {
+      var saveMembershipsInCache = function(conn, persNo, memberships) {
         _.each(memberships, function(membership) {
           var cacheKey = cacheKeyForConf(persNo, membership.conference.conf_no);
           var promise = createResolvedPromiseFor(membership);
-          membershipsCache.put(cacheKey, promise);
+          conn.membershipsCache.put(cacheKey, promise);
         });
       };
       
       return {
-        clearCacheForConf: function(confNo) {
-          var confKey = cacheKeyForConf(getCurrentPersNo(), confNo);
-          if (!_.isUndefined(membershipsCache.get(confKey))) {
-            membershipsCache.remove(confKey);
-          }
+        clearCacheForConf: function(conn, confNo) {
+          var confKey = cacheKeyForConf(conn.getPersNo(), confNo);
+          conn.membershipsCache.remove(confKey);
         },
         
-        setNumberOfUnreadTexts: function(confNo, noOfUnread) {
+        setNumberOfUnreadTexts: function(conn, confNo, noOfUnread) {
           var data = { no_of_unread: parseInt(noOfUnread) };
-          return $http.post(httpkomServer + '/persons/current/memberships/' + confNo, data, config).
+          return conn.http({ method: 'post', url: '/persons/current/memberships/' + confNo,
+                             data: data }).
             then(function(response) {
-              clearCacheForPersonAndConf(getCurrentPersNo(), confNo);
+              clearCacheForPersonAndConf(conn, conn.getPersNo(), confNo);
               return response;
             });
         },
         
-        addMembership: function(confNo) {
-          return this.addMembershipForPerson(getCurrentPersNo());
+        addMembership: function(conn, confNo) {
+          return this.addMembershipForPerson(conn, conn.getPersNo());
         },
         
-        addMembershipForPerson: function(persNo, confNo) {
+        addMembershipForPerson: function(conn, persNo, confNo) {
           var priority = 100;
-          return $http.put(httpkomServer + '/persons/' + persNo + '/memberships/' + confNo, null,
-                           _.extend({ params: { "priority": parseInt(priority) } }, config)).
+          // todo: this httpkom call should take priority in the body, not as query param.
+          return conn.http({ method: 'put', url: '/persons/' + persNo + '/memberships/' + confNo,
+                             params: { "priority": parseInt(priority) } }).
             then(function(response) {
-              clearCacheForPersonAndConf(getCurrentPersNo(), confNo);
+              clearCacheForPersonAndConf(conn, conn.getPersNo(), confNo);
               return response;
             });
         },
         
-        deleteMembership: function(confNo) {
-          return this.deleteMembershipForPerson(getCurrentPersNo(), confNo);
+        deleteMembership: function(conn, confNo) {
+          return this.deleteMembershipForPerson(conn, conn.getPersNo(), confNo);
         },
         
-        deleteMembershipForPerson: function(persNo, confNo) {
-          return $http.delete(httpkomServer + '/persons/' + persNo + '/memberships/' + confNo,
-                              config).
+        deleteMembershipForPerson: function(conn, persNo, confNo) {
+          return conn.http({ method: 'delete',
+                             url: '/persons/' + persNo + '/memberships/' + confNo }).
             then(function(response) {
-              clearCacheForPersonAndConf(getCurrentPersNo(), confNo);
+              clearCacheForPersonAndConf(conn, conn.getPersNo(), confNo);
               return response;
             });
         },
         
-        getMembership: function(confNo, options) {
-          return this.getMembershipForPerson(getCurrentPersNo(), confNo, options);
+        getMembership: function(conn, confNo, options) {
+          return this.getMembershipForPerson(conn, conn.getPersNo(), confNo, options);
         },
         
-        getMembershipForPerson: function(persNo, confNo, options) {
+        getMembershipForPerson: function(conn, persNo, confNo, options) {
           options = options || { cache: true };
           
           var cacheKey = cacheKeyForConf(persNo, confNo);
-          var cachedResp = membershipsCache.get(cacheKey);
+          var cachedResp = conn.membershipsCache.get(cacheKey);
           
           if (options.cache && cachedResp) {
             $log.log('membershipsService - getMembership(' + confNo + ') - cached');
@@ -505,36 +549,37 @@ angular.module('jskom.services', ['jskom.settings']).
             var deferred = $q.defer();
             var promise = deferred.promise;
             
-            var c = _.extend({ params: { "want-unread": true } }, config);
-            $http.get(httpkomServer + '/persons/' + persNo + '/memberships/' + confNo, c).then(
-              function(response) {
-                $log.log('membershipsService - getMembership(' + confNo + ') - success');
-                deferred.resolve(response.data);
-              },
-              function(response) {
-                $log.log('membershipsService - getMembership(' + confNo + ') - error');
-                membershipsCache.remove(cacheKey);
-                deferred.reject(response);
-              });
+            conn.http({ method: 'get', url: '/persons/' + persNo + '/memberships/' + confNo,
+                        params: { "want-unread": true } }).
+              then(
+                function(response) {
+                  $log.log('membershipsService - getMembership(' + confNo + ') - success');
+                  deferred.resolve(response.data);
+                },
+                function(response) {
+                  $log.log('membershipsService - getMembership(' + confNo + ') - error');
+                  conn.membershipsCache.remove(cacheKey);
+                  deferred.reject(response);
+                });
             
-            membershipsCache.put(cacheKey, promise);
+            conn.membershipsCache.put(cacheKey, promise);
             return promise;
           }
         },
         
-        getUnreadMemberships: function(options) {
-          return this.getUnreadMembershipsForPerson(getCurrentPersNo(), options);
+        getUnreadMemberships: function(conn, options) {
+          return this.getUnreadMembershipsForPerson(conn, conn.getPersNo(), options);
         },
         
-        getUnreadMembershipsForPerson: function(persNo, options) {
+        getUnreadMembershipsForPerson: function(conn, persNo, options) {
           var deferred = $q.defer();
           var promise = deferred.promise;
           
           var self = this;
-          this.getUnreadConfNosForPerson(persNo, options).then(
+          this.getUnreadConfNosForPerson(conn, persNo, options).then(
             function(unreadConfNos) {
               var promises = _.map(unreadConfNos, function(confNo) {
-                return self.getMembershipForPerson(persNo, confNo, options);
+                return self.getMembershipForPerson(conn, persNo, confNo, options);
               });
               $q.all(promises).then(
                 function(memberships) {
@@ -555,15 +600,15 @@ angular.module('jskom.services', ['jskom.settings']).
           return promise;
         },
         
-        getUnreadConfNos: function(options) {
-          return this.getUnreadConfNosForPerson(getCurrentPersNo(), options);
+        getUnreadConfNos: function(conn, options) {
+          return this.getUnreadConfNosForPerson(conn, conn.getPersNo(), options);
         },
         
-        getUnreadConfNosForPerson: function(persNo, options) {
+        getUnreadConfNosForPerson: function(conn, persNo, options) {
           options = options || { cache: true };
-
+          
           var cacheKey = cacheKeyForUnread(persNo);
-          var cachedResp = membershipsCache.get(cacheKey);
+          var cachedResp = conn.membershipsCache.get(cacheKey);
           
           if (options.cache && cachedResp) {
             $log.log('membershipsService - getUnreadMemberships() - cached');
@@ -572,24 +617,25 @@ angular.module('jskom.services', ['jskom.settings']).
             var deferred = $q.defer();
             var promise = deferred.promise;
             
-            var c = _.extend({ params: { "unread": true, "want-unread": true } }, config);
-            $http.get(httpkomServer + '/persons/' + persNo + '/memberships/', c).then(
-              function(response) {
-                $log.log('membershipsService - getUnreadMemberships() - success');
-                saveMembershipsInCache(persNo, response.data.memberships);
-                var unreadConfNos = _.map(response.data.memberships, function(membership) {
-                  return membership.conference.conf_no;
+            conn.http({ method: 'get', url: '/persons/' + persNo + '/memberships/',
+                        params: { "unread": true, "want-unread": true } }).
+              then(
+                function(response) {
+                  $log.log('membershipsService - getUnreadMemberships() - success');
+                  saveMembershipsInCache(conn, persNo, response.data.memberships);
+                  var unreadConfNos = _.map(response.data.memberships,
+                                            function(membership) {
+                                              return membership.conference.conf_no;
+                                            });
+                  deferred.resolve(unreadConfNos);
+                },
+                function(response) {
+                  $log.log('membershipsService - getUnreadMemberships() - error');
+                  conn.membershipsCache.remove(cacheKey);
+                  deferred.reject(response);
                 });
-                deferred.resolve(unreadConfNos);
-                //deferred.resolve(response);
-              },
-              function(response) {
-                $log.log('membershipsService - getUnreadMemberships() - error');
-                membershipsCache.remove(cacheKey);
-                deferred.reject(response);
-              });
             
-            membershipsCache.put(cacheKey, promise);
+            conn.membershipsCache.put(cacheKey, promise);
             return promise;
           }
         },
@@ -597,60 +643,44 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('readMarkingsService', [
-    '$http', 'httpkomServer', 'membershipsService',
-    function($http, httpkomServer, membershipsService) {
-      var config = { withCredentials: true };
-      
-      var clearCacheForRecipients = function(text) {
+    'membershipsService',
+    function(membershipsService) {
+      var clearCacheForRecipients = function(conn, text) {
         if (text) {
           // Clear membership cache because marking texts as read/unread
           // will make the data invalid.
           _.each(text.recipient_list, function(recipient) {
-            membershipsService.clearCacheForConf(recipient.conf_no);
+            membershipsService.clearCacheForConf(conn, recipient.conf_no);
           });
         }
       };
       
       return {
-        createGlobalReadMarking: function(text) {
-          return $http.put(httpkomServer + '/texts/' + text.text_no + '/read-marking', 
-                           null, config).then(
-                             function(response) {
-                               clearCacheForRecipients(text);
-                               return response;
-                             });
+        createGlobalReadMarking: function(conn, text) {
+          var request = { method: 'put', url: '/texts/' + text.text_no + '/read-marking' };
+          return conn.http(request).then(
+            function(response) {
+              clearCacheForRecipients(conn, text);
+              return response;
+            });
         },
         
-        deleteGlobalReadMarking: function(text) {
-          return $http.delete(httpkomServer + '/texts/' + text.text_no + '/read-marking',
-                              config).then(
-                                function(response) {
-                                  clearCacheForRecipients(text);
-                                  return response;
-                                });
-        },
-      };
-    }
-  ]).
-  factory('readerService', [
-    '$log', 'readerFactory', 'membershipsService',
-    function($log, readerFactory, membershipsService) {
-      return {
-        getReader: function(confNo) {
-          return membershipsService.getMembership(confNo).then(
+        deleteGlobalReadMarking: function(conn, text) {
+          var request = { method: 'delete', url: '/texts/' + text.text_no + '/read-marking' };
+          return conn.http(request).then(
             function(response) {
-              var unreadQueue = readerFactory.createUnreadQueue(response.data.unread_texts);
-              return readerFactory.createReader(unreadQueue);
+              clearCacheForRecipients(conn, text);
+              return response;
             });
-        }
+        },
       };
     }
   ]).
   factory('readerFactory', [
     '$log', 'textsService', 'readMarkingsService', 'messagesService',
     function($log, textsService, readMarkingsService, messagesService) {
-      var markAsRead = function(text) {
-        readMarkingsService.createGlobalReadMarking(text).then(
+      var markAsRead = function(conn, text) {
+        readMarkingsService.createGlobalReadMarking(conn, text).then(
           function(response) {
             $log.log("readerFactory - markAsRead(" + text.text_no + ") - success");
             text._is_unread = false;
@@ -661,7 +691,8 @@ angular.module('jskom.services', ['jskom.settings']).
           });
       };
       
-      var Reader = function(unreadQueue) {
+      var Reader = function(conn, unreadQueue) {
+        this.conn = conn;
         this._unreadQueue = unreadQueue;
         this._pending = [];
       };
@@ -677,16 +708,17 @@ angular.module('jskom.services', ['jskom.settings']).
         
         shift: function() {
           if (this.hasPending()) {
-            return textsService.getText(this._pending.shift()).then(
+            return textsService.getText(this.conn, this._pending.shift()).then(
               function(response) {
                 return response.data;
               });
-              
+            
           } else if (this.hasUnread()) {
-            return textsService.getText(this._unreadQueue.dequeue()).then(
+            var self = this;
+            return textsService.getText(this.conn, this._unreadQueue.dequeue()).then(
               function(response) {
                 response.data._is_unread = true;
-                markAsRead(response.data);
+                markAsRead(self.conn, response.data);
                 return response.data;
               });
           } else {
@@ -721,7 +753,8 @@ angular.module('jskom.services', ['jskom.settings']).
       
       
       
-      var UnreadQueue = function() {
+      var UnreadQueue = function(conn) {
+        this.conn = conn;
         this._currentTextNo = null;
         this._currentThreadStack = [];
         this._unreadTextNos = [];
@@ -777,6 +810,7 @@ angular.module('jskom.services', ['jskom.settings']).
           // For the new text, push all unread comments onto the stack, in
           // reverse order.
           
+          var self = this;
           var nextTextNo = null;
           if (this._currentThreadStack.length > 0) {
             // We still have texts to read in this thread
@@ -809,8 +843,7 @@ angular.module('jskom.services', ['jskom.settings']).
             // reverse order.
             
             this._currentTextNo = nextTextNo;
-            var self = this;
-            textsService.getText(nextTextNo).then(
+            textsService.getText(this.conn, nextTextNo).then(
               function(response) {
                 var comments = _.map(response.data.comment_in_list, function(text) {
                   return text.text_no;
@@ -839,7 +872,7 @@ angular.module('jskom.services', ['jskom.settings']).
                          // rely on the text to be stored in the
                          // cache. If there is no cache: this will
                          // make things even slower!
-                         textsService.getText(textNo);
+                         textsService.getText(self.conn, textNo);
                        });
                 
               });
@@ -853,18 +886,18 @@ angular.module('jskom.services', ['jskom.settings']).
             // We don't use the text here, instead we rely on the text
             // to be stored in the cache. If there is no cache: this
             // will make things even slower!
-            textsService.getText(textNo);
+            textsService.getText(self.conn, textNo);
           });
         }
       });
       
       return {
-        createReader: function(unreadQueue) {
-          return new Reader(unreadQueue);
+        createReader: function(conn, unreadQueue) {
+          return new Reader(conn, unreadQueue);
         },
         
-        createUnreadQueue: function(textNos) {
-          var unreadQueue = new UnreadQueue();
+        createUnreadQueue: function(conn, textNos) {
+          var unreadQueue = new UnreadQueue(conn);
           if (textNos) {
             unreadQueue.enqueue(textNos);
           }

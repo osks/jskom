@@ -30,7 +30,6 @@ assets = Environment(app)
 
 
 js_libs = Bundle('lib/jquery.js',
-                 'lib/jquery.cookie.js',
                  'lib/json2.js',
                  'lib/mimeparse.js',
                  'lib/underscore.js',
@@ -41,7 +40,6 @@ assets.register('js_libs', js_libs)
 
 js_angular = Bundle('lib/angular.js',
                     'lib/angular-sanitize.js',
-                    #'lib/angular-resource.js',
                     filters='rjsmin',
                     output='gen/packed_angular.js')
 assets.register('js_angular', js_angular)
@@ -54,7 +52,7 @@ assets.register('js_bootstrap', js_bootstrap)
 js_jskom = Bundle('jskom.js',
                   'jskom.services.js',
                   'jskom.controllers.js',
-                  'jskom.auth.js',
+                  'jskom.connections.js',
                   'jskom.filters.js',
                   'jskom.directives.js',
                   filters='rjsmin',

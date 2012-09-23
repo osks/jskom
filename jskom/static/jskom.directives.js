@@ -160,6 +160,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
         templateUrl: templatePath('conf_input.html'),
         scope: {
           model: '=',
+          conn: '='
         },
         controller: [
           '$scope',
@@ -204,6 +205,9 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
                     scope.getConf();
                   }
                 }
+              } else {
+                scope.lookup = '';
+                scope.clearMatching();
               }
             });
             
@@ -221,30 +225,33 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
               }
               
               scope.isLoading = true;
-              conferencesService.lookupConferences(scope.lookup, scope.wantPers, scope.wantConfs).
-                success(function(data) {
-                  $log.log("<jskom:conf-input> - lookupConferences(" + scope.lookup + ") - success");
-                  scope.isLoading = false;
-                  scope.matches = data.conferences;
-                  if (scope.matches.length > 0) {
-                    scope.conf = scope.matches[0];
-                    scope.model = scope.conf.conf_no;
-                  } else {
-                    scope.conf = null;
-                    scope.model = null;
-                    messagesService.showMessage('error', 'Could not find any ' +
+              conferencesService.lookupConferences(
+                scope.conn, scope.lookup, scope.wantPers, scope.wantConfs).then(
+                  function(response) {
+                    $log.log("<jskom:conf-input> - lookupConferences(" + scope.lookup +
+                             ") - success");
+                    scope.isLoading = false;
+                    scope.matches = response.data.conferences;
+                    if (scope.matches.length > 0) {
+                      scope.conf = scope.matches[0];
+                      scope.model = scope.conf.conf_no;
+                    } else {
+                      scope.conf = null;
+                      scope.model = null;
+                      messagesService.showMessage('error', 'Could not find any ' +
+                                                  errorMsgText(scope.wantPers, scope.wantConfs) +
+                                                  ' with that name.');
+                    }
+                    scope.delayedResize();
+                  },
+                  function(response) {
+                    $log.log("<jskom:conf-input> - lookupConferences(" + scope.lookup +
+                             ") - error");
+                    scope.isLoading = false;
+                    messagesService.showMessage('error', 'Failed to lookup ' + 
                                                 errorMsgText(scope.wantPers, scope.wantConfs) +
-                                                ' with that name.');
-                  }
-                  scope.delayedResize();
-                }).
-                error(function(data) {
-                  $log.log("<jskom:conf-input> - lookupConferences(" + scope.lookup + ") - error");
-                  scope.isLoading = false;
-                  messagesService.showMessage('error', 'Failed to lookup ' + 
-                                              errorMsgText(scope.wantPers, scope.wantConfs) +
-                                              '.', data);
-                });
+                                                '.', response.data);
+                  });
             };
           }
         ],
@@ -256,7 +263,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           var matchesInputEl = iElement.find('.jskomConfInputMatches select');
           var matchesButtonEl = iElement.find('.jskomConfInputMatches button');
           
-          angular.element(lookupInputEl).keydown(function(e) {
+          angular.element(lookupInputEl).bind('keydown', function(e) {
             if (e.keyCode == 13) {
               scope.getConf();
             }

@@ -31,7 +31,7 @@
   $(function() {
     checkBrowser();
   });
-})(jQuery);
+})(angular.element);
 
 angular.module('jskom.templates', []).
   provider('templatePath', function() {
@@ -63,9 +63,36 @@ angular.module('jskom.templates', []).
     };
   });
 
+angular.module('jskom.httpkom', []).
+  provider('httpkom', function() {
+    var _httpkomServer = null;
+    
+    this.setHttpkomServer = function(httpkomServer) {
+      _httpkomServer = httpkomServer;
+    };
+    
+    this.$get = [
+      '$http',
+      function($http) {
+        return {
+          getHttpkomServer: function() {
+            return _httpkomServer;
+          },
+          
+          getLyskomServers: function() {
+            return $http({ method: 'get', url: _httpkomServer + '/' });
+          },
+        };
+      }
+    ];
+  });
+
 angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
                          'jskom.controllers', 'jskom.filters', 'jskom.directives',
-                         'jskom.auth']).
+                         'jskom.connections']).
+  config(['$locationProvider', function($locationProvider) {  
+    $locationProvider.html5Mode(true);
+  }]).
   config([
     '$routeProvider', 'templatePathProvider',
     function($routeProvider, templatePathProvider) {
@@ -107,8 +134,4 @@ angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
           redirectTo: '/'
         });
     }
-  ]).
-  config(['$locationProvider', function($locationProvider) {  
-    $locationProvider.html5Mode(true);
-    $locationProvider.hashPrefix('!');
-  }]);
+  ]);

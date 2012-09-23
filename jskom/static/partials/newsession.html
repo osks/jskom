@@ -1,0 +1,25 @@
+  <div ng-controller="LoginTabsCtrl">
+    <div class="span6">
+      <ng-include src="'messages.html'|jskomTemplate"></ng-include>
+      
+      <p/>
+      
+      <ul class="nav nav-tabs">
+        <li ng-class="isTabActive('login')">
+          <a data-target="#" ng-click="selectTab('login')">Log in</a>
+        </li>
+        <li ng-class="isTabActive('create')">
+          <a data-target="#" ng-click="selectTab('create')">Create person</a>
+        </li>
+      </ul>
+      
+      <div class="tab-content">
+        <div class="tab-pane" ng-class="isTabActive('login')">
+          <ng-include src="'login.html'|jskomTemplate"></ng-include>
+        </div>
+        <div class="tab-pane" ng-class="isTabActive('create')">
+          <ng-include src="'newperson.html'|jskomTemplate"></ng-include>
+        </div>
+      </div>
+    </div>
+  </div>

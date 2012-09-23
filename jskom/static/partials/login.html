@@ -1,17 +1,28 @@
 <h3>Log in</h3>
 
 <form ng-controller="LoginCtrl">
+  <label>LysKOM server</label>
+  <select class="span6" ng-model="connection.serverId" ng-show="servers"
+          ng-disabled="connection.isConnected()"
+          ng-options="sid as s|serverName for (sid, s) in servers"></select>
+  
   <label>Person name</label>
-  <jskom:conf-input class="span6" model="person.pers_no" only-pers></jskom:conf-input>
+  <jskom:conf-input class="span6" conn="connection" model="person.pers_no" only-pers>
+  </jskom:conf-input>
   
   <label>Password</label>
   <input type="password" class="span6" ng-model="person.passwd" />
   
   <div class="jskomControlBar navbar">
     <div class="navbar-inner">
+      <button type="button" class="btn" ng-click="reset()"
+              ng-disabled="!connection || isReseting">
+        Reset
+      </button>
+      
       <div class="pull-right">
         <button type="submit" class="btn btn-primary"
-                ng-disabled="isLoggingIn || !person.pers_no"
+                ng-disabled="isLoggingIn || isReseting || !person.pers_no"
                 ng-click="login()">
           Log in
         </button>

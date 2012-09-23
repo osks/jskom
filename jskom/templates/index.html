@@ -37,7 +37,7 @@
 
     <title>jskom</title>
   </head>
-  <body ng-controller="SessionCtrl">
+  <body ng-controller="ConnectionsCtrl">
     <div id="jskomTopBar" class="navbar navbar-fixed-top navbar-inverse">
       <div class="navbar-inner">
         <div class="container">
@@ -52,13 +52,16 @@
           ('/conferences/set-unread', 'Set unread'),
           ] %}
           
-          <ul class="nav" ng-show="state == 'loggedIn'" ng-cloak>
+          <ul class="nav" ng-show="connection.isLoggedIn()" ng-cloak>
             <li>
-              <a class="home" href="/">Home</a>
+              <a class="home" href="/">
+                <i class="icon-home icon-white"></i>
+                <span class="hidden-phone">Home</span>
+              </a>
             </li>
             
             <li class="dropdown hidden-phone">
-              <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+              <a class="dropdown-toggle" data-toggle="dropdown">
                 Texts
                 <b class="caret"></b>
               </a>
@@ -70,7 +73,7 @@
             </li>
             
             <li class="dropdown hidden-phone">
-              <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+              <a class="dropdown-toggle" data-toggle="dropdown">
                 Conferences
                 <b class="caret"></b>
               </a>
@@ -82,7 +85,7 @@
             </li>
             
             <li class="dropdown visible-phone">
-              <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+              <a class="dropdown-toggle" data-toggle="dropdown" data-target="#">
                 Menu
                 <b class="caret"></b>
               </a>
@@ -103,83 +106,73 @@
             
           </ul>
           
-          <ul class="nav pull-right" ng-show="state == 'loggedIn'" ng-cloak>
+          {% raw %}
+          <ul class="nav pull-right" ng-cloak>
             <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                {% raw %}
+              <a class="dropdown-toggle" data-toggle="dropdown">
+                <span class="hidden-phone">
+                  <span ng-show="connection.isLoggedIn()">
+                    {{ connection.session.person|personName }}
+                  </span>
+                  <span ng-hide="connection.isLoggedIn()">
+                    (Not logged in)
+                  </span>
+                </span>
                 <i class="icon-user icon-white"></i>
-                <span class="hidden-phone">{{ person.pers_name }}</span>
-                {% endraw %}
                 <b class="caret"></b>
               </a>
               <ul class="dropdown-menu">
-                <li><a ng-click="logout()" href="#">Logout</a></li>
+                <li ng-show="connection.isLoggedIn()">
+                  <a ng-click="logout()">Logout {{conn.session.person|personName}}</a>
+                </li>
+                
+                <li class="divider" ng-show="connection.isLoggedIn()"></li>
+                
+                <li class="nav-header">Sessions</li>
+                <li ng-repeat="conn in connections">
+                  <a href="#" ng-click="selectConnection(conn)">
+                    <i class="icon-user" ng-show="conn.id == connection.id"></i>
+                    <span ng-show="conn.isLoggedIn()">
+                      {{conn.session.person|personName}}
+                    </span>
+                    <span ng-hide="conn.isLoggedIn()">(Not logged in)</span>
+                  </a>
+                </li>
+                <li class="divider"></li>
+                <li>
+                  <a href="#" ng-click="newConnection()">New session...</a>
+                </li>
               </ul>
             </li>
           </ul>
+          {% endraw %}
           
         </div>
       </div>
     </div>
     
     <div class="container">
-      
-      <div class="row">
-        <ng-switch on="state">
-          
-          <div ng-switch-default>
-            <div class="span4">
-              loading...
-            </div>
+      <div ng-show="connection" ng-cloak>
+        <ng-switch on="connection.isLoggedIn()">
+          <div class="row" ng-switch-default>
+            <ng-include src="'newsession.html'|jskomTemplate"></ng-include>
           </div>
           
-          <div ng-switch-when="loggedIn" ng-cloak>
-            <div class="span8">
+          <div class="row" ng-switch-when="true">
+            <div class="span8" ng-controller="SessionCtrl">
               <ng-include src="'messages.html'|jskomTemplate"></ng-include>
-              <ng-view ng-cloak></ng-view>
+              <ng-view></ng-view>
             </div>
             
             <div class="span4 hidden-phone">
               <ng-include src="'help.html'|jskomTemplate"></ng-include>
             </div>
           </div>
-          
-          <div ng-switch-when="notLoggedIn" ng-controller="LoginTabsCtrl" ng-cloak>
-            <div class="span6">
-              <ng-include src="'messages.html'|jskomTemplate"></ng-include>
-              
-              <p/>
-              
-              <ul class="nav nav-tabs">
-                <li ng-class="isTabActive('login')">
-                  <a data-target="#" ng-click="selectTab('login')">Log in</a>
-                </li>
-                <li ng-class="isTabActive('create')">
-                  <a data-target="#" ng-click="selectTab('create')">Create person</a>
-                </li>
-              </ul>
-              
-              <div class="tab-content">
-                <div class="tab-pane" ng-class="isTabActive('login')">
-                  <ng-include src="'login.html'|jskomTemplate"></ng-include>
-                </div>
-                <div class="tab-pane" ng-class="isTabActive('create')">
-                  <ng-include src="'newperson.html'|jskomTemplate"></ng-include>
-                </div>
-              </div>
-            </div>
-          </div>
-          
         </ng-switch>
       </div>
       
       <hr />
       <footer>
-        {% raw %}
-        <p ng-show="state == 'loggedIn'" ng-cloak>
-          <small>Logged in as: <em>{{ person.pers_name }}</em></small>
-        </p>
-        {% endraw %}
         <p style="display: inline-block;">
           <small>
             <a href="https://github.com/osks/jskom">jskom</a>
@@ -194,10 +187,16 @@
     </div>
     
     <script type="text/javascript">
-      angular.module('jskom.settings', ['jskom.templates']).
-        constant('httpkomServer', '{{ httpkom_server }}').
+      angular.module('jskom.settings', ['jskom.templates', 'jskom.httpkom']).
         constant('jskomName', 'jskom').
         constant('jskomVersion', '{{ version }}').
+        constant('httpkomServer', '{{ httpkom_server }}').
+        config([
+          'httpkomProvider',
+          function(httpkomProvider){
+            httpkomProvider.setHttpkomServer('{{ httpkom_server }}');
+          }
+        ]).
         config([
           'templatePathProvider',
           function(templatePathProvider) {

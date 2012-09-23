@@ -8,7 +8,7 @@ angular.module('jskom.filters', ['jskom.templates']).
     function(templatePath) {
       return function(filename) {
         return templatePath(filename);
-      }
+      };
     }
   ]).
   filter('personName', [
@@ -23,6 +23,13 @@ angular.module('jskom.filters', ['jskom.templates']).
         } else {
           return "";
         }
-      }
+      };
+    }
+  ]).
+  filter('serverName', [
+    function() {
+      return function(server) {
+        return server.name + " (" + server.host + ":" + server.port + ")";
+      };
     }
   ]);
