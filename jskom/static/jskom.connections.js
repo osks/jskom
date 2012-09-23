@@ -28,9 +28,9 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
   ]).
   factory('connectionFactory', [
     '$rootScope', '$log', '$q', '$http',
-    'httpkom', 'sessionsService', 'jskomCacheFactory',
+    'httpkom', 'sessionsService', 'jskomCacheFactory', 'httpkomConnectionHeader',
     function($rootScope, $log, $q, $http,
-             httpkom, sessionsService, jskomCacheFactory) {
+             httpkom, sessionsService, jskomCacheFactory, httpkomConnectionHeader) {
       var HttpkomConnection = function(httpkomServer, id, serverId, httpkomId, session) {
         this._httpkomServer = httpkomServer;
         this.id = id; // our internal id
@@ -46,7 +46,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         _request: function(config) {
           config.headers = config.headers || {};
           if (this.httpkomId != null) {
-            config.headers['Httpkom-Connection'] = this.httpkomId;
+            config.headers[httpkomConnectionHeader] = this.httpkomId;
           }
           return $http(config);
         },

@@ -17,6 +17,7 @@ class default_settings:
     
     # httpkom server, without trailing slash (example: 'http://localhost:5001')
     HTTPKOM_SERVER = 'http://localhost:5001'
+    HTTKOM_CONNECTION_HEADER = 'Httpkom-Connection'
 
 
 app = Flask(__name__)
@@ -82,4 +83,5 @@ def index(path):
     return render_template('index.html',
                            version=version.__version__,
                            static_version=app.config['STATIC_VERSION'],
-                           httpkom_server=app.config['HTTPKOM_SERVER'])
+                           httpkom_server=app.config['HTTPKOM_SERVER'],
+                           httpkom_connection_header=app.config['HTTKOM_CONNECTION_HEADER'])

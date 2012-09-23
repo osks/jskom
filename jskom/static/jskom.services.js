@@ -278,9 +278,9 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
   ]).
   factory('sessionsService', [
     '$rootScope', '$log', '$q',
-    'messagesService', 'jskomName', 'jskomVersion',
+    'messagesService', 'jskomName', 'jskomVersion', 'httpkomConnectionHeader',
     function($rootScope, $log, $q,
-             messagesService, jskomName, jskomVersion) {
+             messagesService, jskomName, jskomVersion, httpkomConnectionHeader) {
       var clientInfo = { name: jskomName, version: jskomVersion };
       
       return {
@@ -288,8 +288,8 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
           var request = { method: 'post', url: '/sessions/', data: { client: clientInfo } };
           return conn.http(request).then(
             function(response) {
-              if (response.headers('Httpkom-Connection')) {
-                conn.httpkomId = response.headers('Httpkom-Connection');
+              if (response.headers(httpkomConnectionHeader)) {
+                conn.httpkomId = response.headers(httpkomConnectionHeader);
                 conn.session = response.data;
                 conn.clearAllCaches();
                 $rootScope.$broadcast('jskom:connection:changed', conn);
