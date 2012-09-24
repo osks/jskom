@@ -288,8 +288,8 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
           var request = { method: 'post', url: '/sessions/', data: { client: clientInfo } };
           return conn.http(request).then(
             function(response) {
-              if (response.headers(httpkomConnectionHeader)) {
-                conn.httpkomId = response.headers(httpkomConnectionHeader);
+              if (response.data['connection_id']) {
+                conn.httpkomId = response.data['connection_id'];
                 conn.session = response.data;
                 conn.clearAllCaches();
                 $rootScope.$broadcast('jskom:connection:changed', conn);
