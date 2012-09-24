@@ -288,12 +288,15 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
           var request = { method: 'post', url: '/sessions/', data: { client: clientInfo } };
           return conn.http(request).then(
             function(response) {
-              if (response.data['connection_id']) {
-                conn.httpkomId = response.data['connection_id'];
-                conn.session = response.data;
-                conn.clearAllCaches();
-                $rootScope.$broadcast('jskom:connection:changed', conn);
-              }
+              conn.httpkomId = response.data.connection_id;
+              // Remove the connection_id from the session. It's only
+              // there as a work-around for not being able to read the
+              // Httpkom-Connection header on all browsers.
+              var session = _.clone(response.data);
+              delete session.connection_id;
+              conn.session = session;
+              conn.clearAllCaches();
+              $rootScope.$broadcast('jskom:connection:changed', conn);
               return response;
             });
         },
