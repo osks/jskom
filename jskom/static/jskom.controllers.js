@@ -111,12 +111,24 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         $scope.$apply(function() {
           $location.url('/texts/new');
         });
+        return false;
       });
 
       keybindingService.bindGlobal('g', 'Go to conference...', function(e) {
         $scope.$apply(function() {
           $location.url('/conferences/go-to');
         });
+        return false;
+      });
+
+      keybindingService.bindGlobal('p', 'Browser history back', function(e) {
+        $window.history.back();
+        return false;
+      });
+      
+      keybindingService.bindGlobal('n', 'Browser history forward', function(e) {
+        $window.history.forward();
+        return false;
       });
     }
   ]).
@@ -277,6 +289,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         $scope.$apply(function() {
           $scope.isVisible = !$scope.isVisible;
         });
+        return false;
       });
       
       $scope.$watch(keybindingService.getBindings, function(newBindings) {
@@ -376,6 +389,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             $scope.readFirstConference();
           });
         }
+        return false;
       });
       
       keybindingService.bindLocal('R', 'Refresh', function(e) {
@@ -384,12 +398,15 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             $scope.load(false);
           }
         });
+        return false;
       });
       
       keybindingService.bindLocal('e', 'Set unread...', function(e) {
+        $log.log("local");
         $scope.$apply(function() {
           $location.url('/conferences/set-unread');
         });
+        return false;
       });
     }
   ]).
@@ -403,7 +420,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.confNo = $routeParams.confNo || null;
       $scope.noOfUnread = 0;
       $scope.isLoading = false;
-      
+
       $scope.setNumberOfUnreadTexts = function() {
         $scope.isLoading = true;
         membershipsService.setNumberOfUnreadTexts(
@@ -730,6 +747,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             $location.path("/conferences/" + confNo + "/set-unread");
           }
         });
+        return false;
       });
     }
   ]).
@@ -904,6 +922,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             $scope.refresh();
           }
         });
+        return false;
       });
       
       keybindingService.bindLocal(',', 'Show commented', function() {
@@ -942,14 +961,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             $location.url("/conferences/" + confNo + "/set-unread");
           }
         });
-      });
-      
-      keybindingService.bindLocal('p', 'Browser history back', function(e) {
-        $window.history.back();
-      });
-      
-      keybindingService.bindLocal('n', 'Browser history forward', function(e) {
-        $window.history.forward();
+        return false;
       });
     }
   ]);
