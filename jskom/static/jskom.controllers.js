@@ -57,6 +57,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           //$log.log("New current connection: " + newCurrentConn);
           $scope.connection = null;
         }
+        messagesService.clearAll();
         if (newCurrentConn !== oldConn) {
           // New connection, reset URL.
           $location.url('/');
@@ -265,18 +266,8 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
   controller('MessagesCtrl', [
     '$scope', 'messagesService', '$log',
     function($scope, messagesService, $log) {
-      $scope.messages = [];
-      
-      $scope.$watch('connection', function(newConnection) {
-        messagesService.clearAll();
-      });
-      
-      messagesService.onMessage(function(message) {
-        $scope.messages.push(message);
-      });
-      
-      messagesService.onClearAll(function() {
-        $scope.messages = [];
+      $scope.$watch(messagesService.getMessages, function(newMessages) {
+        $scope.messages = newMessages;
       });
     }
   ]).
@@ -428,7 +419,8 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             function() {
               $log.log("SetUnreadTextsCtrl - setNumberOfUnreadTexts() - success");
               $scope.isLoading = false;
-              messagesService.showMessage('success', 'Successfully set number of unread texts.');
+              messagesService.showMessage('success', 'Successfully set number of unread texts.',
+                                          '', true);
               $location.url('/');
             },
             function(response) {
@@ -536,7 +528,8 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           function(response) {
             $log.log("NewTextCtrl - createText() - success");
             messagesService.showMessage('success', 'Successfully created text.',
-                                        'Text number ' + response.data.text_no + ' was created.');
+                                        'Text number ' + response.data.text_no + ' was created.',
+                                        true);
             $scope.isCreating = false;
             if ($scope.returnUrl) {
               $scope.goToReturnUrl();

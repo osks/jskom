@@ -239,40 +239,43 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
   factory('messagesService', [
     '$rootScope', '$log',
     function($rootScope, $log) {
-      var messageBroadcastName = 'messagesService:message';
-      var clearAllBroadcastName = 'messagesService:clearAll';
+      var messages = [];
+      
+      $rootScope.$on('$routeChangeSuccess', function() {
+        var newMessages = _.filter(messages, function(msg) {
+          return msg.showAfterUrlChange;
+        });
+        _.each(newMessages, function(msg) {
+          msg.showAfterUrlChange = false;
+        });
+        messages = newMessages;
+      });
+      
       return {
-        createMessage: function(level, heading, text) {
+        newMessage: function(level, heading, text, showAfterUrlChange) {
           return {
             level: level,
             heading: heading,
-            text: text
+            text: text,
+            showAfterUrlChange: showAfterUrlChange
           };
         },
         
-        showMessage: function(level, heading, text) {
-          return this.show(this.createMessage(level, heading, text));
+        showMessage: function(level, heading, text, showAfterUrlChange) {
+          return this.show(this.newMessage(level, heading, text, showAfterUrlChange));
         },
         
         show: function(message) {
-          $rootScope.$broadcast(messageBroadcastName, message);
+          messages.push(message);
         },
         
-        onMessage: function(listener) {
-          return $rootScope.$on(messageBroadcastName, function(event, message) {
-            listener.call(this, message);
-          });
+        getMessages: function() {
+          return messages;
         },
         
         clearAll: function() {
-          $rootScope.$broadcast(clearAllBroadcastName);
+          messages = [];
         },
-        
-        onClearAll: function(listener) {
-          return $rootScope.$on(clearAllBroadcastName, function(event) {
-            listener.call(this);
-          });
-        }
       };
     }
   ]).

@@ -206,7 +206,6 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
                   }
                 }
               } else {
-                scope.lookup = '';
                 scope.clearMatching();
               }
             });
