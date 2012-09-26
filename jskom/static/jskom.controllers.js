@@ -788,11 +788,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
               $location.search('text', text.text_no);
             }
             
-            // We manually clear messages. It is done on route change,
-            // but we don't want to trigger route change on chaning
-            // text parameter, so we need to clear messages ourself.
-            messagesService.clearAll(true);
-            
             // This is a bad way to do this.
             // We do this because .navbar-fixed-top changes from fixed
             // to static based on media queries.
@@ -823,6 +818,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       
       $rootScope.$on('$routeUpdate', function(event) {
         showText($routeParams.text);
+        // We manually clear messages. It is done on route change,
+        // but we don't want to trigger route change on chaning
+        // text parameter, so we need to clear messages ourself.
+        messagesService.clearAll(true);
       });
       
       $scope.$on('jskom:a:text', function($event, textNo, href) {
