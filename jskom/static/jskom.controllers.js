@@ -57,7 +57,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           //$log.log("New current connection: " + newCurrentConn);
           $scope.connection = null;
         }
-        messagesService.clearAll();
         if (newCurrentConn !== oldConn) {
           // New connection, reset URL.
           $location.url('/');
@@ -194,6 +193,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         sessionsService.login($scope.connection, $scope.person).then(
           function(response) {
             $log.log("LoginCtrl - login() - success");
+            messagesService.clearAll();
             $scope.isLoggingIn = false;
           },
           function(response) {
@@ -323,8 +323,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             function(response) {
               $log.log("UnreadConfsCtrl - getUnreadMemberships() - error");
               $scope.isLoading = false;
-              messagesService.showMessage('error', 'Failed to get unread conferences.',
-                                          response.data);
+              if (response.status != 401) {
+                messagesService.showMessage('error', 'Failed to get unread conferences.',
+                                            response.data);
+              }
               return $q.reject(response);
             });
       };
@@ -786,6 +788,11 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
               $location.search('text', text.text_no);
             }
             
+            // We manually clear messages. It is done on route change,
+            // but we don't want to trigger route change on chaning
+            // text parameter, so we need to clear messages ourself.
+            messagesService.clearAll(true);
+            
             // This is a bad way to do this.
             // We do this because .navbar-fixed-top changes from fixed
             // to static based on media queries.
@@ -796,6 +803,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             }*/
             // If we scroll to 0, the android browser will show the
             // toolbar/address field.
+            
             angular.element($window).scrollTop(1);
           },
           function(response) {

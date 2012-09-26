@@ -241,14 +241,21 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
     function($rootScope, $log) {
       var messages = [];
       
-      $rootScope.$on('$routeChangeSuccess', function() {
-        var newMessages = _.filter(messages, function(msg) {
-          return msg.showAfterUrlChange;
-        });
-        _.each(newMessages, function(msg) {
+      var clearMessages = function(keepShowAfterUrlChange) {
+        var newMessages = [];
+        if (keepShowAfterUrlChange) {
+          newMessages = _.filter(messages, function(msg) {
+            return msg.showAfterUrlChange;
+          });
+          _.each(newMessages, function(msg) {
           msg.showAfterUrlChange = false;
-        });
+          });
+        }
         messages = newMessages;
+      };
+      
+      $rootScope.$on('$routeChangeSuccess', function() {
+        clearMessages(true);
       });
       
       return {
@@ -273,8 +280,8 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
           return messages;
         },
         
-        clearAll: function() {
-          messages = [];
+        clearAll: function(keepShowAfterUrlChange) {
+          clearMessages(keepShowAfterUrlChange);
         },
       };
     }
