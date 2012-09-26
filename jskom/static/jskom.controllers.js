@@ -93,9 +93,9 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
     }
   ]).
   controller('SessionCtrl', [
-    '$scope', '$log', '$location',
+    '$scope', '$log', '$location', '$window',
     'messagesService', 'keybindingService',
-    function($scope, $log, $location,
+    function($scope, $log, $location, $window,
              messagesService, keybindingService) {
       $scope.session = null;
       $scope.$watch('connection', function(newConnection) {
