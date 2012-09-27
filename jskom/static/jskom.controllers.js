@@ -22,9 +22,9 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           $scope.$apply(function(scope) {
             $location.url(url);
           });
+          jQuery(this).removeClass('open');
+          event.preventDefault();
         }
-        jQuery(this).removeClass('open');
-        event.preventDefault();
       });
       
       
