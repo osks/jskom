@@ -97,30 +97,20 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
     'messagesService', 'keybindingService',
     function($scope, $log, $location, $window,
              messagesService, keybindingService) {
-      $scope.session = null;
-      $scope.$watch('connection', function(newConnection) {
-        if (newConnection) {
-          //$log.log("SessionCtrl - new session: " + angular.toJson(newConnection.session));
-          $scope.session = newConnection.session;
-        } else {
-          $scope.session = null;
-        }
-      });
-      
       keybindingService.bindGlobal('i', 'New text...', function(e) {
         $scope.$apply(function() {
           $location.url('/texts/new');
         });
         return false;
       });
-
+      
       keybindingService.bindGlobal('g', 'Go to conference...', function(e) {
         $scope.$apply(function() {
           $location.url('/conferences/go-to');
         });
         return false;
       });
-
+      
       keybindingService.bindGlobal('p', 'Browser history back', function(e) {
         $window.history.back();
         return false;
