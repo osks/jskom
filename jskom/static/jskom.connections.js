@@ -86,7 +86,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         
         http: function(config) {
           // Prefix url with the httpkom server and server id
-          config.url = this._httpkomServer + '/' + this.serverId + config.url;
+          config.url = this.urlFor(config.url, false);
           
           var self = this;
           return this._request(config).then(
@@ -111,6 +111,20 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
               
               return $q.reject(response);
             });
+        },
+        
+        urlFor: function(path, addHttpkomIdQueryParameter) {
+          var url = this._httpkomServer + '/' + this.serverId + path;
+          if (addHttpkomIdQueryParameter) {
+            var kv = encodeURIComponent(httpkomConnectionHeader) + '=' +
+              encodeURIComponent(this.httpkomId);
+            if (url.indexOf('?') == -1) {
+              url += '?' + kv;
+            } else {
+              url += '&' + kv;
+            }
+          }
+          return url;
         },
         
         isConnected: function() {

@@ -369,14 +369,14 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
     }
   ]).
   factory('textsService', [
-    '$log', '$q', 'httpkomServer',
-    function($log, $q, httpkomServer) {
-      var enhanceText = function(text) {
+    '$log', '$q',
+    function($log, $q) {
+      var enhanceText = function(conn, text) {
         var mimeType = Mimeparse.parseMimeType(text.content_type);
         text.jskomBodyType = mimeType[0];
         
         if (text.jskomBodyType == 'image') {
-          text.jskomImageUrl = httpkomServer + '/texts/' + text.text_no + '/body';
+          text.jskomImageUrl = conn.urlFor('/texts/' + text.text_no + '/body', true);
         } else {
           text.jskomImageUrl = null;
         }
@@ -399,7 +399,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
             conn.http({ method: 'get', url: '/texts/' + textNo }).then(
               function(response) {
                 $log.log("textsService - getText(" + textNo + ") - success");
-                response.data = enhanceText(response.data);
+                response.data = enhanceText(conn, response.data);
                 deferred.resolve(response);
               },
               function(response) {
