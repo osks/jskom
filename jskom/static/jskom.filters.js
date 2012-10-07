@@ -11,14 +11,25 @@ angular.module('jskom.filters', ['jskom.templates']).
       };
     }
   ]).
+  filter('confName', [
+    function() {
+      return function(conf) {
+        if (conf) {
+          return conf.conf_name;
+        } else {
+          return "";
+        }
+      }
+    }
+  ]).
   filter('personName', [
     function() {
-      return function(author) {
-        if (author) {
-          if (author.pers_no == 0) {
+      return function(person) {
+        if (person) {
+          if (person.pers_no == 0) {
             return "Anonymous person";
           } else {
-            return author.pers_name;
+            return person.pers_name;
           }
         } else {
           return "";

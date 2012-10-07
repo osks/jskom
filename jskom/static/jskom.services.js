@@ -381,6 +381,14 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
           text.jskomImageUrl = null;
         }
         
+        if (text.aux_items) {
+          text.jskomFastReplies = _.filter(text.aux_items, function(aux_item) {
+            return aux_item.tag == 'fast-reply';
+          });
+        } else {
+          text.jskomFastReplies = null;
+        }
+        
         return text;
       };
       

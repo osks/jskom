@@ -548,7 +548,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             $log.log("ShowTextCtrl - getText(" + textNo + ") - success");
             $scope.textIsLoading = false;
             $scope.text = response.data;
-            angular.element($window).scrollTop(0);
+            angular.element($window).scrollTop(1);
           },
           function(response) {
             $log.log("ShowTextCtrl - getText(" + textNo + ") - error");

@@ -7,6 +7,25 @@ blockquote.jskomTextBody p article p {
     margin-bottom: 9px;
 }
 
+table.jskomTextRecipients td {
+    vertical-align: top;
+}
+
+table.jskomFastReplys {
+    margin-bottom: 18px;
+}
+
+table.jskomFastReplys td {
+    padding: 2px 3px;
+    vertical-align: top;
+}
+
+table.jskomFastReplys caption {
+    font-size: 11px;
+    font-weight: bold;
+    text-align: left;
+}
+
 .jskomTextBody {
     max-width: 600px;
 }

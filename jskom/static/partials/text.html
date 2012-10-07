@@ -11,10 +11,18 @@
       by {{ ct.author|personName }}
     </div>
     
-    <div ng-repeat="r in text.recipient_list">
-      <span class="jskomCapitalize">{{ r.type }}:</span>
-      <a href="/conferences/{{r.conf_no}}">{{ r.conf_name }}</a>
-    </div>
+    <table class="jskomTextRecipients">
+      <tr ng-repeat="r in text.recipient_list">
+        <td><span class="jskomCapitalize">{{ r.type }}:</span></td>
+        <td>
+          <a href="/conferences/{{r.recpt.conf_no}}">{{ r.recpt|confName }}</a>
+          <span ng-show="r.sent_by">
+            <br/>Sent by: {{ r.sent_by|personName }}
+            <br/>Sent at: {{ r.sent_at }}
+          </span>
+        </td>
+      </tr>
+    </table>
     
     <div>Subject: {{ text.subject }}</div>
     
@@ -47,6 +55,16 @@
       </ng-switch>
       
       <hr />
+      
+      <table class="jskomFastReplys" ng-show="text.jskomFastReplies">
+        <caption>Remarks</caption>
+        <tr ng-repeat="ai in text.jskomFastReplies">
+          <td>
+            &quot;<span>{{ ai.data }}</span>&quot;
+            / <span>{{ ai.creator|personName }}</span>
+          </td>
+        </tr>
+      </table>
       
       <div class="jskomNoWrap" ng-repeat="ci in text.comment_in_list">
         <span class="jskomCapitalize">{{ ci.type }}</span> in
