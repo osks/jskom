@@ -13,15 +13,18 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       // incompatibility with AngularJS. The dropdown plugin stops
       // AngularJS from capturing link clicks, which causes page
       // reloads. Angular in its turn stops the clicks from closing
-      // the dropdown when it updates the location. We want to do
-      // both!  TODO: Make a directive of this. This is the wrong
-      // place for this code.
+      // the dropdown when it updates the location. We want to do both
+      // (but not for a.dropdown-toggle)!  TODO: Make a directive of
+      // this. This is the wrong place for this code.
       jQuery('.dropdown').on('click', function(event) {
-        var url = jQuery(event.target).closest('a').attr('href');
-        if (url) {
-          $scope.$apply(function(scope) {
-            $location.url(url);
-          });
+        var aElement = jQuery(event.target).closest('a');
+        if (!aElement.hasClass('dropdown-toggle')) {
+          var url = aElement.attr('href');
+          if (url) {
+            $scope.$apply(function(scope) {
+              $location.url(url);
+            });
+          }
           jQuery(this).removeClass('open');
           event.preventDefault();
         }
@@ -778,17 +781,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
               $location.search('text', text.text_no);
             }
             
-            // This is a bad way to do this.
-            // We do this because .navbar-fixed-top changes from fixed
-            // to static based on media queries.
-            /*if (angular.element('.navbar-fixed-top').css('position') == 'fixed') {
-              angular.element($window).scrollTop(0);
-            } else {
-              angular.element($window).scrollTop(40);
-            }*/
-            // If we scroll to 0, the android browser will show the
-            // toolbar/address field.
-            
             angular.element($window).scrollTop(1);
           },
           function(response) {
@@ -808,9 +800,9 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       
       $rootScope.$on('$routeUpdate', function(event) {
         showText($routeParams.text);
-        // We manually clear messages. It is done on route change,
-        // but we don't want to trigger route change on chaning
-        // text parameter, so we need to clear messages ourself.
+        // We manually clear messages. It is done on route change, but
+        // we don't want to trigger route change on changing text
+        // parameter, so we need to clear messages ourself here.
         messagesService.clearAll(true);
       });
       
