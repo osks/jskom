@@ -296,7 +296,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
       return {
         createSession: function(conn) {
           var request = { method: 'post', url: '/sessions/', data: { client: clientInfo } };
-          return conn.http(request).then(
+          return conn.http(request, false, false).then(
             function(response) {
               conn.httpkomId = response.data.connection_id;
               // Remove the connection_id from the session. It's only
@@ -313,7 +313,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
         
         deleteSession: function(conn, sessionNo) {
           // sessionNo == 0 means current session
-          return conn.http({ method: 'delete', url: '/sessions/' + sessionNo }).then(
+          return conn.http({ method: 'delete', url: '/sessions/' + sessionNo }, true, false).then(
             function(response) {
               // Check if we deleted our own session
               if (sessionNo == 0 || sessionNo == conn.session.session_no) {
@@ -330,7 +330,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
         // Methods on current session:
         
         whoAmI: function(conn) {
-          return conn.http({ method: 'get', url: '/sessions/current/who-am-i'});
+          return conn.http({ method: 'get', url: '/sessions/current/who-am-i'}, true, false);
         },
         
         newPerson: function(persNo) {
@@ -341,7 +341,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
         login: function(conn, person) {
           var request = { method: 'post', url: '/sessions/current/login',
                           data: { person: person } };
-          return conn.http(request).then(
+          return conn.http(request, true, false).then(
             function(response) {
               conn.session = response.data;
               conn.clearAllCaches();
@@ -351,7 +351,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
         },
         
         logout: function(conn) {
-          return conn.http({ method: 'post', url: '/sessions/current/logout' }).then(
+          return conn.http({ method: 'post', url: '/sessions/current/logout' }, true, true).then(
             function(response) {
               conn.session.person = null;
               conn.clearAllCaches();
@@ -363,7 +363,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
         changeConference: function(conn, confNo) {
           var request = { method: 'post', url: '/sessions/current/working-conference',
                           data: { conf_no: parseInt(confNo) }};
-          return conn.http(request);
+          return conn.http(request, true, true);
         }
       };
     }
@@ -404,7 +404,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
             var deferred = $q.defer();
             var promise = deferred.promise;
             
-            conn.http({ method: 'get', url: '/texts/' + textNo }).then(
+            conn.http({ method: 'get', url: '/texts/' + textNo }, true, true).then(
               function(response) {
                 $log.log("textsService - getText(" + textNo + ") - success");
                 response.data = enhanceText(conn, response.data);
@@ -422,7 +422,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
         },
         
         createText: function(conn, text) {
-          return conn.http({ method: 'post', url: '/texts/', data: text }).then(
+          return conn.http({ method: 'post', url: '/texts/', data: text }, true, true).then(
             function(response) {
               _.each(text.comment_to_list, function(commentedText) {
                 // Remove commented texts from the cache so we can
@@ -446,7 +446,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
                                "name": name,
                                "want-pers": wantPers,
                                "want-confs": wantConfs
-                             } });
+                             } }, true, false);
         },
         
         getConference: function(conn, confNo, micro) {
@@ -454,7 +454,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
             micro = true;
           }
           return conn.http({ method: 'get', url: '/conferences/' + confNo,
-                             params: { "micro": micro } });
+                             params: { "micro": micro } }, true, true);
         },
       };
     }
@@ -469,7 +469,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
         
         createPerson: function(conn, person) {
           var data = { name: person.name, passwd: person.passwd };
-          return conn.http({ method: 'post', url: '/persons/', data: data });
+          return conn.http({ method: 'post', url: '/persons/', data: data }, true, false);
         }
       };
     }
@@ -518,7 +518,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
         setNumberOfUnreadTexts: function(conn, confNo, noOfUnread) {
           var data = { no_of_unread: parseInt(noOfUnread) };
           return conn.http({ method: 'post', url: '/persons/current/memberships/' + confNo,
-                             data: data }).
+                             data: data }, true, true).
             then(function(response) {
               clearCacheForPersonAndConf(conn, conn.getPersNo(), confNo);
               return response;
@@ -526,14 +526,14 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
         },
         
         addMembership: function(conn, confNo) {
-          return this.addMembershipForPerson(conn, conn.getPersNo());
+          return this.addMembershipForPerson(conn, conn.getPersNo(), true, true);
         },
         
         addMembershipForPerson: function(conn, persNo, confNo) {
           var priority = 100;
           // todo: this httpkom call should take priority in the body, not as query param.
           return conn.http({ method: 'put', url: '/persons/' + persNo + '/memberships/' + confNo,
-                             params: { "priority": parseInt(priority) } }).
+                             params: { "priority": parseInt(priority) } }, true, true).
             then(function(response) {
               clearCacheForPersonAndConf(conn, conn.getPersNo(), confNo);
               return response;
@@ -546,7 +546,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
         
         deleteMembershipForPerson: function(conn, persNo, confNo) {
           return conn.http({ method: 'delete',
-                             url: '/persons/' + persNo + '/memberships/' + confNo }).
+                             url: '/persons/' + persNo + '/memberships/' + confNo }, true, true).
             then(function(response) {
               clearCacheForPersonAndConf(conn, conn.getPersNo(), confNo);
               return response;
@@ -571,7 +571,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
             var promise = deferred.promise;
             
             conn.http({ method: 'get', url: '/persons/' + persNo + '/memberships/' + confNo,
-                        params: { "want-unread": true } }).
+                        params: { "want-unread": true } }, true, true).
               then(
                 function(response) {
                   $log.log('membershipsService - getMembership(' + confNo + ') - success');
@@ -639,7 +639,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
             var promise = deferred.promise;
             
             conn.http({ method: 'get', url: '/persons/' + persNo + '/memberships/',
-                        params: { "unread": true, "want-unread": true } }).
+                        params: { "unread": true, "want-unread": true } }, true, true).
               then(
                 function(response) {
                   $log.log('membershipsService - getUnreadMemberships() - success');
@@ -679,7 +679,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
       return {
         createGlobalReadMarking: function(conn, text) {
           var request = { method: 'put', url: '/texts/' + text.text_no + '/read-marking' };
-          return conn.http(request).then(
+          return conn.http(request, true, true).then(
             function(response) {
               clearCacheForRecipients(conn, text);
               return response;
@@ -688,7 +688,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
         
         deleteGlobalReadMarking: function(conn, text) {
           var request = { method: 'delete', url: '/texts/' + text.text_no + '/read-marking' };
-          return conn.http(request).then(
+          return conn.http(request, true, true).then(
             function(response) {
               clearCacheForRecipients(conn, text);
               return response;

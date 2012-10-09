@@ -40,39 +40,215 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         
         this.textsCache = jskomCacheFactory(this.id + '-texts', { capacity: 100 });
         this.membershipsCache = jskomCacheFactory(this.id + '-memberships', { capacity: 100 });
+        
+        this._createSessionPromise = null;
+        this._pendingRequests = [];
       };
       
       _.extend(HttpkomConnection.prototype, {
-        _request: function(config) {
-          config.headers = config.headers || {};
-          if (this.httpkomId != null) {
-            config.headers[httpkomConnectionHeader] = this.httpkomId;
-          }
-          return $http(config);
+        _addPendingRequest: function(deferred, requireSession, requireLogin) {
+          this._pendingRequests.push({
+            deferred: deferred,
+            requireLogin: requireLogin,
+            requireSession: requireSession
+          });
         },
         
-        _createSessionAndRetry: function(originalRequest) {
+        _removePendingRequest: function(deferred) {
+          this._pendingRequests = _.filter(this._pendingRequests, function(req) {
+            return req.deferred !== deferred
+          });
+        },
+        
+        _findPendingRequest: function(deferred) {
+          return _.find(this._pendingRequests, function(req) {
+            return req.deferred === deferred
+          });
+        },
+        
+        _hasPendingRequest: function(deferred) {
+          return this._findPendingRequest(deferred) ? true : false;
+        },
+        
+        _cancelAllPendingRequestsRequiringLogin: function() {
+          $log.log("connectionFactory - http() - canceling all requests requiring login");
+          this._pendingRequests = _.filter(this._pendingRequests, function(req) {
+            return !req.requireLogin;
+          });
+        },
+        
+        _cancelAllPendingRequestsRequiringSession: function() {
+          this._cancelAllPendingRequestsRequiringLogin();
+          $log.log("connectionFactory - http() - canceling all requests requiring session");
+          this._pendingRequests = _.filter(this._pendingRequests, function(req) {
+            return !req.requireSession;
+          });
+        },
+        
+        _request: function(config, requireSession, requireLogin) {
+          // This method issues the $http requests after we have added
+          // httpkom headers. It also checks for 401 and 403 responses
+          // and resets the connection variables.  We wrap the $http
+          // request in our own deferred so we can decide if and when
+          // we should resolve/reject it.
+          
           var deferred = $q.defer();
           var promise = deferred.promise;
           var self = this;
-          sessionsService.createSession(this).then(
+          
+          config.headers = config.headers || {};
+          if (requireSession) {
+            config.headers[httpkomConnectionHeader] = this.httpkomId;
+          }
+
+          var request = $http(config);
+          this._addPendingRequest(deferred, requireSession, requireLogin);
+          request.then(
             function(response) {
-              // if the create session succeeded, retry the first request.
-              self._request(originalRequest).then(
-                function(response) {
-                  deferred.resolve(response);
-                },
-                function(response) {
-                  deferred.reject(response);
-                });
+              if (self._hasPendingRequest(deferred)) {
+                deferred.resolve(response);
+                self._removePendingRequest(deferred);
+              }
             },
             function(response) {
-              deferred.reject(response);
+              if (self._hasPendingRequest(deferred)) {
+                deferred.reject(response);
+                self._removePendingRequest(deferred);
+                
+                if (response.status == 401) {
+                  $log.log("connectionFactory - _request() - 401: ") + config.url;
+                  self._cancelAllPendingRequestsRequiringLogin();
+                  
+                  // We are not logged in according to the server, so
+                  // reset the person object.
+                  if (self.isLoggedIn()) {
+                    self.session.person = null;
+                    $rootScope.$broadcast('jskom:connection:changed', self);
+                  }
+                } else if (response.status == 403) {
+                  $log.log("connectionFactory - _request() - 403: " + config.url);
+                  // Both the httpkomId and session are invalid.
+                  self._cancelAllPendingRequestsRequiringSession();
+                  
+                  if (self.httpkomId || self.session) {
+                    self.httpkomId = null;
+                    self.session = null;
+                    $rootScope.$broadcast('jskom:connection:changed', self);
+                  }
+                }
+              }
             });
           
           return promise;
         },
+        
+        _createSessionAndRetry: function(originalRequest, requireSession, requireLogin) {
+          $log.log("connectionFactory - createSessionAndRetry(): " + originalRequest.url);
+          var deferred = $q.defer();
+          var promise = deferred.promise;
+          var self = this;
+          
+          if (this._createSessionPromise == null) {
+            this._createSessionPromise = sessionsService.createSession(this).then(
+              function(response) {
+                $log.log("connectionFactory - createSession - success");
+                self._createSessionPromise = null;
+                return response;
+              },
+              function(response) {
+                $log.log("connectionFactory - createSession - failure");
+              self._createSessionPromise = null;
+                return $q.reject(response);
+              });
+          }
+          
+          this._createSessionPromise.then(
+            function() {
+              $log.log("connectionFactory - createSessionPromise - success");
+              // createSession succeeded, issue the original request.
+              self._request(originalRequest, requireSession, requireLogin).then(
+                function(orgResponse) {
+                  deferred.resolve(orgResponse);
+                },
+                function(orgResponse) {
+                  deferred.reject(orgResponse);
+                });
+            },
+            function() {
+              $log.log("connectionFactory - createSessionPromise - failure");
+              // createSession failed
+              // todo: what should we really do here?
+              deferred.reject({
+                data: null,
+                status: 403,
+                headers: null,
+                config: originalRequest
+              });
+            });
+          
+          return promise;
+        },
+        
+        http: function(config, requireSession, requireLogin) {
+          requireSession = requireSession || false;
+          requireLogin = requireLogin || false;
+          
+          // Prefix url with the httpkom server and server id
+          config.url = this.urlFor(config.url, false);
+          
+          // Our $http wrapper.
+          //
+          // 1. Check if there is an outstanding createSession request.
+          // 
+          //   a. There is: Append the request to the createSession
+          //      request, so it is issued when the createSession
+          //      request succeeds.
+          //
+          //   b. There is not: Issue the request with a check for
+          //      failure status 403. If the requests fails with
+          //      status 403, issue a createSession request and append
+          //      the original request as a re-try.
+          // 
+          // If a createSession request fails, all appended requests
+          // should be rejected with this made up response:
+          // 
+          //   {
+          //     data: null,
+          //     status: 403,
+          //     headers: null,
+          //     config: request.config
+          //   }
+          
 
+          var self = this;
+          if (requireLogin && !this.isLoggedIn()) {
+            // Requests that require login will not succeed after
+            // createSession either, because the user has to
+            // login. Fail them immediately.
+            $log.log("connectionFactory - http() - failing request that requires login");
+            return $q.reject({
+              data: null,
+              status: 401,
+              headers: null,
+              config: config
+            });
+          } else if (requireSession && !this.isConnected()) {
+            $log.log("connectionFactory - http() - retrying request after create session");
+            return this._createSessionAndRetry(config, requireSession, requireLogin);
+          } else {
+            //$log.log("connectionFactory - http() - issuing request");
+            return this._request(config, requireSession, requireLogin).then(
+              null,
+              function(response) {
+                if (response.status == 403 && !requireLogin) {
+                  return self._createSessionAndRetry(config, requireSession, requireLogin);
+                } else {
+                  return $q.reject(response);
+                }
+              });
+          }
+        },
+        
         clearAllCaches: function() {
           $log.log("connection(id: " + this.id + ") - clearing all caches");
           this.textsCache.removeAll();
@@ -82,35 +258,6 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         destroyAllCaches: function() {
           this.textsCache.destroy();
           this.membershipsCache.destroy();
-        },
-        
-        http: function(config) {
-          // Prefix url with the httpkom server and server id
-          config.url = this.urlFor(config.url, false);
-          
-          var self = this;
-          return this._request(config).then(
-            function(response) {
-              return response;
-            },
-            function(response) {
-              if (response.status == 403) {
-                $log.log("connectionFactory - http() - 403");
-                // The httpkomId is invalid
-                self.httpkomId = null;
-                self.session = null;
-                $rootScope.$broadcast('jskom:connection:changed', this);
-                return self._createSessionAndRetry(response.config);
-              } else if (response.status == 401) {
-                $log.log("connectionFactory - http() - 401");
-                // We are not logged in according to the server, so
-                // reset the person object.
-                self.session.person = null;
-                $rootScope.$broadcast('jskom:connection:changed', this);
-              }
-              
-              return $q.reject(response);
-            });
         },
         
         urlFor: function(path, addHttpkomIdQueryParameter) {

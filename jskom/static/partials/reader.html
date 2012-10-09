@@ -1,4 +1,4 @@
-<span ng-hide="reader">Loading...</span>
+<span ng-show="readerIsLoading">Loading...</span>
 <div ng-show="reader">
   <h3 class="jskomNoWrap">
     <em>{{ reader.unreadSize() }}</em> unread in <em>{{ conf.conf_name }}</em>
@@ -12,7 +12,7 @@
 <div id="jskomControlBar" class="navbar">
   <div class="navbar-inner">
     <button class="btn"
-            ng-disabled="readerIsLoading"
+            ng-disabled="readerIsLoading || !reader"
             ng-click="refresh()">
       <i class="icon-refresh"></i>
     </button>

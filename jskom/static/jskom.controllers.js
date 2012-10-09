@@ -166,19 +166,23 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.isLoggingIn = false;
       
       $scope.reset = function() {
-        $scope.isReseting = true;
-        sessionsService.deleteSession(
-          $scope.connection, $scope.connection.session.session_no).then(
-            function(response) {
-              $log.log("LoginCtrl - reset() - success");
-              $scope.person = sessionsService.newPerson();
-              $scope.isReseting = false;
-            },
-            function(response) {
-              $log.log("LoginCtrl - reset() - error");
-              messagesService.showMessage('error', 'Failed to reset login.', response.data);
-              $scope.isReseting = false;
-            });
+        if ($scope.connection.isConnected()) {
+          $scope.isReseting = true;
+          sessionsService.deleteSession(
+            $scope.connection, $scope.connection.session.session_no).then(
+              function(response) {
+                $log.log("LoginCtrl - reset() - success");
+                $scope.person = sessionsService.newPerson();
+                $scope.isReseting = false;
+              },
+              function(response) {
+                $log.log("LoginCtrl - reset() - error");
+                messagesService.showMessage('error', 'Failed to reset login.', response.data);
+                $scope.isReseting = false;
+              });
+        } else {
+          $scope.person = sessionsService.newPerson();
+        }
       };
       
       $scope.login = function() {
@@ -862,7 +866,11 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           function(response) {
             $log.log("ReaderCtrl - getReader(" + confNo + ") - error");
             $scope.readerIsLoading = false;
-            messagesService.showMessage('error', 'Failed to get reader.', response.data);
+            if (response.data.error_code === 13) {
+              messagesService.showMessage('error', 'You are not a member of this conference.');
+            } else {
+              messagesService.showMessage('error', 'Failed to get reader.', response.data);
+            }
           });
       };
       

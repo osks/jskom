@@ -41,16 +41,7 @@
     <div id="jskomTopBar" class="navbar navbar-fixed-top navbar-inverse">
       <div class="navbar-inner">
         <div class="container">
-          <a class="brand" href="/">jskom</a>
-          
-          {% set navigation_texts = [
-          ('/texts/new', 'New text'),
-          ] %}
-
-          {% set navigation_confs = [
-          ('/conferences/go-to', 'Go to conference'),
-          ('/conferences/set-unread', 'Set unread'),
-          ] %}
+          <a class="brand hidden-phone" href="/">jskom</a>
           
           <ul class="nav" ng-show="connection.isLoggedIn()" ng-cloak>
             <li>
@@ -60,50 +51,26 @@
               </a>
             </li>
             
-            <li class="dropdown hidden-phone">
+            <li class="dropdown">
               <a class="dropdown-toggle" data-toggle="dropdown">
                 Texts
                 <b class="caret"></b>
               </a>
               <ul class="dropdown-menu">
-                {% for item in navigation_texts %}
-                <li><a href="{{ item[0] }}">{{ item[1] }}</a></li>
-                {% endfor %}
+                <li><a href="/texts/new">New text</a></li>
               </ul>
             </li>
             
-            <li class="dropdown hidden-phone">
+            <li class="dropdown">
               <a class="dropdown-toggle" data-toggle="dropdown">
-                Conferences
-                <b class="caret"></b>
+                <span class="hidden-phone">Conferences <b class="caret"></b></span>
+                <span class="visible-phone">Confs <b class="caret"></b></span>
               </a>
               <ul class="dropdown-menu">
-                {% for item in navigation_confs %}
-                <li><a href="{{ item[0] }}">{{ item[1] }}</a></li>
-                {% endfor %}
+                <li><a href="/conferences/go-to">Go to conference</a></li>
+                <li><a href="/conferences/set-unread">Set unread</a></li>
               </ul>
             </li>
-            
-            <li class="dropdown visible-phone">
-              <a class="dropdown-toggle" data-toggle="dropdown" data-target="#">
-                Menu
-                <b class="caret"></b>
-              </a>
-              <ul class="dropdown-menu">
-                <li class="nav-header">Texts</li>
-                {% for item in navigation_texts %}
-                <li><a href="{{ item[0] }}">{{ item[1] }}</a></li>
-                {% endfor %}
-                
-                <li class="divider"></li>
-                
-                <li class="nav-header">Conferences</li>
-                {% for item in navigation_confs %}
-                <li><a href="{{ item[0] }}">{{ item[1] }}</a></li>
-                {% endfor %}
-              </ul>
-            </li>
-            
           </ul>
           
           {% raw %}
@@ -130,7 +97,7 @@
                 
                 <li class="nav-header">Sessions</li>
                 <li ng-repeat="conn in connections">
-                  <a href="#" ng-click="selectConnection(conn)">
+                  <a ng-click="selectConnection(conn)">
                     <i class="icon-user" ng-show="conn.id == connection.id"></i>
                     <span ng-show="conn.isLoggedIn()">
                       {{conn.session.person|personName}}
@@ -140,7 +107,7 @@
                 </li>
                 <li class="divider"></li>
                 <li>
-                  <a href="#" ng-click="newConnection()">New session...</a>
+                  <a ng-click="newConnection()">New session...</a>
                 </li>
               </ul>
             </li>
@@ -155,7 +122,10 @@
       <div ng-show="connection" ng-cloak>
         <ng-switch on="connection.isLoggedIn()">
           <div class="row" ng-switch-default>
-            <ng-include src="'newsession.html'|jskomTemplate"></ng-include>
+            <div class="span6">
+              <ng-include src="'messages.html'|jskomTemplate"></ng-include>
+              <ng-include src="'newsession.html'|jskomTemplate"></ng-include>
+            </div>
           </div>
           
           <div class="row" ng-switch-when="true">

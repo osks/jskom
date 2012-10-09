@@ -1,7 +1,7 @@
 <div id="jskomMessages" ng-controller="MessagesCtrl">
     <div class="alert alert-block alert-{{message.level}}"
          ng-repeat="message in messages">
-      <a class="close" data-dismiss="alert" href="#"
+      <a class="close" data-dismiss="alert"
          ng-click="messages.splice($index, 1)">×</a>
       <h4 class="alert-heading" jskom-bind-linkified="message.heading"></h4>
       <span jskom-bind-linkified="message.text"></span>
