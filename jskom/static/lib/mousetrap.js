@@ -16,10 +16,10 @@
  * Mousetrap is a simple keyboard shortcut library for Javascript with
  * no external dependencies
  *
- * @version 1.1.1
+ * @version 1.2
  * @url craig.is/killing/mice
  */
-window.Mousetrap = (function() {
+(function() {
 
     /**
      * mapping of special keycodes to their corresponding keys
@@ -205,7 +205,8 @@ window.Mousetrap = (function() {
      */
     function _addEvent(object, type, callback) {
         if (object.addEventListener) {
-            return object.addEventListener(type, callback, false);
+            object.addEventListener(type, callback, false);
+            return;
         }
 
         object.attachEvent('on' + type, callback);
@@ -235,25 +236,6 @@ window.Mousetrap = (function() {
 
         // if it is not in the special map
         return String.fromCharCode(e.which).toLowerCase();
-    }
-
-    /**
-     * should we stop this event before firing off callbacks
-     *
-     * @param {Event} e
-     * @return {boolean}
-     */
-    function _stop(e) {
-        var element = e.target || e.srcElement,
-            tag_name = element.tagName;
-
-        // if the element has the class "mousetrap" then no need to stop
-        if ((' ' + element.className + ' ').indexOf(' mousetrap ') > -1) {
-            return false;
-        }
-
-        // stop for input, select, and textarea
-        return tag_name == 'INPUT' || tag_name == 'SELECT' || tag_name == 'TEXTAREA'/* || element.getAttribute('contenteditable')*/;
     }
 
     /**
@@ -298,15 +280,16 @@ window.Mousetrap = (function() {
      *
      * @param {string} character
      * @param {Array} modifiers
-     * @param {string} action
+     * @param {Event|Object} e
      * @param {boolean=} remove - should we remove any matches
      * @param {string=} combination
      * @returns {Array}
      */
-    function _getMatches(character, modifiers, action, remove, combination) {
+    function _getMatches(character, modifiers, e, remove, combination) {
         var i,
             callback,
-            matches = [];
+            matches = [],
+            action = e.type;
 
         // if there are no events related to this keycode
         if (!_callbacks[character]) {
@@ -325,7 +308,7 @@ window.Mousetrap = (function() {
 
             // if this is a sequence but it is not at the right level
             // then move onto the next match
-            if (callback['seq'] && _sequence_levels[callback['seq']] != callback['level']) {
+            if (callback.seq && _sequence_levels[callback.seq] != callback.level) {
                 continue;
             }
 
@@ -335,14 +318,18 @@ window.Mousetrap = (function() {
                 continue;
             }
 
-            // if this is a keypress event that means that we need to only
-            // look at the character, otherwise check the modifiers as
-            // well
-            if (action == 'keypress' || _modifiersMatch(modifiers, callback.modifiers)) {
+            // if this is a keypress event and the meta key and control key
+            // are not pressed that means that we need to only look at the
+            // character, otherwise check the modifiers as well
+            //
+            // chrome will not fire a keypress if meta or control is down
+            // safari will fire a keypress if meta or meta+shift is down
+            // firefox will fire a keypress if meta or control is down
+            if ((action == 'keypress' && !e.metaKey && !e.ctrlKey) || _modifiersMatch(modifiers, callback.modifiers)) {
 
                 // remove is used so if you change your mind and call bind a
                 // second time with a new function the first one is overwritten
-                if (remove && callback['combo'] == combination) {
+                if (remove && callback.combo == combination) {
                     _callbacks[character].splice(i, 1);
                 }
 
@@ -391,8 +378,14 @@ window.Mousetrap = (function() {
      * @param {Event} e
      * @returns void
      */
-    function _fireCallback(callback, e) {
-        if (callback(e) === false) {
+    function _fireCallback(callback, e, combo) {
+
+        // if this event should not happen stop here
+        if (Mousetrap.stopCallback(e, e.target || e.srcElement, combo)) {
+            return;
+        }
+
+        if (callback(e, combo) === false) {
             if (e.preventDefault) {
                 e.preventDefault();
             }
@@ -414,13 +407,7 @@ window.Mousetrap = (function() {
      * @returns void
      */
     function _handleCharacter(character, e) {
-
-        // if this event should not happen stop here
-        if (_stop(e)) {
-            return;
-        }
-
-        var callbacks = _getMatches(character, _eventModifiers(e), e.type),
+        var callbacks = _getMatches(character, _eventModifiers(e), e),
             i,
             do_not_reset = {},
             processed_sequence_callback = false;
@@ -433,19 +420,19 @@ window.Mousetrap = (function() {
             // bound such as "g i" and "g t" they both need to fire the
             // callback for matching g cause otherwise you can only ever
             // match the first one
-            if (callbacks[i]['seq']) {
+            if (callbacks[i].seq) {
                 processed_sequence_callback = true;
 
                 // keep a list of which sequences were matches for later
-                do_not_reset[callbacks[i]['seq']] = 1;
-                _fireCallback(callbacks[i].callback, e);
+                do_not_reset[callbacks[i].seq] = 1;
+                _fireCallback(callbacks[i].callback, e, callbacks[i].combo);
                 continue;
             }
 
             // if there were no sequence matches but we are still here
             // that means this is a regular match so we should fire that
             if (!processed_sequence_callback && !_inside_sequence) {
-                _fireCallback(callbacks[i].callback, e);
+                _fireCallback(callbacks[i].callback, e, callbacks[i].combo);
             }
         }
 
@@ -467,7 +454,9 @@ window.Mousetrap = (function() {
 
         // normalize e.which for key events
         // @see http://stackoverflow.com/questions/4285627/javascript-keycode-vs-charcode-utter-confusion
-        e.which = typeof e.which == "number" ? e.which : e.keyCode;
+        if (typeof e.which !== 'number') {
+            e.which = e.keyCode;
+        }
 
         var character = _characterFromEvent(e);
 
@@ -518,7 +507,7 @@ window.Mousetrap = (function() {
             _REVERSE_MAP = {};
             for (var key in _MAP) {
 
-                // pull out the numberic keypad from here cause keypress should
+                // pull out the numeric keypad from here cause keypress should
                 // be able to detect the keys from the character
                 if (key > 95 && key < 112) {
                     continue;
@@ -598,7 +587,7 @@ window.Mousetrap = (function() {
              * @returns void
              */
             _callbackAndReset = function(e) {
-                _fireCallback(callback, e);
+                _fireCallback(callback, e, combo);
 
                 // we should ignore the next key up if the action is key down
                 // or keypress.  this is so if you finish a sequence and
@@ -645,7 +634,8 @@ window.Mousetrap = (function() {
         // if this pattern is a sequence of keys then run through this method
         // to reprocess each pattern one key at a time
         if (sequence.length > 1) {
-            return _bindSequence(combination, sequence, callback, action);
+            _bindSequence(combination, sequence, callback, action);
+            return;
         }
 
         // take the keys from this pattern and figure out what the actual
@@ -685,7 +675,7 @@ window.Mousetrap = (function() {
         }
 
         // remove an existing match if there is one
-        _getMatches(key, modifiers, action, !sequence_name, combination);
+        _getMatches(key, modifiers, {type: action}, !sequence_name, combination);
 
         // add this call back to the array
         // if it is a sequence put it at the beginning
@@ -722,14 +712,13 @@ window.Mousetrap = (function() {
     _addEvent(document, 'keydown', _handleKey);
     _addEvent(document, 'keyup', _handleKey);
 
-    return {
+    var Mousetrap = {
 
         /**
          * binds an event to mousetrap
          *
          * can be a single key, a combination of keys separated with +,
-         * a comma separated list of keys, an array of keys, or
-         * a sequence of keys separated by spaces
+         * an array of keys, or a sequence of keys separated by spaces
          *
          * be sure to list the modifier keys first to make sure that the
          * correct key ends up getting bound (the last key in the pattern)
@@ -742,6 +731,7 @@ window.Mousetrap = (function() {
         bind: function(keys, callback, action) {
             _bindMultiple(keys instanceof Array ? keys : [keys], callback, action);
             _direct_map[keys + ':' + action] = callback;
+            return this;
         },
 
         /**
@@ -766,6 +756,7 @@ window.Mousetrap = (function() {
                 delete _direct_map[keys + ':' + action];
                 this.bind(keys, function() {}, action);
             }
+            return this;
         },
 
         /**
@@ -777,6 +768,7 @@ window.Mousetrap = (function() {
          */
         trigger: function(keys, action) {
             _direct_map[keys + ':' + action]();
+            return this;
         },
 
         /**
@@ -789,6 +781,33 @@ window.Mousetrap = (function() {
         reset: function() {
             _callbacks = {};
             _direct_map = {};
+            return this;
+        },
+
+       /**
+        * should we stop this event before firing off callbacks
+        *
+        * @param {Event} e
+        * @param {Element} element
+        * @return {boolean}
+        */
+        stopCallback: function(e, element, combo) {
+
+            // if the element has the class "mousetrap" then no need to stop
+            if ((' ' + element.className + ' ').indexOf(' mousetrap ') > -1) {
+                return false;
+            }
+
+            // stop for input, select, and textarea
+            return element.tagName == 'INPUT' || element.tagName == 'SELECT' || element.tagName == 'TEXTAREA' || (element.contentEditable && element.contentEditable == 'true');
         }
     };
+
+    // expose mousetrap to the global object
+    window.Mousetrap = Mousetrap;
+
+    // expose mousetrap as an AMD module
+    if (typeof define === 'function' && define.amd) {
+        define('mousetrap', function() { return Mousetrap; });
+    }
 }) ();

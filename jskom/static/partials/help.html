@@ -15,7 +15,7 @@
       <div>
         <h6>General</h6>
         <table class="table table-condensed">
-          <tr ng-repeat="keyBinding in globalKeys">
+          <tr ng-repeat="keyBinding in generalKeys">
             <td>
               <span ng-repeat="key in keyBinding.keys">
                 <span ng-hide="$index == 0"> or </span>
@@ -27,10 +27,10 @@
         </table>
       </div>
       
-      <div ng-show="localKeys">
+      <div ng-show="pageSpecificKeys">
         <h6>Page specific</h6>
         <table class="table table-condensed">
-          <tr ng-repeat="keyBinding in localKeys">
+          <tr ng-repeat="keyBinding in pageSpecificKeys">
             <td>
               <span ng-repeat="key in keyBinding.keys">
                 <span ng-hide="$index == 0"> or </span>

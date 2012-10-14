@@ -6,8 +6,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
   controller('ConnectionsCtrl', [
     '$scope', '$rootScope', '$log', '$location',
     'connectionFactory', 'connectionsService', 'httpkom', 'messagesService', 'sessionsService',
+    'keybindingService',
     function($scope, $rootScope, $log, $location,
-             connectionFactory, connectionsService, httpkom, messagesService, sessionsService) {
+             connectionFactory, connectionsService, httpkom, messagesService, sessionsService,
+             keybindingService) {
       
       // This is a work-around for Twitter Bootstrap dropdown plugin
       // incompatibility with AngularJS. The dropdown plugin stops
@@ -52,8 +54,8 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         connectionsService.setCurrentConnection(conn);
       };
       
-      $scope.$watch(connectionsService.getConnections, function(newConnections) {
-        $scope.connections = newConnections;
+      $scope.$watch(connectionsService.getConnections, function(newConnMap) {
+        $scope.connections = newConnMap;
       });
       
       $scope.$watch(connectionsService.getCurrentConnection, function(newCurrentConn, oldConn) {
@@ -94,6 +96,38 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           $log.log("ConnectionsCtrl - getServers() - error");
           messagesService.showMessage('error', 'Failed to get server list.', response.data);
         });
+      
+      
+      $scope.selectNextConnection = function() {
+        if (_.size($scope.connections) > 1) {
+          var newConn;
+          var connections = _.sortBy(_.values($scope.connections), function(conn) {
+            return conn.id;
+          });
+          
+          if ($scope.connection) {
+            var connectionIds = _.map(connections, function(conn) { return conn.id; });
+            var index = connectionIds.indexOf($scope.connection.id);
+            if (index + 1 < connectionIds.length) {
+              newConn = connections[index+1];
+            } else {
+              newConn = _.first(connections);
+            }
+          } else {
+            newConn = _.first(connections);
+          }
+          
+          $scope.selectConnection(newConn);
+        }
+      };
+      
+      /*keybindingService.bindGeneral('n l', 'Next LysKOM session', function() {
+        $log.log("n l");
+        $scope.$apply(function() {
+          $scope.selectNextConnection();
+        });
+        return false;
+      });*/
     }
   ]).
   controller('SessionCtrl', [
@@ -101,26 +135,26 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
     'messagesService', 'keybindingService',
     function($scope, $log, $location, $window,
              messagesService, keybindingService) {
-      keybindingService.bindGlobal('i', 'New text...', function(e) {
+      keybindingService.bindGeneral('i', 'New text...', function(e) {
         $scope.$apply(function() {
           $location.url('/texts/new');
         });
         return false;
       });
       
-      keybindingService.bindGlobal('g', 'Go to conference...', function(e) {
+      keybindingService.bindGeneral('g', 'Go to conference...', function(e) {
         $scope.$apply(function() {
           $location.url('/conferences/go-to');
         });
         return false;
       });
       
-      keybindingService.bindGlobal('p', 'Browser history back', function(e) {
+      keybindingService.bindGeneral('p', 'Browser history back', function(e) {
         $window.history.back();
         return false;
       });
       
-      keybindingService.bindGlobal('n', 'Browser history forward', function(e) {
+      keybindingService.bindGeneral('n', 'Browser history forward', function(e) {
         $window.history.forward();
         return false;
       });
@@ -274,21 +308,20 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
     function($scope, $log, keybindingService) {
       $scope.isVisible = false;
       
-      keybindingService.bindGlobal('?', 'Show this help (toggle)', function(e) {
+      keybindingService.bindGeneral('?', 'Show this help (toggle)', function(e) {
         $scope.$apply(function() {
           $scope.isVisible = !$scope.isVisible;
         });
         return false;
       });
       
-      $scope.$watch(keybindingService.getBindings, function(newBindings) {
-        $scope.globalKeys = _.reject(newBindings, function(kb) {
-          return kb.isLocal;
-        });
-        $scope.localKeys = _.filter(newBindings, function(kb) {
-          return kb.isLocal;
-        });
-      }, true);
+      $scope.$watch(keybindingService.getGeneralBindings, function(newGeneralBindings) {
+        $scope.generalKeys = newGeneralBindings;
+      });
+      
+      $scope.$watch(keybindingService.getPageSpecificBindings, function(newPageSpecificBindings) {
+        $scope.pageSpecificKeys = newPageSpecificBindings;
+      });
     }
   ]).
   controller('UnreadConfsCtrl', [
@@ -367,6 +400,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       });
       
+      $scope.$watch('unreadMemberships.length', function(newUnreadCount) {
+        pageTitleService.set(newUnreadCount + " unread conference(s)");
+      });
+      
       $scope.readFirstConference = function() {
         if ($scope.unreadMemberships.length > 0) {
           $location.url("/conferences/" +
@@ -374,7 +411,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       };
       
-      keybindingService.bindLocal(['space'], 'Read first conference', function(e) {
+      keybindingService.bindPageSpecific(['space'], 'Read first conference', function(e) {
         if (_.size($scope.unreadMemberships) > 0) {
           $scope.$apply(function() {
             $scope.readFirstConference();
@@ -383,7 +420,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         return false;
       });
       
-      keybindingService.bindLocal('R', 'Refresh', function(e) {
+      keybindingService.bindPageSpecific('shift+r', 'Refresh', function(e) {
         $scope.$apply(function() {
           if (!$scope.isLoading) {
             $scope.load(false);
@@ -392,7 +429,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         return false;
       });
       
-      keybindingService.bindLocal('e', 'Set unread...', function(e) {
+      keybindingService.bindPageSpecific('e', 'Set unread...', function(e) {
         $log.log("local");
         $scope.$apply(function() {
           $location.url('/conferences/set-unread');
@@ -594,7 +631,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       };
       
-      keybindingService.bindLocal('k', 'Write comment', function(e) {
+      keybindingService.bindPageSpecific('k', 'Write comment', function(e) {
         $scope.$apply(function() {
           $scope.writeComment();
         });
@@ -733,7 +770,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           pageTitleService.set("");
         });
       
-      keybindingService.bindLocal('e', 'Set unread...', function(e) {
+      keybindingService.bindPageSpecific('e', 'Set unread...', function(e) {
         $scope.$apply(function() {
           if ($scope.conf) {
             var confNo = $scope.conf.conf_no;
@@ -909,7 +946,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       };
       
-      keybindingService.bindLocal('R', 'Refresh', function(e) {
+      keybindingService.bindPageSpecific('shift+r', 'Refresh', function(e) {
         $scope.$apply(function() {
           if (!$scope.readerisLoading) {
             $scope.refresh();
@@ -918,24 +955,23 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         return false;
       });
       
-      keybindingService.bindLocal(',', 'Show commented', function() {
+      keybindingService.bindPageSpecific([','/*, 'å k'*/], 'Show commented', function() {
+        $log.log("å k");
         $scope.$apply(function() {
           $scope.showCommented();
         });
         return false;
       });
       
-      // 'å a k' works really bad sometimes, probably because of
-      // requiring keypress events (doesn't matter if you specify
-      // 'keydown' or not).
-      /*keybindingService.bindLocal('å a k', 'Show all comments', function() {
+      /*keybindingService.bindPageSpecific('å a k', 'Show all comments', function() {
+        $log.log("å a k");
         $scope.$apply(function() {
           $scope.showAllComments();
         });
         return false;
       });*/
       
-      keybindingService.bindLocal('space', 'Read next unread text', function(e) {
+      keybindingService.bindPageSpecific('space', 'Read next unread text', function(e) {
         if (isScrolledIntoView(angular.element('#jskomBelowText'))) {
           $scope.$apply(function() {
             // Check that the read next button is visible if we used space
@@ -947,7 +983,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       });
       
-      keybindingService.bindLocal('e', 'Set unread...', function(e) {
+      keybindingService.bindPageSpecific('e', 'Set unread...', function(e) {
         $scope.$apply(function() {
           if ($scope.conf) {
             var confNo = $scope.conf.conf_no;

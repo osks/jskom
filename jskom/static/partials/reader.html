@@ -22,7 +22,9 @@
               ng-click="readNext()" ng-disabled="!reader || textIsLoading">
         <span ng-show="reader.isEmpty()">To conference list</span>
         <span ng-hide="reader.isEmpty()">
-          <span ng-show="reader.hasPending()">Show next pending</span>
+          <span ng-show="reader.hasPending()">
+            Show next pending ({{ reader.pendingSize() }})
+          </span>
           <span ng-hide="reader.hasPending()">Show next unread</span>
         </span>
       </button>

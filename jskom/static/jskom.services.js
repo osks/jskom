@@ -135,38 +135,42 @@ angular.module('jskom.services', ['jskom.settings']).
     '$log', '$rootScope',
     function($log, $rootScope) {
       Mousetrap.reset();
-      var keyBindings = [];
+      var generalKeyBindings = [];
+      var pageSpecificKeyBindings = [];
       
       var resetBindings = function() {
-        var kbsByLocal = _.groupBy(keyBindings, 'isLocal');
-        
-        _.each(kbsByLocal['true'], function(kb) {
-          // Only unbind local bindings on reset.
+        // Only unbind page specific key bindings on reset.
+        _.each(pageSpecificKeyBindings, function(kb) {
           _.each(kb.keys, function(key) {
             unbindKey(key);
-          });
+          });  
         });
         
-        keyBindings = kbsByLocal['false']; // Keep only the non-locals.
+        pageSpecificKeyBindings = [];
       };
       
       var removeBindingsForKey = function(key) {
-        var keep = [];
-        _.each(keyBindings, function(keyBinding) {
-          if (_.include(keyBinding.keys, key)) {
-            unbindKey(key);
-            // If there is more than one key (i.e. any other than
-            // 'key') for this binding, keep it, but remove 'key' from
-            // its keys.
-            if (_.size(keyBinding.keys) > 1) {
-              keyBinding.keys = _.without(keyBinding.keys, key);
+        var removeKeyFromKeyBindings = function(keyBindings) {
+          var keep = [];
+          _.each(keyBindings, function(keyBinding) {
+            if (_.include(keyBinding.keys, key)) {
+              unbindKey(key);
+              // If there is more than one key (i.e. any other than
+              // 'key') for this binding, keep it, but remove 'key' from
+              // its keys.
+              if (_.size(keyBinding.keys) > 1) {
+                keyBinding.keys = _.without(keyBinding.keys, key);
+                keep.push(keyBinding);
+              }
+            } else {
               keep.push(keyBinding);
             }
-          } else {
-            keep.push(keyBinding);
-          }
-        });
-        keyBindings = keep;
+          });
+          return keep;
+        }
+        
+        generalKeyBindings = removeKeyFromKeyBindings(generalKeyBindings);
+        pageSpecificKeyBindings = removeKeyFromKeyBindings(pageSpecificKeyBindings);
       };
       
       var addBinding = function(keyBinding) {
@@ -180,15 +184,31 @@ angular.module('jskom.services', ['jskom.settings']).
           bindKey(key, keyBinding.callback);
         });
         
-        keyBindings.push(keyBinding);
+        if (keyBinding.isPageSpecific) {
+          pageSpecificKeyBindings.push(keyBinding);
+        } else {
+          generalKeyBindings.push(keyBinding);
+        }
+      };
+      
+      var swedishToUS = {
+        'å': '[',
+        'ä': '\'',
+        'ö': ';'
       };
       
       var bindKey = function(key, callbackFn) {
+        _.each(swedishToUS, function(usChar, sweChar) {
+          key = key.replace(new RegExp(sweChar, 'g'), usChar);
+        });
         //$log.log("keybindingService - bindKey: " + key);
-        Mousetrap.bind(key, callbackFn);
+        Mousetrap.bind(key, callbackFn, 'keydown');
       };
       
       var unbindKey = function(key) {
+        _.each(swedishToUS, function(usChar, sweChar) {
+          key = key.replace(new RegExp(sweChar, 'g'), usChar);
+        });
         //$log.log("keybindingService - unbindKey: " + key);
         Mousetrap.unbind(key);
       };
@@ -201,28 +221,19 @@ angular.module('jskom.services', ['jskom.settings']).
       });
       
       return {
-        bind: function(keys, description, callbackFn, isLocal) {
+        bindGeneral: function(keys, description, callbackFn) {
           addBinding({
             keys: keys,
-            isLocal: isLocal,
+            isPageSpecific: false,
             description: description,
             callback: callbackFn
           });
         },
         
-        bindGlobal: function(keys, description, callbackFn) {
+        bindPageSpecific: function(keys, description, callbackFn) {
           addBinding({
             keys: keys,
-            isLocal: false,
-            description: description,
-            callback: callbackFn
-          });
-        },
-        
-        bindLocal: function(keys, description, callbackFn) {
-          addBinding({
-            keys: keys,
-            isLocal: true,
+            isPageSpecific: true,
             description: description,
             callback: callbackFn
           });
@@ -232,8 +243,12 @@ angular.module('jskom.services', ['jskom.settings']).
           resetBindings();
         },
         
-        getBindings: function() {
-          return keyBindings;
+        getGeneralBindings: function() {
+          return generalKeyBindings;
+        },
+        
+        getPageSpecificBindings: function() {
+          return pageSpecificKeyBindings;
         },
       };
     }
