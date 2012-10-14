@@ -455,7 +455,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       ];
       
       $scope.newRecipient = function() {
-        return { type: 'to', conf_name: '' }
+        return { type: 'to', recpt: {} }
       };
       
       var newEmptyText = function() {

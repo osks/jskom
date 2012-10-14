@@ -21,7 +21,7 @@
       
       <div ng-repeat="recipient in text.recipient_list">
         <span class="jskomCapitalize">{{ recipient.type }}:</span>
-        <em>{{ recipient.conf_name }}</em>
+        <em>{{ recipient.recpt|confName }}</em>
       </div>
       
       <span>Subject:</span> <em>{{ text.subject }}</em>
@@ -53,7 +53,7 @@
             <select class="span1 jskomRecipientType" ng-model="recipient.type"
                     ng-options="rt.type as rt.name for rt in recipientTypes"></select>
             
-            <jskom:conf-input class="span6" conn="connection" model="recipient.conf_no">
+            <jskom:conf-input class="span6" conn="connection" model="recipient.recpt.conf_no">
             </jskom:conf-input>
           </div>
         </fieldset>

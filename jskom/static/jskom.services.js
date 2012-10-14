@@ -681,14 +681,14 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('readMarkingsService', [
-    'membershipsService',
-    function(membershipsService) {
+    '$log', 'membershipsService',
+    function($log, membershipsService) {
       var clearCacheForRecipients = function(conn, text) {
         if (text) {
           // Clear membership cache because marking texts as read/unread
           // will make the data invalid.
           _.each(text.recipient_list, function(recipient) {
-            membershipsService.clearCacheForConf(conn, recipient.conf_no);
+            membershipsService.clearCacheForConf(conn, recipient.recpt.conf_no);
           });
         }
       };
