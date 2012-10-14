@@ -2,7 +2,7 @@
 
 'use strict';
 
-angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
+angular.module('jskom.services', ['jskom.settings']).
   factory('htmlFormattingService', [
     '$log',
     function($log) {
@@ -22,6 +22,7 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
       };
       
       // Escape html tags
+      // From: https://github.com/wycats/handlebars.js/blob/master/lib/handlebars/utils.js
       var escapeExpression = function(string) {
         if (string == null || string === false) {
           return "";
@@ -36,50 +37,66 @@ angular.module('jskom.services', ['jskom.settings', 'jskom.connections']).
       var urlRegexp = /\b((?:[a-z][\w-]+:(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
       
       var lyskomTextNumberRegexp = /\b([0-9]{4,})\b/g;
+      var lyskomTextLinkRegexp = /<text\s+([0-9]+)\s*(?::.*)?\s*>/g;
       
-      var replaceMultiple = function(str, replacers) {
+      var lineBreakRegexp = /\r?\n|\r/g;
+      
+      var replaceMultiple = function(unescapedStr, replacers) {
         var i = 0;
         var replace = function(str, regexp, replaceFunc, tmpObj) {
-          var matches = str.match(regexp);
-          if (matches) {
-            _.each(_.uniq(matches), function(match) {
-              str = str.replace(match, '<$' + i +'$>');
-              tmpObj['<$' + i + '$>'] = replaceFunc(match);
-              ++i;
-            });
-          }
+          str = str.replace(regexp, function(match) {
+            var holder = '#@@' + i + '@@%';
+            tmpObj[holder] = replaceFunc.apply(null, arguments);
+            ++i;
+            return holder;
+          });
           return str;
         };
         
         var tmp = {};
         _.each(replacers, function(replacer) {
-          str = replace(str, replacer.regexp, replacer.func, tmp);
-        });
-        _.each(tmp, function(value, key) {
-          str = str.replace(key, value);
+          unescapedStr = replace(unescapedStr, replacer.regexp, replacer.func, tmp);
         });
         
-        return str;
+        var escapedStr = escapeExpression(unescapedStr);
+        _.each(tmp, function(value, key) {
+          escapedStr = escapedStr.replace(key, value);
+        });
+        
+        return escapedStr;
       };
       
       return {
         formatBody: function(rawBody) {
-          var escaped = this.escapeHtml(rawBody);
-          escaped = this.formatLineBreaks(escaped);
-          
-          escaped = replaceMultiple(escaped, [
+          var escaped = replaceMultiple(rawBody, [
             {
               regexp: urlRegexp,
               func: function(match) {
-                return '<a href="' + encodeURI(match) + '">' + match + '</a>';
+                return '<a target="_blank" href="' + match + '">' +
+                  escapeExpression(match) + '</a>';
+              }
+            },
+            {
+              regexp: lyskomTextLinkRegexp,
+              func: function(match, p1) {
+                $log.log("lyskomTextLink: " + match);
+                return '<jskom:a text-no="' + p1 + '">' +
+                  escapeExpression(match) + '</jskom:a>';
               }
             },
             {
               regexp: lyskomTextNumberRegexp,
-              func: function(match) {
-                return '<jskom:a text-no="' + encodeURI(match) + '">' + match + '</jskom:a>';
+              func: function(match, p1) {
+                return '<jskom:a text-no="' + match + '">' +
+                  escapeExpression(match) + '</jskom:a>';
               },
-            }
+            },
+            {
+              regexp: lineBreakRegexp,
+              func: function(match, p1) {
+                return '<br/>';
+              }
+            },
           ]);
           
           return escaped;
