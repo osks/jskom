@@ -44,9 +44,15 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       };
       
       $scope.selectConnection = function(conn) {
+        var curConn = connectionsService.getCurrentConnection();
+        if (conn !== curConn) {
+          $log.log("clear and change url");
+          messagesService.clearAll();
+          $location.url('/');
+        }
         connectionsService.setCurrentConnection(conn);
       };
-
+      
       $scope.$watch(connectionsService.getConnections, function(newConnections) {
         $scope.connections = newConnections;
       });
@@ -59,10 +65,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         } else {
           //$log.log("New current connection: " + newCurrentConn);
           $scope.connection = null;
-        }
-        if (newCurrentConn !== oldConn) {
-          // New connection, reset URL.
-          $location.url('/');
         }
       });
       
@@ -867,7 +869,9 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             $log.log("ReaderCtrl - getReader(" + confNo + ") - error");
             $scope.readerIsLoading = false;
             if (response.data.error_code === 13) {
-              messagesService.showMessage('error', 'You are not a member of this conference.');
+              messagesService.showMessage('error', 'You are not a member of the conference: ' +
+                                          confNo, '', true);
+              $location.url('/');
             } else {
               messagesService.showMessage('error', 'Failed to get reader.', response.data);
             }

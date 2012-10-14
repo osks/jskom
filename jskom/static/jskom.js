@@ -31,7 +31,8 @@
   $(function() {
     checkBrowser();
   });
-})(angular.element);
+})(jQuery);
+
 
 angular.module('jskom.templates', []).
   provider('templatePath', function() {
