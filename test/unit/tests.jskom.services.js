@@ -56,6 +56,14 @@ suite('htmlFormattingService', function() {
       // a <br> tag. This is because we don't handle nested tags.
       assert.equal(service.formatBody('Man trycker C-c C-i C-l (tänk på det som "insert link" eller "infoga\nlänk") och svarar på frågorna. Eller så skriver man <text 4711: en\ntegelsten>.'),
                    'Man trycker C-c C-i C-l (tänk på det som &quot;insert link&quot; eller &quot;infoga<br/>länk&quot;) och svarar på frågorna. Eller så skriver man <jskom:a text-no="4711">&lt;text 4711: en\ntegelsten&gt;</jskom:a>.');
+      
+      // This test shows that a <text ...> tag cannot contain other
+      // tags (i.e. you can't nest tags).
+      assert.equal(service.formatBody('<text 19914766: Hej>. <text 19914766: Hej då> ' +
+                                      '<text 19914766>'),
+                   '<jskom:a text-no="19914766">&lt;text 19914766: Hej&gt;</jskom:a>. ' + 
+                   '<jskom:a text-no="19914766">&lt;text 19914766: Hej då&gt;</jskom:a> ' + 
+                   '<jskom:a text-no="19914766">&lt;text 19914766&gt;</jskom:a>');
     });
     
     test('should replace newlines with br tags', function() {
