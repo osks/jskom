@@ -46,7 +46,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.selectConnection = function(conn) {
         var curConn = connectionsService.getCurrentConnection();
         if (conn !== curConn) {
-          $log.log("clear and change url");
           messagesService.clearAll();
           $location.url('/');
         }

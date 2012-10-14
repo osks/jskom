@@ -79,7 +79,6 @@ angular.module('jskom.services', ['jskom.settings']).
             {
               regexp: lyskomTextLinkRegexp,
               func: function(match, p1) {
-                $log.log("lyskomTextLink: " + match);
                 return '<jskom:a text-no="' + p1 + '">' +
                   escapeExpression(match) + '</jskom:a>';
               }
@@ -509,13 +508,17 @@ angular.module('jskom.services', ['jskom.settings']).
         return persNo + ":" + confNo;
       };
       
+      var clearCacheForUnread = function(conn) {
+        var unreadKey = cacheKeyForUnread(conn.getPersNo());
+        conn.membershipsCache.remove(unreadKey);
+      };
+      
       var clearCacheForPersonAndConf = function(conn, persNo, confNo) {
         var confKey = cacheKeyForConf(persNo, confNo);
         conn.membershipsCache.remove(confKey);
         
         // also remove unread cache
-        var unreadKey = cacheKeyForUnread(persNo);
-        conn.membershipsCache.remove(unreadKey);
+        clearCacheForUnread(conn);
       };
       
       var saveMembershipsInCache = function(conn, persNo, memberships) {
@@ -527,6 +530,10 @@ angular.module('jskom.services', ['jskom.settings']).
       };
       
       return {
+        clearCacheForUnread: function(conn) {
+          clearCacheForUnread(conn);
+        },
+        
         clearCacheForConf: function(conn, confNo) {
           var confKey = cacheKeyForConf(conn.getPersNo(), confNo);
           conn.membershipsCache.remove(confKey);
