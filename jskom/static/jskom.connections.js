@@ -410,9 +410,25 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         }
       };
       
+      var pruneInvalidConnections = function(servers) {
+        // Remove connections to lyskom servers that no longer exist
+        // on httpkom.
+        _.each(connections, function(conn) {
+          // Remove connections to servers that don't exist, because
+          // we can't do anything with them.
+          if (!_.has(servers, conn.serverId)) {
+            $log.log("connectionsService - removing invalid connection (unknown serverId: " +
+                     conn.serverId + "): " + conn.id);
+            removeConnection(conn);
+          }
+        });
+      };
+      
       var serversPromise = httpkom.getLyskomServers().then(
         function(response) {
           $log.log("connectionsService - getServers() - success");
+          pruneInvalidConnections(response.data);
+          pruneInactiveConnections();
           return response.data;
         },
         function(response) {
