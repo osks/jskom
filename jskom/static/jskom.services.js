@@ -37,7 +37,7 @@ angular.module('jskom.services', ['jskom.settings']).
       var urlRegexp = /\b((?:[a-z][\w-]+:(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
       
       var lyskomTextNumberRegexp = /\b([0-9]{4,})\b/g;
-      var lyskomTextLinkRegexp = /<text\s+([0-9]+)\s*(?::.*)?\s*>/g;
+      var lyskomTextLinkRegexp = /<text\s+([0-9]+)\s*(?::[\s\S]*)?\s*>/g;
       
       var lineBreakRegexp = /\r?\n|\r/g;
       

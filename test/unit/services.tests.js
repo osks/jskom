@@ -50,6 +50,12 @@ suite('htmlFormattingService', function() {
       
       assert.equal(service.formatBody('<text 4711: lite text>'),
                    '<jskom:a text-no="4711">&lt;text 4711: lite text&gt;</jskom:a>');
+      
+      // This test shows that a line feed character inside a lyskom
+      // <text ..> tag will remain a line feed, and not be replaced by
+      // a <br> tag. This is because we don't handle nested tags.
+      assert.equal(service.formatBody('Man trycker C-c C-i C-l (tänk på det som "insert link" eller "infoga\nlänk") och svarar på frågorna. Eller så skriver man <text 4711: en\ntegelsten>.'),
+                   'Man trycker C-c C-i C-l (tänk på det som &quot;insert link&quot; eller &quot;infoga<br/>länk&quot;) och svarar på frågorna. Eller så skriver man <jskom:a text-no="4711">&lt;text 4711: en\ntegelsten&gt;</jskom:a>.');
     });
     
     test('should replace newlines with br tags', function() {
