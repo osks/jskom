@@ -143,7 +143,15 @@
       
       <hr />
       <footer>
-        <p style="display: inline-block;">
+        <p>
+          {% raw %}
+          <small ng-show="connection && connection.isLoggedIn()" ng-cloak>
+            Current session: <em>{{ connection.session.person|personName }}</em>
+          </small>
+          {% endraw %}
+        </p>
+        
+        <p>
           <small>
             <a href="https://github.com/osks/jskom">jskom</a>
             &copy; <a href="mailto:oskar@osd.se">Oskar Skoog</a> 2012
