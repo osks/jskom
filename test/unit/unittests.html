@@ -1,0 +1,45 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Unit Tests</title>
+  <link rel="stylesheet" href="../lib/mocha/mocha.css" />
+  
+  <!-- jskom libs -->
+  <script src="../../jskom/static/lib/jquery.js"></script>
+  <script src="../../jskom/static/lib/underscore.js"></script>
+  <script src="../../jskom/static/lib/angular.js"></script>
+  <script src="../../jskom/static/lib/angular-sanitize.js"></script>
+  
+  <!-- jskom -->
+  <script>
+    angular.module('jskom.settings', ['jskom.templates', 'jskom.httpkom']).
+      constant('jskomName', 'jskom').
+      constant('jskomVersion', 'test').
+      constant('httpkomServer', null).
+      constant('httpkomConnectionHeader', 'Httpkom-Connection');
+  </script>
+  <script src="../../jskom/static/jskom.js"></script>
+  <script src="../../jskom/static/jskom.connections.js"></script>
+  <script src="../../jskom/static/jskom.directives.js"></script>
+  <script src="../../jskom/static/jskom.filters.js"></script>
+  <script src="../../jskom/static/jskom.services.js"></script>
+  
+  <!-- Test libs -->
+  <script src="../lib/diff.js"></script>
+  <script src="../lib/mocha/mocha.js"></script>
+  <script>mocha.setup('tdd')</script>
+  <script src="../lib/chai.js"></script>
+  <script src="../lib/angular/angular-mocks.js"></script>
+  
+  <!-- Tests -->
+  <script src="services.tests.js"></script>
+</head>
+<body>
+  <div id="mocha"></div>
+  
+  <script>
+      if (window.mochaPhantomJS) { mochaPhantomJS.run(); }
+      else { mocha.run(); }
+  </script>
+</body>
+</html>
