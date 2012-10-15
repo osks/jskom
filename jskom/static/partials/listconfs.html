@@ -2,15 +2,8 @@
 
 <form>
   <label>Conference name</label>
-  <div class="input-append">
-    <span></span>
-    <input type="text" class="span7" ng-model="lookupName" />
-    <button type="submit" class="btn btn-primary"
-            ng-disabled="isLoading"
-            ng-click="listConfs()">
-      Search
-    </button>
-  </div>
+  
+  <input type="text" class="span8" ng-model="lookupName" />
   
   <div ng-hide="confs == null">
     <table class="table">
