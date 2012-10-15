@@ -857,9 +857,9 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         showText(textNo);
       });
       
-      $scope.$watch('conf', function(newConf) {
-        if (newConf) {
-          pageTitleService.set("Reading " + newConf.conf_name);
+      $scope.$watch('reader.unreadSize()', function(newUnreadCount) {
+        if (newUnreadCount && $scope.conf) {
+          pageTitleService.set(newUnreadCount + " unread in " + $scope.conf.conf_name);
         } else {
           pageTitleService.set("");
         }
