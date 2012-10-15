@@ -3,7 +3,7 @@
 <form>
   <label>Conference name</label>
   
-  <input type="text" class="span8" ng-model="lookupName" />
+  <input type="text" class="span8" ng-model="lookupName" jskom-autofocus/>
   
   <div ng-hide="confs == null">
     <table class="table">
@@ -25,7 +25,7 @@
       <li ng-class="{'disabled': currentPage < 1 }">
         <a ng-click="previousPage()">Previous</a>
       </li>
-      <li>{{currentPage+1}}/{{numberOfPages}}</li>
+      <li>{{currentPage+1}} / {{numberOfPages}}</li>
       <li ng-class="{'disabled': currentPage >= numberOfPages - 1}">
         <a ng-click="nextPage()">Next</a>
       </li>

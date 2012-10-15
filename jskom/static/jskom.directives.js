@@ -136,6 +136,25 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
       };
     }
   ]).
+  directive('jskomAutofocus', [
+    '$log', 'modernizr',
+    function($log, modernizr) {
+      return {
+        restrict: 'A',
+        link: function(scope, iElement, iAttrs, controller) {
+          var el = angular.element(iElement);
+          $log.log("touch: " + modernizr.touch);
+          if (!modernizr.touch) {
+            if (el.is('input') || el.is('textarea')) {
+              el.focus();
+            } else {
+              el.find('input[type=text],textarea,select').filter(':visible:first').focus();
+            }
+          }
+        }
+      };
+    }
+  ]).
   directive('jskomConfInput', [
     // Example:
     // <jskom:conf-input model="session.person.pers_no" only-pers></jskom:conf-input>

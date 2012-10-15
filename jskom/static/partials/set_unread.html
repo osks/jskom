@@ -2,7 +2,8 @@
 
 <form>
   <label>Conference</label>
-  <jskom:conf-input class="span8" conn="connection" model="confNo"></jskom:conf-input>
+  <jskom:conf-input class="span8" conn="connection" model="confNo" jskom-autofocus>
+  </jskom:conf-input>
   
   <label>Number of unread texts</label> 
   <input type="text" class="span8" name="unread" ng-model="noOfUnread" />
