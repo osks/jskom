@@ -12,7 +12,7 @@
     </button>
   </div>
   
-  <div ng-show="confs">
+  <div ng-hide="confs == null">
     <table class="table">
       <thead>
         <tr>
@@ -20,13 +20,15 @@
         </tr>
       </thead>
       <tbody>
+        <tr ng-show="confs.length == 0"><td>No matches</td></tr>
+        
         <tr ng-repeat="conf in confs | startFrom:currentPage*pageSize | limitTo:pageSize">
           <td><a href="/conferences/{{conf.conf_no}}">{{conf|confName}}</a></td>
         </tr>
       </tbody>
     </table>
     
-    <ul class="pager" ng-show="numberOfPages > 1">
+    <ul class="pager">
       <li ng-class="{'disabled': currentPage < 1 }">
         <a ng-click="previousPage()">Previous</a>
       </li>
