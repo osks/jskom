@@ -143,7 +143,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
         restrict: 'A',
         link: function(scope, iElement, iAttrs, controller) {
           var el = angular.element(iElement);
-          $log.log("touch: " + modernizr.touch);
+          //$log.log("touch: " + modernizr.touch);
           if (!modernizr.touch) {
             if (el.is('input') || el.is('textarea')) {
               el.focus();
