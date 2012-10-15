@@ -121,13 +121,13 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       };
       
-      /*keybindingService.bindGeneral('n l', 'Next LysKOM session', function() {
+      keybindingService.bindGeneral('N', 'Next LysKOM session', function() {
         $log.log("n l");
         $scope.$apply(function() {
           $scope.selectNextConnection();
         });
         return false;
-      });*/
+      });
     }
   ]).
   controller('SessionCtrl', [
@@ -420,7 +420,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         return false;
       });
       
-      keybindingService.bindPageSpecific('shift+r', 'Refresh', function(e) {
+      keybindingService.bindPageSpecific('R', 'Refresh', function(e) {
         $scope.$apply(function() {
           if (!$scope.isLoading) {
             $scope.load(false);
@@ -988,7 +988,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       };
       
-      keybindingService.bindPageSpecific('shift+r', 'Refresh', function(e) {
+      keybindingService.bindPageSpecific('R', 'Refresh', function(e) {
         $scope.$apply(function() {
           if (!$scope.readerisLoading) {
             $scope.refresh();

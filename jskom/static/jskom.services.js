@@ -202,7 +202,7 @@ angular.module('jskom.services', ['jskom.settings']).
           key = key.replace(new RegExp(sweChar, 'g'), usChar);
         });
         //$log.log("keybindingService - bindKey: " + key);
-        Mousetrap.bind(key, callbackFn, 'keydown');
+        Mousetrap.bind(key, callbackFn);
       };
       
       var unbindKey = function(key) {
