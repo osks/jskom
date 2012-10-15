@@ -106,6 +106,10 @@ angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
           templateUrl: templatePathProvider.path('gotoconf.html'),
           controller: 'GoToConfCtrl'
         }).
+        when('/conferences/list', {
+          templateUrl: templatePathProvider.path('listconfs.html'),
+          controller: 'ListConfsCtrl'
+        }).
         when('/conferences/set-unread', {
           templateUrl: templatePathProvider.path('set_unread.html'),
           controller: 'SetUnreadTextsCtrl'

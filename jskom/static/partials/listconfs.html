@@ -1,0 +1,51 @@
+<h3>List conferences</h3>
+
+<form>
+  <label>Conference name</label>
+  <div class="input-append">
+    <span></span>
+    <input type="text" class="span7" ng-model="lookupName" />
+    <button type="submit" class="btn btn-primary"
+            ng-disabled="isLoading"
+            ng-click="listConfs()">
+      Search
+    </button>
+  </div>
+  
+  <div ng-show="confs">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="conf in confs | startFrom:currentPage*pageSize | limitTo:pageSize">
+          <td><a href="/conferences/{{conf.conf_no}}">{{conf|confName}}</a></td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <ul class="pager" ng-show="numberOfPages > 1">
+      <li ng-class="{'disabled': currentPage < 1 }">
+        <a ng-click="previousPage()">Previous</a>
+      </li>
+      <li>{{currentPage+1}}/{{numberOfPages}}</li>
+      <li ng-class="{'disabled': currentPage >= numberOfPages - 1}">
+        <a ng-click="nextPage()">Next</a>
+      </li>
+    </ul>
+  </div>
+  
+  <div id="jskomControlBar" class="navbar">
+    <div class="navbar-inner">
+      <div class="pull-right">
+        <button type="submit" class="btn btn-primary"
+                ng-disabled="isLoading"
+                ng-click="listConfs()">
+          Search
+        </button>
+      </div>
+    </div>
+  </div>
+</form>

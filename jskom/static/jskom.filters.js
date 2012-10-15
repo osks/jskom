@@ -43,4 +43,13 @@ angular.module('jskom.filters', ['jskom.templates']).
         return server.name + " (" + server.host + ":" + server.port + ")";
       };
     }
-  ]);
+  ])
+  .filter('startFrom', function() {
+    return function(arr, start) {
+      if (arr) {
+        return arr.slice(parseInt(start));
+      } else {
+        return [];
+      }
+    }
+  });

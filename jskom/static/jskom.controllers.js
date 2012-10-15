@@ -675,6 +675,48 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       };
     }
   ]).
+  controller('ListConfsCtrl', [
+    '$scope', '$log', 'pageTitleService', 'conferencesService',
+    function($scope, $log, pageTitleService, conferencesService) {
+      pageTitleService.set("List conferences");
+      
+      $scope.lookupName = "";
+      $scope.confs = null;
+      $scope.isLoading = false;
+      $scope.pageSize = 10;
+      $scope.currentPage = 0;
+      $scope.numberOfPages = 1;
+      
+      $scope.listConfs = function() {
+        $scope.isLoading = true;
+        conferencesService.lookupConferences(
+          $scope.connection, $scope.lookupName, false, true).then(
+            function(response) {
+              $log.log("ListConfsCtrl - listConfs() - success")
+              $scope.isLoading = false;
+              
+              $scope.confs = _.sortBy(response.data.conferences, function(conf) {
+                return conf.conf_name;
+              });
+              $scope.currentPage = 0;
+              $scope.numberOfPages = Math.ceil($scope.confs.length / $scope.pageSize);
+            },
+            function(response) {
+              $log.log("ListConfsCtrl - listConfs() - error")
+              $scope.isLoading = false;
+              messagesService.showMessage('error', 'Failed to list conferences.', response.data);
+            });
+      };
+      
+      $scope.previousPage = function() {
+        $scope.currentPage = ($scope.currentPage < 1 ? 0 : $scope.currentPage - 1);
+      };
+      $scope.nextPage = function() {
+        $scope.currentPage = ($scope.currentPage >= $scope.numberOfPages -1 ?
+                              $scope.currentPage : $scope.currentPage + 1);
+      };
+    }
+  ]).
   controller('GoToConfCtrl', [
     '$scope', '$location', '$log', 'pageTitleService',
     function($scope, $location, $log, pageTitleService) {
