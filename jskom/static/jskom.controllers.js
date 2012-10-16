@@ -400,8 +400,21 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       });
       
-      $scope.$watch('unreadMemberships.length', function(newUnreadCount) {
-        pageTitleService.set(newUnreadCount + " unread conference(s)");
+      $scope.$watch('unreadMemberships', function(newUnreadMemberships) {
+        if (newUnreadMemberships != null) {
+          if (newUnreadMemberships.length == 0) {
+            pageTitleService.set("No unread conferences");
+          } else {
+            var unreadCount = _.reduce(newUnreadMemberships, function(count, membership) {
+              $log.log(membership);
+              return count + membership.no_of_unread;
+            }, 0);
+            
+            if (unreadCount == 0) unreadCount = "No";
+            pageTitleService.set(unreadCount + " unread in " + newUnreadMemberships.length +
+                                 " conference(s)");
+          }
+        }
       });
       
       $scope.readFirstConference = function() {
