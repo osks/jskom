@@ -1,4 +1,4 @@
-// Copyright (C) 2012 Oskar Skoog. Released under GPL.
+// Copyright (C) 2012 Oskar Skoog.
 
 'use strict';
 
