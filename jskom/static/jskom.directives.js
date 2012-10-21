@@ -105,15 +105,17 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           });
           
           scope.click = function($event) {
-            $event.stopPropagation();
-            $event.preventDefault();
-            
-            //$log.log("jskomA - click() - iAttrs.href: " + iAttrs.href);
-            
-            if (scope.textNo) {
-              scope.$emit(textEmit, scope.textNo, iAttrs.href);
-            } else if (scope.confNo) {
-              scope.$emit(confEmit, scope.confNo, iAttrs.href);
+            if (!($event.ctrlKey || $event.altKey || $event.shiftKey || $event.metaKey)) {
+              $event.stopPropagation();
+              $event.preventDefault();
+              
+              //$log.log("jskomA - click() - iAttrs.href: " + iAttrs.href);
+              
+              if (scope.textNo) {
+                scope.$emit(textEmit, scope.textNo, iAttrs.href);
+              } else if (scope.confNo) {
+                scope.$emit(confEmit, scope.confNo, iAttrs.href);
+              }
             }
           };
         }
