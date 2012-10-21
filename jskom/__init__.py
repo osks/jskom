@@ -31,7 +31,6 @@ assets = Environment(app)
 
 
 js_libs = Bundle('lib/jquery.js',
-                 'lib/json2.js',
                  'lib/mimeparse.js',
                  'lib/underscore.js',
                  'lib/mousetrap.js',
