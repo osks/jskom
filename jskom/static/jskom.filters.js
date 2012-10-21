@@ -3,14 +3,6 @@
 'use strict';
 
 angular.module('jskom.filters', ['jskom.templates']).
-  filter('jskomTemplate', [
-    'templatePath',
-    function(templatePath) {
-      return function(filename) {
-        return templatePath(filename);
-      };
-    }
-  ]).
   filter('confName', [
     function() {
       return function(conf) {

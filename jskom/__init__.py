@@ -51,11 +51,12 @@ js_bootstrap = Bundle('bootstrap/js/bootstrap.js',
 assets.register('js_bootstrap', js_bootstrap)
 
 js_jskom = Bundle('jskom.js',
-                  'jskom.services.js',
                   'jskom.controllers.js',
                   'jskom.connections.js',
-                  'jskom.filters.js',
                   'jskom.directives.js',
+                  'jskom.filters.js',
+                  'jskom.services.js',
+                  'jskom.templates.js',
                   filters='rjsmin',
                   output='gen/packed_jskom.js')
 assets.register('js_jskom', js_jskom)
