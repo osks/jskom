@@ -744,12 +744,14 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
   controller('ShowConfCtrl', [
     '$scope', '$routeParams', '$log', '$location',
     'pageTitleService', 'conferencesService', 'keybindingService', 'messagesService',
-    'membershipsService',
+    'membershipsService', 'textsService',
     function($scope, $routeParams, $log, $location,
              pageTitleService, conferencesService, keybindingService, messagesService,
-             membershipsService) {
+             membershipsService, textsService) {
       $scope.conf = null;
       $scope.isLoadingMembership = false;
+      $scope.isLoadingPresentation = false;
+      $scope.text = null;
       $scope.isJoining = false;
       $scope.isLeaving = false;
       $scope.membership = null;
@@ -757,11 +759,12 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       var getMembership = function(confNo) {
         $scope.isLoadingMembership = true;
         $scope.membership = null;
-        membershipsService.getMembership($scope.connection, confNo).then(
+        return membershipsService.getMembership($scope.connection, confNo).then(
             function(membership) {
               $log.log("ShowConfCtrl - getMembership(" + confNo + ") - success");
               $scope.isLoadingMembership = false;
               $scope.membership = membership;
+              return membership;
             },
             function(response) {
               $log.log("ShowConfCtrl - getMembership(" + confNo + ") - error");
@@ -774,6 +777,22 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
                                             response.data);
               }
             });
+      };
+      
+      var getPresentation = function(textNo) {
+        $scope.isLoadingPresentation = true;
+        textsService.getText($scope.connection, textNo).then(
+          function(response) {
+            $log.log("ShowConfCtrl - getPresentation(" + textNo + ") - success");
+            $scope.isLoadingPresentation = false;
+            $scope.text = response.data;
+          },
+          function(response) {
+            $log.log("ShowConfCtrl - getPresentation(" + textNo + ") - error");
+            $scope.isLoadingPresentation = false;
+            $scope.text = null;
+            messagesService.showMessage('error', 'Failed to get presentation.', response.data);
+          });
       };
       
       $scope.joinConf = function() {
@@ -814,7 +833,12 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         function(response) {
           $log.log("ShowConfCtrl - getConference(" + $routeParams.confNo + ") - success");
           $scope.conf = response.data;
-          getMembership($scope.conf.conf_no);
+          getMembership($scope.conf.conf_no).then(
+            function(response) {
+              if ($scope.conf.presentation !== 0) {
+                getPresentation($scope.conf.presentation);
+              }
+            });
           pageTitleService.set($scope.conf.name);
         },
         function(response) {

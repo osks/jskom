@@ -6,7 +6,8 @@
 
   <div>
     <ul class="nav nav-tabs">
-      <li class="active"><a data-target="#details" data-toggle="tab">Details</a></li>
+      <li class="active"><a data-target="#presentation" data-toggle="tab">Presentation</a></li>
+      <li><a data-target="#details" data-toggle="tab">Details</a></li>
       <li ng-hide="isLoadingMembership">
         <a data-target="#membership" data-toggle="tab">Membership</a>
       </li>
@@ -14,7 +15,21 @@
     
     <div class="tab-content">
       
-      <div class="tab-pane active" id="details">
+      <div class="tab-pane active" id="presentation">
+        <ng-switch on="conf.presentation">
+          <div ng-switch-default>
+            <span ng-show="isLoadingPresentation">Loading...</span>
+            <div ng-show="text">
+              <ng-include src="'text.html'|jskomTemplate"></ng-include>
+            </div>
+          </div>
+          <div ng-switch-when="0">
+            <em>{{ conf.name }} has no presentation.</em>
+          </div>
+        </ng-switch>
+      </div>
+      
+      <div class="tab-pane" id="details">
         <table class="table">
           <tr>
             <th>Conference number</th>
