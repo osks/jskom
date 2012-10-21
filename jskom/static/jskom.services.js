@@ -571,7 +571,7 @@ angular.module('jskom.services', ['jskom.settings']).
         },
         
         addMembership: function(conn, confNo) {
-          return this.addMembershipForPerson(conn, conn.getPersNo(), true, true);
+          return this.addMembershipForPerson(conn, conn.getPersNo(), confNo);
         },
         
         addMembershipForPerson: function(conn, persNo, confNo) {
