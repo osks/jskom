@@ -120,22 +120,6 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
       };
     }
   ]).
-  directive('jskomText', [
-    // Example: <jskom:text></jskom:text>
-    
-    // This basically just does what ng-include do, but without
-    // creating a new scope.
-    
-    '$log', 'templatePath',
-    function($log, templatePath) {
-      return {
-        restrict: 'E',
-        templateUrl: templatePath('text.html'),
-        link: function(scope, iElement, iAttrs, controller) {
-        }
-      };
-    }
-  ]).
   directive('jskomAutofocus', [
     '$log', 'modernizr',
     function($log, modernizr) {

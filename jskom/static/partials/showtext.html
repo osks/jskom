@@ -4,5 +4,8 @@
   </h3>
   
   <span ng-show="textIsLoading">Loading...</span>
-  <jskom:text></jskom:text>
+  <div ng-controller="TextCtrl" ng-show="text">
+    <ng-include src="'text.html'|jskomTemplate"></ng-include>
+    <ng-include src="'textcontrols.html'|jskomTemplate"></ng-include>
+  </div>
 </div>

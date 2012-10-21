@@ -406,7 +406,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             pageTitleService.set("No unread conferences");
           } else {
             var unreadCount = _.reduce(newUnreadMemberships, function(count, membership) {
-              $log.log(membership);
               return count + membership.no_of_unread;
             }, 0);
             
@@ -633,7 +632,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
              httpkomServer, keybindingService, readMarkingsService, textsService,
              messagesService) {
       $scope.readmarkIsLoading = false;
-      $scope.textMode = "default";
       
       $scope.writeComment = function() {
         if ($scope.text) {

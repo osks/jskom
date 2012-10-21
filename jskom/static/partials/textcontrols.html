@@ -1,0 +1,39 @@
+  <div>
+    <div class="form-actions">
+      <button class="btn" ng-click="writeComment()">
+        Comment
+      </button>
+      
+      <div class="pull-right">
+        <div class="btn-group">
+          <button class="btn dropdown-toggle" data-toggle="dropdown">
+            Actions
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li>
+              <a ng-click="showCommented()" ng-hide="showCommented == null">Show commented</a>
+            </li>
+            <li>
+              <a ng-click="showAllComments()" ng-hide="showAllComments == null">
+                Show all comments
+              </a>
+            </li>
+            <li ng-hide="text._is_unread == false">
+              <a ng-click="markAsRead()" ng-disabled="readmarkIsLoading">Mark as read</a>
+            </li>
+            <li ng-hide="text._is_unread == true">
+              <a ng-click="markAsUnread()" ng-disabled="readmarkIsLoading">Mark as unread</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="pull-right">
+        <span class="label label-info" ng-show="text._is_unread == true">Unread</span>
+        <span class="label label-success" ng-show="text._is_unread == false">Read</span>
+        &nbsp;
+      </div>
+    </div>
+    
+  </div>
