@@ -17,7 +17,7 @@ httpkom: https://github.com/osks/httpkom
 
 For required Python packages, see requirements.txt. Install them with:
 
-  $ pip install -r requirements.txt
+    $ pip install -r requirements.txt
 
 For running the tests from the Makefile in a console, you need
 PhantomJS. You can still run the tests in a regular browser if you
@@ -31,9 +31,9 @@ For information: The jskom tests uses the Mocha framework
 jskom. For mocha-phantomjs to work, mocha.js had to be patched to use
 a real diff library:
 
-  require.register("browser/diff.js", function(module, exports, require){
-    module.exports = JsDiff; // this row was added
-  });
+    require.register("browser/diff.js", function(module, exports, require){
+      module.exports = JsDiff; // this row was added
+    });
 
 
 Authors
