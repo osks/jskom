@@ -410,7 +410,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
               return count + membership.no_of_unread;
             }, 0);
             
-            if (unreadCount == 0) unreadCount = "No";
+            unreadCount = unreadCount == 0 ? "No" : unreadCount;
             pageTitleService.set(unreadCount + " unread in " + newUnreadMemberships.length +
                                  " conference(s)");
           }
@@ -913,12 +913,13 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       });
       
       $scope.$watch('reader.unreadSize()', function(newUnreadCount) {
-        if (newUnreadCount && $scope.conf) {
+        if ($scope.conf && newUnreadCount != null) {
+          newUnreadCount = newUnreadCount == 0 ? "No" : newUnreadCount;
           pageTitleService.set(newUnreadCount + " unread in " + $scope.conf.conf_name);
         } else {
           pageTitleService.set("");
         }
-      });
+      }, true);
       
       $scope.readNext = function() {
         if (!$scope.textIsLoading) {
