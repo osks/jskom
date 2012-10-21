@@ -38,6 +38,7 @@ angular.module('jskom.services', ['jskom.settings']).
       
       var lyskomTextNumberRegexp = /\b([0-9]{4,})\b/g;
       var lyskomTextLinkRegexp = /<text\s+([0-9]+)\s*(?::[^<>]*)?\s*>/g;
+      var lyskomConfLinkRegexp = /<(?:person|möte)\s+([0-9]+)\s*(?::[^<>]*)?\s*>/g;
       
       var lineBreakRegexp = /\r?\n|\r/g;
       
@@ -72,22 +73,27 @@ angular.module('jskom.services', ['jskom.settings']).
             {
               regexp: urlRegexp,
               func: function(match) {
-                return '<a target="_blank" href="' + match + '">' +
-                  escapeExpression(match) + '</a>';
+                return '<a target="_blank" href="' + match + '">' + escapeExpression(match) +
+                  '</a>';
               }
             },
             {
               regexp: lyskomTextLinkRegexp,
               func: function(match, p1) {
-                return '<jskom:a text-no="' + p1 + '">' +
-                  escapeExpression(match) + '</jskom:a>';
+                return '<jskom:a text-no="' + p1 + '">' + escapeExpression(match) + '</jskom:a>';
+              }
+            },
+            {
+              regexp: lyskomConfLinkRegexp,
+              func: function(match, p1) {
+                return '<a href="/conferences/' + p1 + '">' + escapeExpression(match) + '</a>';
               }
             },
             {
               regexp: lyskomTextNumberRegexp,
               func: function(match, p1) {
-                return '<jskom:a text-no="' + match + '">' +
-                  escapeExpression(match) + '</jskom:a>';
+                return '<jskom:a text-no="' + match + '">' + escapeExpression(match) +
+                  '</jskom:a>';
               },
             },
             {

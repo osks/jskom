@@ -42,6 +42,22 @@ suite('htmlFormattingService', function() {
                    'a text number <jskom:a text-no="1287624">1287624</jskom:a> in some text');
     });
     
+    test('should linkify lyskom conf link', function() {
+      assert.equal(service.formatBody('<möte12345>'), '&lt;möte12345&gt;');
+      
+      assert.equal(service.formatBody('<möte 67890>'),
+                   '<a href="/conferences/67890">&lt;möte 67890&gt;</a>');
+      
+      assert.equal(service.formatBody('<möte 6: Inlägg }t mig>'),
+                   '<a href="/conferences/6">&lt;möte 6: Inlägg }t mig&gt;</a>');
+
+      assert.equal(service.formatBody('<person  14506>'),
+                   '<a href="/conferences/14506">&lt;person  14506&gt;</a>');
+      
+      assert.equal(service.formatBody('<person 14506: Oskars Testperson>'),
+                   '<a href="/conferences/14506">&lt;person 14506: Oskars Testperson&gt;</a>');
+    });
+    
     test('should linkify lyskom text link', function() {
       assert.equal(service.formatBody('<text12345>'), '&lt;text12345&gt;');
       

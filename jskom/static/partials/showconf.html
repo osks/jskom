@@ -1,9 +1,14 @@
 <span ng-hide="conf">Loading...</span>
 <div ng-show="conf">
-  <h3>Conference: <em>{{ conf.name }}</em></h3>
+  <h3>
+    <span ng-show="conf.type.letterbox == 0">Conference:</span>
+    <span ng-show="conf.type.letterbox == 1">Person:</span>
+    <em>{{ conf.name }}</em>
+  </h3>
+  
   
   <p />
-
+  
   <div>
     <ul class="nav nav-tabs">
       <li class="active"><a data-target="#presentation" data-toggle="tab">Presentation</a></li>
@@ -45,7 +50,7 @@
           </tr>
           <tr>
             <th>Supervisor</th>
-            <td>{{conf.supervisor.conf_name}}</td>
+            <td>{{conf.supervisor|confName}}</td>
           </tr>
           <tr>
             <th>Presentation</th>
