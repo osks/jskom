@@ -31,9 +31,9 @@ For information: The jskom tests uses the Mocha framework
 jskom. For mocha-phantomjs to work, mocha.js had to be patched to use
 a real diff library:
 
-require.register("browser/diff.js", function(module, exports, require){
-  module.exports = JsDiff; // this row was added
-});
+  require.register("browser/diff.js", function(module, exports, require){
+    module.exports = JsDiff; // this row was added
+  });
 
 
 Authors
