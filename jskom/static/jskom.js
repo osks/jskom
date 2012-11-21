@@ -7,6 +7,10 @@
   var checkBrowser = function() {
     var supported = true;
     var ul = $("<ul></ul>");
+    if (!Modernizr.localstorage) {
+      supported = false;
+      $(ul).append("<li>localStorage</li>");
+    }
     if (!$.support.ajax) {
       supported = false;
       $(ul).append("<li>Ajax</li>");

@@ -322,33 +322,97 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
     }
   ]).
   factory('connectionsStorage', [
-    '$log', 'connectionFactory',
-    function($log, connectionFactory) {
+    '$log', 'connectionFactory', 'messagesService',
+    function($log, connectionFactory, messagesService) {
+      var hasStorage = false;
+      var storage;
+
+      function initialize() {
+        try {
+          if (!!window.localStorage) {
+            storage = window.localStorage;
+            storage.setItem("initializationTest", "123");
+            if (storage.getItem("initializationTest") == "123") {
+              hasStorage = true;
+            }
+          } else {
+            hasStorage = false;
+            messagesService.showMessage('warning', 'Failed to initialize local storage.');
+          }
+        } catch (e) {
+          hasStorage = false;
+          if (e instanceof QuotaExceededError) {
+            localStorage.clear();
+            messagesService.showMessage(
+              'warning', e.name + ': Failed to initialize local storage.',
+              e.message + " Try reloading the page.");
+          } else if (e instanceof SecurityError) {
+            messagesService.showMessage(
+              'error', e.name + ': Failed to initialize local storage.', e.message);
+          } else {
+            messagesService.showMessage(
+              'error', e.name + ': Failed to initialize local storage.', e.message);
+          }
+        }
+      }
+      
+      initialize();
+      
       return {
         saveCurrentConnectionId: function(id) {
-          localStorage.setItem("currentConnectionId", id);
+          if (!hasStorage) return;
+          
+          try {
+            storage.removeItem("currentConnectionId"); // temp hack
+            storage.setItem("currentConnectionId", id);
+          } catch (e) {
+            messagesService.showMessage(
+              'error', e.name + ': Failed to access local storage.', e.message);
+          }
         },
         
         loadCurrentConnectionId: function() {
-          return localStorage.getItem("currentConnectionId");
+          if (!hasStorage) return null;
+          
+          try {
+            return storage.getItem("currentConnectionId");
+          } catch (e) {
+            messagesService.showMessage(
+              'error', e.name + ': Failed to access local storage.', e.message);
+          }
         },
         
         loadConnections: function() {
-          // If there is list of connections in localStorage, create one.
-          var connections = angular.fromJson(localStorage.getItem("connections"));
-          connections = connections || {};
-          _.each(connections, function(connObj, id) {
-            connections[id] = connectionFactory.createConnection(connObj);
-          });
-          return connections;
+          if (!hasStorage) return {};
+          
+          // If there is list of connections in storage, create one.
+          try {
+            var connections = angular.fromJson(storage.getItem("connections"));
+            connections = connections || {};
+            _.each(connections, function(connObj, id) {
+              connections[id] = connectionFactory.createConnection(connObj);
+            });
+            return connections;
+          } catch (e) {
+            messagesService.showMessage(
+              'error', e.name + ': Failed to access local storage.', e.message);
+          }
         },
         
         saveConnections: function(connections) {
-          var objs = {};
-          _.each(connections, function(conn, id) {
-            objs[id] = conn.toObject();
-          });
-          localStorage.setItem("connections", angular.toJson(objs));
+          if (!hasStorage) return;
+          
+          try {
+            var objs = {};
+            _.each(connections, function(conn, id) {
+              objs[id] = conn.toObject();
+            });
+            storage.removeItem("connections"); // temp hack
+            storage.setItem("connections", angular.toJson(objs));
+          } catch (e) {
+            messagesService.showMessage(
+              'error', e.name + ': Failed to access local storage.', e.message);
+          }
         },
       };
     }
