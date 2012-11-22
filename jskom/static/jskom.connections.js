@@ -100,7 +100,13 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
           if (requireSession) {
             config.headers[httpkomConnectionHeader] = this.httpkomId;
           }
-
+          
+          // Safari in iOS 6 has excessive caching, so this is to make
+          // sure it doesn't cache our POST requests.
+          if (config.method != null && config.method.toLowerCase() == 'post') {
+            config.headers['Cache-Control'] = 'no-cache';
+          }
+          
           var request = $http(config);
           this._addPendingRequest(deferred, requireSession, requireLogin);
           request.then(
