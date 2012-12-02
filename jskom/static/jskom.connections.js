@@ -71,7 +71,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         },
         
         _cancelAllPendingRequestsRequiringLogin: function() {
-          $log.log("connectionFactory - http() - canceling all requests requiring login");
+          $log.log("HttpkomConnection - http() - canceling all requests requiring login");
           this._pendingRequests = _.filter(this._pendingRequests, function(req) {
             return !req.requireLogin;
           });
@@ -79,7 +79,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         
         _cancelAllPendingRequestsRequiringSession: function() {
           this._cancelAllPendingRequestsRequiringLogin();
-          $log.log("connectionFactory - http() - canceling all requests requiring session");
+          $log.log("HttpkomConnection - http() - canceling all requests requiring session");
           this._pendingRequests = _.filter(this._pendingRequests, function(req) {
             return !req.requireSession;
           });
@@ -122,7 +122,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
                 self._removePendingRequest(deferred);
                 
                 if (response.status == 401) {
-                  $log.log("connectionFactory - _request() - 401: ") + config.url;
+                  $log.log("HttpkomConnection - _request() - 401: ") + config.url;
                   self._cancelAllPendingRequestsRequiringLogin();
                   
                   // We are not logged in according to the server, so
@@ -132,7 +132,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
                     $rootScope.$broadcast('jskom:connection:changed', self);
                   }
                 } else if (response.status == 403) {
-                  $log.log("connectionFactory - _request() - 403: " + config.url);
+                  $log.log("HttpkomConnection - _request() - 403: " + config.url);
                   // Both the httpkomId and session are invalid.
                   self._cancelAllPendingRequestsRequiringSession();
                   
@@ -149,7 +149,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         },
         
         _createSessionAndRetry: function(originalRequest, requireSession, requireLogin) {
-          $log.log("connectionFactory - createSessionAndRetry(): " + originalRequest.url);
+          $log.log("HttpkomConnection - createSessionAndRetry(): " + originalRequest.url);
           var deferred = $q.defer();
           var promise = deferred.promise;
           var self = this;
@@ -157,12 +157,12 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
           if (this._createSessionPromise == null) {
             this._createSessionPromise = sessionsService.createSession(this).then(
               function(response) {
-                $log.log("connectionFactory - createSession - success");
+                $log.log("HttpkomConnection - createSession - success");
                 self._createSessionPromise = null;
                 return response;
               },
               function(response) {
-                $log.log("connectionFactory - createSession - failure");
+                $log.log("HttpkomConnection - createSession - failure");
               self._createSessionPromise = null;
                 return $q.reject(response);
               });
@@ -170,7 +170,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
           
           this._createSessionPromise.then(
             function() {
-              $log.log("connectionFactory - createSessionPromise - success");
+              $log.log("HttpkomConnection - createSessionPromise - success");
               // createSession succeeded, issue the original request.
               self._request(originalRequest, requireSession, requireLogin).then(
                 function(orgResponse) {
@@ -181,7 +181,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
                 });
             },
             function() {
-              $log.log("connectionFactory - createSessionPromise - failure");
+              $log.log("HttpkomConnection - createSessionPromise - failure");
               // createSession failed
               // todo: what should we really do here?
               deferred.reject({
@@ -231,7 +231,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
             // Requests that require login will not succeed after
             // createSession either, because the user has to
             // login. Fail them immediately.
-            $log.log("connectionFactory - http() - failing request that requires login");
+            $log.log("HttpkomConnection - http() - failing request that requires login");
             return $q.reject({
               data: null,
               status: 401,
@@ -239,10 +239,10 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
               config: config
             });
           } else if (requireSession && !this.isConnected()) {
-            $log.log("connectionFactory - http() - retrying request after create session");
+            $log.log("HttpkomConnection - http() - retrying request after create session");
             return this._createSessionAndRetry(config, requireSession, requireLogin);
           } else {
-            //$log.log("connectionFactory - http() - issuing request");
+            //$log.log("HttpkomConnection - http() - issuing request");
             return this._request(config, requireSession, requireLogin).then(
               null,
               function(response) {
@@ -546,7 +546,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         $log.log('connectionsService - on(jskom:connection:changed)');
         saveConnections();
       });
-      
+
       return {
         getServers: function() {
           return serversPromise;
