@@ -370,18 +370,28 @@ angular.module('jskom.services', ['jskom.settings']).
           return conn.http({ method: 'get', url: '/sessions/current/who-am-i'}, true, false);
         },
         
+        userIsActive: function(conn) {
+          return conn.http({ method: 'post', url: '/sessions/current/active'}, true, false).then(
+            function(response) {
+              $log.log("sessionsService - userIsActive() - success");
+              return response;
+            });
+        },
+        
         newPerson: function(persNo) {
           persNo = persNo || null;
           return { pers_name: '', pers_no: persNo, passwd: '' };
         },
         
         login: function(conn, person) {
+          var self = this;
           var request = { method: 'post', url: '/sessions/current/login',
                           data: { person: person } };
           return conn.http(request, true, false).then(
             function(response) {
               conn.session = response.data;
               conn.clearAllCaches();
+              self.userIsActive(conn);
               $rootScope.$broadcast('jskom:connection:changed', conn);
               return response;
             });
@@ -743,8 +753,8 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('readerFactory', [
-    '$log', 'textsService', 'readMarkingsService', 'messagesService',
-    function($log, textsService, readMarkingsService, messagesService) {
+    '$log', 'textsService', 'readMarkingsService', 'messagesService', 'sessionsService',
+    function($log, textsService, readMarkingsService, messagesService, sessionsService) {
       var markAsRead = function(conn, text) {
         readMarkingsService.createGlobalReadMarking(conn, text).then(
           function(response) {
@@ -773,6 +783,8 @@ angular.module('jskom.services', ['jskom.settings']).
         },
         
         shift: function() {
+          sessionsService.userIsActive(this.conn);
+          
           if (this.hasPending()) {
             return textsService.getText(this.conn, this._pending.shift()).then(
               function(response) {
