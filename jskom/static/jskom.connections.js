@@ -43,9 +43,39 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         
         this._createSessionPromise = null;
         this._pendingRequests = [];
+        
+        this._userActiveIntervalMs = 40*1000; // milliseconds
+        this._userActiveLastSent = null;
+        this._userActivePromise = null;
       };
       
       _.extend(HttpkomConnection.prototype, {
+        userIsActive: function() {
+          var self = this;
+          if (this._userActiveLastSent == null
+              || Date.now() - this._userActiveIntervalMs >= this._userActiveLastSent) {
+            if (this._userActivePromise == null) {
+              $log.log("HttpkomConnection - userIsActive(" + this.getPersNo() +
+                       ") - sending new user-active");
+              this._userActivePromise = sessionsService.userIsActive(this).then(
+                function(response) {
+                  self._userActivePromise = null;
+                  // Don't update last sent until we get a successful response
+                  self._userActiveLastSent = Date.now();
+                },
+                function(response) {
+                  self._userActivePromise = null;
+                });
+            } else {
+              //$log.log("HttpkomConnection - userIsActive(" + this.getPersNo() +
+              //         ") - there is an active request");
+            }
+          } else {
+            //$log.log("HttpkomConnection - userIsActive(" + this.getPersNo() +
+            //           ") - user-active was sent recently");
+          }
+        },
+        
         _addPendingRequest: function(deferred, requireSession, requireLogin) {
           this._pendingRequests.push({
             deferred: deferred,

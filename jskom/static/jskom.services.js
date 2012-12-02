@@ -371,7 +371,7 @@ angular.module('jskom.services', ['jskom.settings']).
         },
         
         userIsActive: function(conn) {
-          return conn.http({ method: 'post', url: '/sessions/current/active'}, true, false).then(
+          return conn.http({ method: 'post', url: '/sessions/current/active'}, true, true).then(
             function(response) {
               $log.log("sessionsService - userIsActive() - success");
               return response;
@@ -391,7 +391,7 @@ angular.module('jskom.services', ['jskom.settings']).
             function(response) {
               conn.session = response.data;
               conn.clearAllCaches();
-              self.userIsActive(conn);
+              conn.userIsActive();
               $rootScope.$broadcast('jskom:connection:changed', conn);
               return response;
             });
@@ -753,8 +753,8 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('readerFactory', [
-    '$log', 'textsService', 'readMarkingsService', 'messagesService', 'sessionsService',
-    function($log, textsService, readMarkingsService, messagesService, sessionsService) {
+    '$log', 'textsService', 'readMarkingsService', 'messagesService',
+    function($log, textsService, readMarkingsService, messagesService) {
       var markAsRead = function(conn, text) {
         readMarkingsService.createGlobalReadMarking(conn, text).then(
           function(response) {
@@ -783,7 +783,7 @@ angular.module('jskom.services', ['jskom.settings']).
         },
         
         shift: function() {
-          sessionsService.userIsActive(this.conn);
+          this.conn.userIsActive();
           
           if (this.hasPending()) {
             return textsService.getText(this.conn, this._pending.shift()).then(

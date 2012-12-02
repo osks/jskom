@@ -50,6 +50,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         if (conn !== curConn) {
           messagesService.clearAll();
           $location.url('/');
+          conn.userIsActive();
         }
         connectionsService.setCurrentConnection(conn);
       };
@@ -340,6 +341,13 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         return sortedMemberships;
       };
       
+      $scope.refresh = function() {
+        $scope.connection.userIsActive();
+        if (!$scope.isLoading) {
+          $scope.load(false);
+        }
+      };
+      
       $scope.load = function(allowCache) {
         $scope.unreadMemberships = [];
         $scope.isLoading = true;
@@ -389,7 +397,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       });
       
       // We watch the connection because this controller doesn't
-      // nesscerily get recreated when the connection changes (it is
+      // necessarily get recreated when the connection changes (it is
       // only recreated if the URL changes).
       $scope.$watch('connection', function(newConnection) {
         $scope.disableAutoRefresh();
@@ -433,9 +441,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       
       keybindingService.bindPageSpecific('R', 'Refresh', function(e) {
         $scope.$apply(function() {
-          if (!$scope.isLoading) {
-            $scope.load(false);
-          }
+          $scope.refresh();
         });
         return false;
       });
