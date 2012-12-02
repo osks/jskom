@@ -122,7 +122,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       };
       
       keybindingService.bindGeneral('N', 'Next LysKOM session', function() {
-        $log.log("n l");
         $scope.$apply(function() {
           $scope.selectNextConnection();
         });
