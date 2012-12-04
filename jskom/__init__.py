@@ -3,7 +3,7 @@
 
 import os
 
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
 from flask.ext.assets import Environment, Bundle
 
 import version
@@ -86,3 +86,8 @@ def index(path):
                            static_version=app.config['STATIC_VERSION'],
                            httpkom_server=app.config['HTTPKOM_SERVER'],
                            httpkom_connection_header=app.config['HTTPKOM_CONNECTION_HEADER'])
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
