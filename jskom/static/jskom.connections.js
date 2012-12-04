@@ -151,31 +151,54 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
                 deferred.reject(response);
                 self._removePendingRequest(deferred);
                 
-                if (response.status == 401) {
+                if (response.status === 401) {
                   $log.log("HttpkomConnection - _request() - 401: ") + config.url;
                   self._cancelAllPendingRequestsRequiringLogin();
-                  
                   // We are not logged in according to the server, so
                   // reset the person object.
-                  if (self.isLoggedIn()) {
-                    self.session.person = null;
-                    $rootScope.$broadcast('jskom:connection:changed', self);
-                  }
-                } else if (response.status == 403) {
+                  self._resetPerson();
+                } else if (response.status === 403) {
                   $log.log("HttpkomConnection - _request() - 403: " + config.url);
                   // Both the httpkomId and session are invalid.
                   self._cancelAllPendingRequestsRequiringSession();
-                  
-                  if (self.httpkomId || self.session) {
-                    self.httpkomId = null;
-                    self.session = null;
-                    $rootScope.$broadcast('jskom:connection:changed', self);
+                  self._resetSession();
+                } else if (response.status === 500) {
+                  $log.log("HttpkomConnection - _request() - 500: " + config.url);
+                  var error = response.data;
+                  if (_.isObject(error)
+                      && error.error_type === 'httpkom' && error.error_msg === '') {
+                    // Note: This is a work-around to make it easier
+                    // to handle httpkom sessions that dies
+                    // unexpectedly. We don't know why it happens and
+                    // it's hard to logout when it happens. This is
+                    // the only known case where we get this kind of
+                    // error, so this is an experiment to see if this
+                    // is improves the experience until we can solve
+                    // the real problem.
+                    
+                    self._cancelAllPendingRequestsRequiringSession();
+                    self._resetSession();
                   }
                 }
               }
             });
           
           return promise;
+        },
+        
+        _resetSession: function() {
+          if (this.httpkomId || this.session) {
+            this.httpkomId = null;
+            this.session = null;
+            $rootScope.$broadcast('jskom:connection:changed', this);
+          }
+        },
+        
+        _resetPerson: function() {
+          if (this.isLoggedIn()) {
+            this.session.person = null;
+            $rootScope.$broadcast('jskom:connection:changed', this);
+          }
         },
         
         _createSessionAndRetry: function(originalRequest, requireSession, requireLogin) {

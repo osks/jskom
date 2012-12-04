@@ -81,6 +81,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           function(response) {
             $log.log("ConnectionsCtrl - logout() - error");
             messagesService.showMessage('error', 'Error when logging out.', response.data);
+            connectionsService.removeConnection($scope.connection);
           });
       };
       
