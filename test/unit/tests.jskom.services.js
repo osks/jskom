@@ -32,6 +32,19 @@ suite('htmlFormattingService', function() {
                    '&lt;<a target="_blank" href="' + url + '">' + url + '</a>&gt;');
     });
     
+    test('should not include url: prefix in brackets', function() {
+      var url = 'http://jskom.osd.se/?baz=foo%20bar(barbapappa)';
+      
+      assert.equal(service.formatBody('<url:' + url + '>'),
+                   '<a target="_blank" href="' + url + '">&lt;url:' + url + '&gt;</a>');
+
+      assert.equal(service.formatBody('<url: ' + url + ' >'),
+                   '<a target="_blank" href="' + url + '">&lt;url: ' + url + ' &gt;</a>');
+      
+      assert.equal(service.formatBody('<URL:' + url + '>'),
+                   '<a target="_blank" href="' + url + '">&lt;URL:' + url + '&gt;</a>');
+    });
+    
     test('should linkify text number', function() {
       assert.equal(service.formatBody('123'), '123');
       

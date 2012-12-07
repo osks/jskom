@@ -37,8 +37,9 @@ angular.module('jskom.services', ['jskom.settings']).
       var urlRegexp = /\b((?:[a-z][\w-]+:(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
       
       var lyskomTextNumberRegexp = /\b([0-9]{4,})\b/g;
-      var lyskomTextLinkRegexp = /<text\s+([0-9]+)\s*(?::[^<>]*)?\s*>/g;
-      var lyskomConfLinkRegexp = /<(?:person|möte)\s+([0-9]+)\s*(?::[^<>]*)?\s*>/g;
+      var lyskomTextLinkRegexp = /<text\s+([0-9]+)\s*(?::[^<>]*)?\s*>/gi;
+      var lyskomConfLinkRegexp = /<(?:person|möte)\s+([0-9]+)\s*(?::[^<>]*)?\s*>/gi;
+      var lyskomUrlLinkRegexp = /<url:?\s*([^\s>]+)\s*>/gi;
       
       var lineBreakRegexp = /\r?\n|\r/g;
       
@@ -71,6 +72,13 @@ angular.module('jskom.services', ['jskom.settings']).
         formatBody: function(rawBody) {
           var escaped = replaceMultiple(rawBody, [
             {
+              regexp: lyskomUrlLinkRegexp,
+              func: function(match, p1) {
+                return '<a target="_blank" href="' + p1 + '">' + escapeExpression(match) +
+                  '</a>';
+              }
+            },
+            {
               regexp: urlRegexp,
               func: function(match) {
                 return '<a target="_blank" href="' + match + '">' + escapeExpression(match) +
@@ -94,7 +102,7 @@ angular.module('jskom.services', ['jskom.settings']).
               func: function(match, p1) {
                 return '<jskom:a text-no="' + match + '">' + escapeExpression(match) +
                   '</jskom:a>';
-              },
+              }
             },
             {
               regexp: lineBreakRegexp,
