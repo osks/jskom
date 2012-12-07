@@ -1,8 +1,9 @@
 <span ng-show="readerIsLoading">Loading...</span>
 <div ng-show="reader">
-  <h3 class="jskomNoWrap">
-    <em>{{ reader.unreadSize() }}</em> unread in <em>{{ conf.conf_name }}</em>
-  </h3>
+  <h1 class="jskomNoWrap">
+    {{ reader.unreadSize() }} unread in
+    <a href="/conferences/{{r.recpt.conf_no}}">{{ conf|confName }}</a>
+  </h1>
   
   <span ng-show="textIsLoading">Loading...</span>
   <div ng-controller="TextCtrl" ng-show="text">
