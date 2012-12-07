@@ -34,7 +34,7 @@
             <select class="span2" ng-model="commentTo.type"
                     ng-options="ct.type as ct.name for ct in commentTypes"></select>
             to
-            <input type="text" class="span2" ng-model="commentTo.text_no" />
+            <input type="number" class="span2" ng-model="commentTo.text_no" />
           </div>
         </fieldset>
       </div>
@@ -68,12 +68,13 @@
       <p/>
       
       <label>Subject</label>
-      <input class="span8" type="text" name="subject" ng-model="text.subject" />
+      <input class="span8" type="text" name="subject" ng-model="text.subject"
+             spellcheck="true" autocorrect="on" autocapitalize="on" />
     </div>
   </div>
   
   <label>Body</label>
-  <textarea class="span8" name="body" rows="5" spellcheck="true"
-            ng-model="text.body" jskom-autofocus>
+  <textarea class="span8" name="body" rows="5" ng-model="text.body" jskom-autofocus
+            spellcheck="true" autocorrect="on" autocapitalize="on">
   </textarea>
 </div>

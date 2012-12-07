@@ -3,7 +3,8 @@
 <form>
   <label>Conference name</label>
   
-  <input type="text" class="span8" ng-model="lookupName" jskom-autofocus/>
+  <input type="text" class="span8" ng-model="lookupName" jskom-autofocus
+         spellcheck="false" autocorrect="off" autocapitalize="off"/>
   
   <div ng-hide="confs == null">
     <table class="table">

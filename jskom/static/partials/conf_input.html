@@ -1,6 +1,6 @@
 <div class="jskomConfInput">
   <div ng-hide="matches" class="input-append jskomConfInputLookup">
-    <input type="text" spellcheck="false"
+    <input type="text" spellcheck="false" autocorrect="off" autocapitalize="off"
            ng-disabled="conf"
            ng-model="lookup" />
     <button type="button" class="btn btn-info" tabindex="-1"
@@ -12,7 +12,7 @@
   </div>
   
   <div ng-show="matches.length == 1" class="input-append jskomConfInputConfName">
-    <input type="text" class="" tabindex="-1" readonly
+    <input type="text" class="" tabindex="-1" readonly autocorrect="off" autocapitalize="off"
            ng-disabled="!conf"
            ng-model="conf.conf_name" />
     <button type="button" class="btn btn-warning"
