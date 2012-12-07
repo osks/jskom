@@ -305,9 +305,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
     }
   ]).
   controller('HelpCtrl', [
-    '$scope', '$log', 'keybindingService',
-    function($scope, $log, keybindingService) {
+    '$scope', '$log', 'keybindingService', 'modernizr',
+    function($scope, $log, keybindingService, modernizr) {
       $scope.isVisible = false;
+      $scope.hasTouch = modernizr.touch;
       
       keybindingService.bindGeneral('?', 'Show this help (toggle)', function(e) {
         $scope.$apply(function() {
