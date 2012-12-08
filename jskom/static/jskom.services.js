@@ -205,24 +205,12 @@ angular.module('jskom.services', ['jskom.settings']).
         }
       };
       
-      var swedishToUS = {
-        'å': '[',
-        'ä': '\'',
-        'ö': ';'
-      };
-      
       var bindKey = function(key, callbackFn) {
-        _.each(swedishToUS, function(usChar, sweChar) {
-          key = key.replace(new RegExp(sweChar, 'g'), usChar);
-        });
         //$log.log("keybindingService - bindKey: " + key);
         Mousetrap.bind(key, callbackFn);
       };
       
       var unbindKey = function(key) {
-        _.each(swedishToUS, function(usChar, sweChar) {
-          key = key.replace(new RegExp(sweChar, 'g'), usChar);
-        });
         //$log.log("keybindingService - unbindKey: " + key);
         Mousetrap.unbind(key);
       };
