@@ -14,6 +14,23 @@ angular.module('jskom.filters', ['jskom.templates']).
       }
     }
   ]).
+  filter('confType', [
+    function() {
+      return function(conf) {
+        if (conf) {
+          if (conf.type.letterbox === 0) {
+            return "Conference";
+          } else if (conf.type.letterbox === 1) {
+            return "Person";
+          } else {
+            return "Unknown";
+          }
+        } else {
+          return "";
+        }
+      }
+    }
+  ]).
   filter('personName', [
     function() {
       return function(person) {
