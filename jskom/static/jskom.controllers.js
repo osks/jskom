@@ -432,7 +432,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       };
       
-      keybindingService.bindPageSpecific(['space'], 'Read first conference', function(e) {
+      keybindingService.bindPageSpecific('space', 'Read first conference', function(e) {
         if (_.size($scope.unreadMemberships) > 0) {
           $scope.$apply(function() {
             $scope.readFirstConference();
@@ -1041,7 +1041,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       });
       
       keybindingService.bindPageSpecific([','/*, 'å k'*/], 'Show commented', function() {
-        $log.log("å k");
+        //$log.log("å k");
         $scope.$apply(function() {
           $scope.showCommented();
         });
