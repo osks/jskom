@@ -2,7 +2,7 @@
 <div ng-show="reader">
   <h1 class="jskomNoWrap">
     {{ reader.unreadSize() }} unread in
-    <a href="/conferences/{{r.recpt.conf_no}}">{{ conf|confName }}</a>
+    <a href="/conferences/{{conf.conf_no}}">{{ conf|confName }}</a>
   </h1>
   
   <span ng-show="textIsLoading">Loading...</span>
