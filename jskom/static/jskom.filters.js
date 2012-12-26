@@ -52,13 +52,41 @@ angular.module('jskom.filters', ['jskom.templates']).
         return server.name + " (" + server.host + ":" + server.port + ")";
       };
     }
-  ])
-  .filter('startFrom', function() {
-    return function(arr, start) {
-      if (arr) {
-        return arr.slice(parseInt(start));
-      } else {
-        return [];
-      }
+  ]).
+  filter('startFrom', [
+    function() {
+      return function(arr, start) {
+        if (arr) {
+          return arr.slice(parseInt(start));
+        } else {
+          return [];
+        }
+      };
     }
-  });
+  ]).
+  filter('alertBoxClass', [
+    function() {
+      return function(level) {
+        if (level === 'error') {
+          return 'alert';
+        } else if (level === 'success') {
+          return 'success';
+        } else {
+          return '';
+        }
+      };
+    }
+  ]).
+  filter('capitalize', [
+    function() {
+      return function(str) {
+        if (_.isString(str)) {
+          return str.charAt(0).toUpperCase() + str.slice(1);
+        } else {
+          return str;
+        }
+      };
+    }
+  ]);
+
+

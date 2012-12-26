@@ -1,73 +1,84 @@
-  <strong class="jskomNoWrap">
-    <jskom:a text-no="{{ text.text_no }}">{{ text.text_no }}</jskom:a>
-    / {{ text.creation_time }} / {{ text.author|personName }}
-  </strong>
-  
-  <div>
-    <div class="jskomNoWrap" ng-repeat="ct in text.comment_to_list">
-      <span class="jskomCapitalize">{{ ct.type }}</span> to
+<div>
+  <dl>
+    <dd>
+      <strong class="jskomNoWrap">
+        <jskom:a text-no="{{ text.text_no }}">{{ text.text_no }}</jskom:a>
+        / {{ text.creation_time }} / {{ text.author|personName }}
+      </strong>
+    </dd>
+    
+    <dd class="jskomNoWrap" ng-repeat="ct in text.comment_to_list">
+      <span class="secondary label">{{ ct.type|capitalize }}</span> to
       <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
       by {{ ct.author|personName }}
+    </dd>
+    
+    <dd ng-repeat="r in text.recipient_list">
+      <span class="secondary label">{{ r.type|capitalize }}:</span>
+      
+      <a href="/conferences/{{r.recpt.conf_no}}">{{ r.recpt|confName }}</a>
+      <span ng-show="r.sent_by">
+        <br/>Sent by: {{ r.sent_by|personName }}
+        <br/>Sent at: {{ r.sent_at }}
+      </span>
+    </dd>
+  </dl>
+  
+  <div class="row">
+    <div class="eight mobile-three columns">
+      <p><span class="label">Subject:</span> {{ text.subject }}</p>
     </div>
     
-    <table class="jskomTextRecipients">
-      <tr ng-repeat="r in text.recipient_list">
-        <td><span class="jskomCapitalize">{{ r.type }}:</span></td>
-        <td>
-          <a href="/conferences/{{r.recpt.conf_no}}">{{ r.recpt|confName }}</a>
-          <span ng-show="r.sent_by">
-            <br/>Sent by: {{ r.sent_by|personName }}
-            <br/>Sent at: {{ r.sent_at }}
-          </span>
-        </td>
-      </tr>
-    </table>
-    
-    <div>Subject: {{ text.subject }}</div>
-    
-    <div class="btn-group pull-right" data-toggle="buttons-radio"
-         ng-show="text.jskomBodyType == 'text'">
-      <button ng-click="textMode = 'default'" class="btn active">
-        <i class="icon-align-left"></i>
-      </button>
-      <button ng-click="textMode = 'raw'" class="btn">
-        <i class="icon-align-justify"></i>
-      </button>
+    <div class="four mobile-one columns">
+      <ul class="button-group right" data-toggle="buttons-radio"
+          ng-show="text.jskomBodyType == 'text'">
+        <li>
+          <a ng-click="textMode = 'default'" class="small secondary button active">
+            <i class="icon-align-left"></i>
+          </a>
+        </li>
+        <li>
+          <a ng-click="textMode = 'raw'" class="small secondary button">
+            <i class="icon-align-justify"></i>
+          </a>
+        </li>
+      </ul>
     </div>
-    
-    <div>
-      <hr />
-      <ng-switch on="text.jskomBodyType">
-        <div ng-switch-default>
-          [unknown content-type: &quot;{{ text.content_type }}&quot;]
-        </div>
-        <div ng-switch-when="image"><img ng-src="{{ text.jskomImageUrl }}" /></div>
-        <div ng-switch-when="text">
-          <ng-switch on="textMode">
-            <div class="jskomTextBody" ng-switch-default jskom-bind-body="text.body"></div>
-            <pre ng-switch-when="raw" jskom-bind-body="text.body"></pre>
-            <!--<div ng-switch-when="html" ng-bind-html="text.body"></div>-->
-          </ng-switch>
-        </div>
-      </ng-switch>
-      
-      <hr />
-      
-      <table class="jskomFastReplys" ng-show="text.jskomFastReplies">
-        <caption>Remarks</caption>
-        <tr ng-repeat="ai in text.jskomFastReplies">
-          <td>
-            &quot;<span>{{ ai.data }}</span>&quot;
-            / <span>{{ ai.creator|personName }}</span>
-          </td>
-        </tr>
-      </table>
-      
-      <div class="jskomNoWrap" ng-repeat="ci in text.comment_in_list">
-        <span class="jskomCapitalize">{{ ci.type }}</span> in
-        <jskom:a text-no="{{ ci.text_no }}">{{ ci.text_no }}</jskom:a>
-        by {{ ci.author|personName }}
-      </div>
-    </div>
-
   </div>
+  
+  <hr />
+  
+  <ng-switch on="text.jskomBodyType">
+    <div ng-switch-default>
+      [unknown content-type: &quot;{{ text.content_type }}&quot;]
+    </div>
+    <div ng-switch-when="image"><img ng-src="{{ text.jskomImageUrl }}" /></div>
+    <div ng-switch-when="text">
+      <ng-switch on="textMode">
+        <div class="jskomTextBody" ng-switch-default jskom-bind-body="text.body"></div>
+        <pre ng-switch-when="raw" jskom-bind-body="text.body"></pre>
+        <!--<div ng-switch-when="html" ng-bind-html="text.body"></div>-->
+      </ng-switch>
+    </div>
+  </ng-switch>
+  
+  <hr />
+  
+  <div ng-show="text.jskomFastReplies">
+    <span class="secondary label">Remarks</span>
+    <dl>
+      <dd ng-repeat="ai in text.jskomFastReplies">
+        &quot;<span>{{ ai.data }}</span>&quot;
+        / <span>{{ ai.creator|personName }}</span>
+      </dd>
+    </dl>
+  </div>
+  
+  <dl>
+    <dd class="jskomNoWrap" ng-repeat="ci in text.comment_in_list">
+      <span class="secondary label">{{ ci.type|capitalize }}</span> in
+      <jskom:a text-no="{{ ci.text_no }}">{{ ci.text_no }}</jskom:a>
+      by {{ ci.author|personName }}
+    </dd>
+  </dl>
+</div>

@@ -1,10 +1,10 @@
 <h1>Unread conferences</h1>
 
-<span ng-show="isLoading">Loading...</span>
+<p ng-show="isLoading">Loading...</p>
 <div ng-hide="isLoading">
-  <span ng-hide="unreadMemberships">Nothing unread</span>
+  <p ng-hide="unreadMemberships">Nothing unread</p>
   
-  <table class="table table-striped" ng-show="unreadMemberships">
+  <table class="twelve" ng-show="unreadMemberships">
     <thead>
       <tr>
         <th>Conference</th>
@@ -26,13 +26,16 @@
   </table>
 </div>
 
-<div id="jskomControlBar" class="navbar">
-  <div class="navbar-inner">
-    <button class="btn"
-            ng-disabled="isLoading"
-            ng-click="refresh()">
-      <i class="icon-repeat"></i>
-    </button>
+<div id="jskomControlBar" class="panel">
+  <div class="row">
+    <div class="three mobile-one columns">
+      <button type="button" class="secondary button"
+              ng-disabled="isLoading"
+              ng-click="refresh()">
+        <i class="foundicon-general-refresh"></i>
+      </button>
+    </div>
+    
     <!--span>
       <button class="btn active"
               ng-show="autoRefreshing"
@@ -46,8 +49,11 @@
       </button>
     </span-->
     
-    <div class="pull-right">
-      <button class="btn btn-primary"
+    <div class="three mobile-one columns"></div>
+    <div class="three mobile-one columns"></div>
+    
+    <div class="three mobile-one columns">
+      <button type="submit" class="button right"
               ng-disabled="!(unreadMemberships && unreadMemberships.length > 0)"
               ng-click="readFirstConference()">
         Read first

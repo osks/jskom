@@ -1,35 +1,33 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="jskom">
+
+<html class="no-js" lang="en" ng-app="jskom">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
     <link rel="shortcut icon" href="/favicon.ico">
     
-    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/app.css') }}">
     
-    <style>
-      body {
-        /* to make the container go all the way to the bottom of the fixed topbar */
-        padding-top: 40px;
-      }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/foundicons/general/general_foundicons.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/foundicons/general_enclosed/general_enclosed_foundicons.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/foundicons/social/social_foundicons.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/foundicons/accessibility/accessibility_foundicons.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/font-awesome.css') }}">
     
-    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap-responsive.min.css') }}" rel="stylesheet" />
     
-    {% assets "css_jskom" %}
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,300' rel='stylesheet' type='text/css'>
+    
+    
+    {# % assets "css_jskom" %}
     <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}" />
-    {%- endassets %}
+    {%- endassets % #}
     
     {% assets "js_libs" %}
     <script type="text/javascript" src="{{ ASSET_URL }}"></script>
     {%- endassets %}
     
     {% assets "js_angular" %}
-    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-    {%- endassets %}
-    
-    {% assets "js_bootstrap" %}
     <script type="text/javascript" src="{{ ASSET_URL }}"></script>
     {%- endassets %}
     
@@ -40,131 +38,49 @@
     <title>jskom</title>
   </head>
   <body ng-controller="ConnectionsCtrl">
-    <div id="jskomTopBar" class="navbar navbar-fixed-top navbar-inverse" ng-cloak>
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="brand hidden-phone" href="/">jskom</a>
-          
-          <ul class="nav" ng-show="connection.isLoggedIn()" ng-cloak>
-            <li>
-              <a class="home" href="/">
-                <i class="icon-home icon-white"></i>
-                <span class="hidden-phone">Home</span>
-              </a>
-            </li>
-            
-            <li class="dropdown">
-              <a class="dropdown-toggle" data-toggle="dropdown">
-                Texts
-                <b class="caret"></b>
-              </a>
-              <ul class="dropdown-menu">
-                <li><a href="/texts/new">New text</a></li>
-              </ul>
-            </li>
-            
-            <li class="dropdown">
-              <a class="dropdown-toggle" data-toggle="dropdown">
-                <span class="hidden-phone">Conferences <b class="caret"></b></span>
-                <span class="visible-phone">Confs <b class="caret"></b></span>
-              </a>
-              <ul class="dropdown-menu">
-                <li><a href="/conferences/go-to">Go to conference</a></li>
-                <li><a href="/conferences/list">List conferences</a></li>
-                <li><a href="/conferences/set-unread">Set unread</a></li>
-              </ul>
-            </li>
-          </ul>
-          
-          {% raw %}
-          <ul class="nav pull-right" ng-cloak>
-            <li class="dropdown">
-              <a class="dropdown-toggle" data-toggle="dropdown">
-                <span class="hidden-phone">
-                  <span ng-show="connection.isLoggedIn()">
-                    {{ connection.session.person|personName }}
-                  </span>
-                  <span ng-hide="connection.isLoggedIn()">
-                    (Not logged in)
-                  </span>
-                </span>
-                <i class="icon-user icon-white"></i>
-                <b class="caret"></b>
-              </a>
-              <ul class="dropdown-menu">
-                <li ng-show="connection.isLoggedIn()">
-                  <a ng-click="logout()">Logout {{conn.session.person|personName}}</a>
-                </li>
-                
-                <li class="divider" ng-show="connection.isLoggedIn()"></li>
-                
-                <li class="nav-header">Sessions</li>
-                <li ng-repeat="conn in connections">
-                  <a ng-click="selectConnection(conn)">
-                    <i class="icon-user" ng-show="conn.id == connection.id"></i>
-                    <span ng-show="conn.isLoggedIn()">
-                      {{conn.session.person|personName}}
-                    </span>
-                    <span ng-hide="conn.isLoggedIn()">(Not logged in)</span>
-                  </a>
-                </li>
-                <li class="divider"></li>
-                <li>
-                  <a ng-click="newConnection()">New session...</a>
-                </li>
-              </ul>
-            </li>
-          </ul>
-          {% endraw %}
-          
+    
+    <jskom-top-bar></jskom-top-bar>
+    
+    <ng-switch on="connection.isLoggedIn()" ng-show="connection" ng-cloak>
+      <div class="row" ng-switch-default>
+        <div class="six columns">
+          <ng-include src="'messages.html'|jskomTemplate"></ng-include>
+          <ng-include src="'newsession.html'|jskomTemplate"></ng-include>
         </div>
       </div>
-    </div>
-    
-    <div class="container">
-      <div ng-show="connection" ng-cloak>
-        <ng-switch on="connection.isLoggedIn()">
-          <div class="row" ng-switch-default>
-            <div class="span6">
-              <ng-include src="'messages.html'|jskomTemplate"></ng-include>
-              <ng-include src="'newsession.html'|jskomTemplate"></ng-include>
-            </div>
-          </div>
-          
-          <div class="row" ng-switch-when="true">
-            <div class="span8" ng-controller="SessionCtrl">
-              <ng-include src="'messages.html'|jskomTemplate"></ng-include>
-              <ng-view></ng-view>
-            </div>
-            
-            <div class="span4 hidden-phone">
-              <ng-include src="'help.html'|jskomTemplate"></ng-include>
-            </div>
-          </div>
-        </ng-switch>
-      </div>
       
-      <hr />
-      <footer>
-        <p>
-          {% raw %}
-          <small ng-show="connection && connection.isLoggedIn()" ng-cloak>
-            Current session: <em>{{ connection.session.person|personName }}</em>
-          </small>
-          {% endraw %}
-        </p>
+      <div class="row" ng-switch-when="true">
+        <div class="eight columns" ng-controller="SessionCtrl">
+          <ng-include src="'messages.html'|jskomTemplate"></ng-include>
+          <ng-view></ng-view>
+        </div>
         
-        <p>
-          <small>
+        <div class="four columns">
+          <ng-include src="'help.html'|jskomTemplate"></ng-include>
+        </div>
+      </div>
+    </ng-switch>
+    
+    <div class="row">
+      <div class="twelve columns">
+        <hr />
+        <footer>
+          <p ng-show="connection && connection.isLoggedIn()" ng-cloak>
+            {% raw %}
+            Current session: <em>{{ connection.session.person|personName }}</em>
+            {% endraw %}
+          </p>
+          
+          <p>
             <a href="https://github.com/osks/jskom">jskom</a>
             &copy; <a href="mailto:oskar@osd.se">Oskar Skoog</a> 2012
             <span ng-cloak>
               {# This is in the jinja2 template, not Angular. #}
               &#8212; version {{ version }}
             </span>
-          </small>
-        </p>
-      </footer>
+          </p>
+        </footer>
+      </div>
     </div>
     
     <script type="text/javascript">
@@ -188,5 +104,29 @@
           }
         ]);
     </script>
+    
+    
+    <!-- Included JS Files (Uncompressed) -->
+    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.cookie.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.event.move.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.event.swipe.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.foundation.accordion.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.foundation.alerts.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.foundation.buttons.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.foundation.clearing.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.foundation.forms.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.foundation.joyride.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.foundation.magellan.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.foundation.mediaQueryToggle.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.foundation.navigation.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.foundation.orbit.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.foundation.reveal.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.foundation.tabs.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.foundation.tooltips.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.placeholder.js') }}"></script>
+    
+    <!-- Application Javascript, safe to override -->
+    <script src="{{ url_for('static', filename='javascripts/foundation/app.js') }}"></script>
+    
   </body>
 </html>

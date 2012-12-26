@@ -10,29 +10,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
     function($scope, $rootScope, $log, $location,
              connectionFactory, connectionsService, httpkom, messagesService, sessionsService,
              keybindingService) {
-      
-      // This is a work-around for Twitter Bootstrap dropdown plugin
-      // incompatibility with AngularJS. The dropdown plugin stops
-      // AngularJS from capturing link clicks, which causes page
-      // reloads. Angular in its turn stops the clicks from closing
-      // the dropdown when it updates the location. We want to do both
-      // (but not for a.dropdown-toggle)!  TODO: Make a directive of
-      // this. This is the wrong place for this code.
-      jQuery('.dropdown').on('click', function(event) {
-        var aElement = jQuery(event.target).closest('a');
-        if (!aElement.hasClass('dropdown-toggle')) {
-          var url = aElement.attr('href');
-          if (url) {
-            $scope.$apply(function(scope) {
-              $location.url(url);
-            });
-          }
-          jQuery(this).removeClass('open');
-          event.preventDefault();
-        }
-      });
-      
-      
       $scope.newConnection = function() {
         connectionsService.newConnectionPromise().then(
           function(conn) {
@@ -763,6 +740,20 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.isLeaving = false;
       $scope.membership = null;
       
+
+      $scope.activeTab = 'presentation';
+      $scope.selectTab = function(tab) {
+        $scope.activeTab = tab;
+      };
+      
+      $scope.isTabActive = function(tab) {
+        if ($scope.activeTab == tab) {
+          return 'active';
+        } else {
+          return '';
+        }
+      };
+
       var getMembership = function(confNo) {
         $scope.isLoadingMembership = true;
         $scope.membership = null;

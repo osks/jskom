@@ -1,0 +1,160 @@
+/* font-face */
+@font-face {
+  font-family: "AccessibilityFoundicons";
+  src: url("../../../fonts/foundicons/accessibility/accessibility_foundicons.eot");
+  src: url("../../../fonts/foundicons/accessibility/accessibility_foundicons.eot?#iefix") format("embedded-opentype"), url("../../../fonts/foundicons/accessibility/accessibility_foundicons.woff") format("woff"), url("../../../fonts/foundicons/accessibility/accessibility_foundicons.ttf") format("truetype"), url("../../../fonts/foundicons/accessibility/accessibility_foundicons.svg#AccessibilityFoundicons") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* global foundicon styles */
+/* line 7, ../../../scss/foundicons/accessibility/accessibility_foundicons.scss */
+[class*="foundicon-accessibility-"] {
+  display: inline;
+  width: auto;
+  height: auto;
+  line-height: inherit;
+  vertical-align: baseline;
+  background-image: none;
+  background-position: 0 0;
+  background-repeat: repeat;
+}
+
+/* line 17, ../../../scss/foundicons/accessibility/accessibility_foundicons.scss */
+[class*="foundicon-accessibility-"]:before {
+  font-family: "AccessibilityFoundicons";
+  font-weight: normal;
+  font-style: normal;
+  text-decoration: inherit;
+}
+
+/* icons */
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-wheelchair:before {
+  content: "\f000";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-speaker:before {
+  content: "\f001";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-fontsize:before {
+  content: "\f002";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-eject:before {
+  content: "\f003";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-view-mode:before {
+  content: "\f004";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-eyeball:before {
+  content: "\f005";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-asl:before {
+  content: "\f006";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-person:before {
+  content: "\f007";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-question:before {
+  content: "\f008";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-adult:before {
+  content: "\f009";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-child:before {
+  content: "\f00a";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-glasses:before {
+  content: "\f00b";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-cc:before {
+  content: "\f00c";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-blind:before {
+  content: "\f00d";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-braille:before {
+  content: "\f00e";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-iphone-home:before {
+  content: "\f00f";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-w3c:before {
+  content: "\f010";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-css:before {
+  content: "\f011";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-key:before {
+  content: "\f012";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-hearing-impaired:before {
+  content: "\f013";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-male:before {
+  content: "\f014";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-female:before {
+  content: "\f015";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-network:before {
+  content: "\f016";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-guidedog:before {
+  content: "\f017";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-universal-access:before {
+  content: "\f018";
+}
+
+/* line 6, ../../../scss/foundicons/accessibility/_settings.scss */
+.foundicon-accessibility-elevator:before {
+  content: "\f019";
+}

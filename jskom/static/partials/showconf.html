@@ -1,23 +1,25 @@
-<span ng-hide="conf">Loading...</span>
+<p ng-hide="conf">Loading...</p>
 <div ng-show="conf">
-  <h1>
-    {{ conf|confType }}: {{ conf.name }}
-  </h1>
+  <h1>{{ conf|confType }}: {{ conf.name }}</h1>
   
   <p />
   
   <div>
-    <ul class="nav nav-tabs">
-      <li class="active"><a data-target="#presentation" data-toggle="tab">Presentation</a></li>
-      <li><a data-target="#details" data-toggle="tab">Details</a></li>
-      <li ng-hide="isLoadingMembership">
-        <a data-target="#membership" data-toggle="tab">Membership</a>
-      </li>
-    </ul>
+    <dl class="tabs">
+      <dd ng-class="isTabActive('presentation')">
+        <a ng-click="selectTab('presentation')">Presentation</a>
+      </dd>
+      <dd ng-class="isTabActive('details')">
+        <a ng-click="selectTab('details')">Details</a>
+      </dd>
+      <dd ng-class="isTabActive('membership')" ng-hide="isLoadingMembership">
+        <a ng-click="selectTab('membership')">Membership</a>
+      </dd>
+    </dl>
     
-    <div class="tab-content">
+    <ul class="tabs-content">
       
-      <div class="tab-pane active" id="presentation">
+      <li ng-class="isTabActive('presentation')">
         <ng-switch on="conf.presentation">
           <div ng-switch-default>
             <span ng-show="isLoadingPresentation">Loading...</span>
@@ -29,28 +31,28 @@
             <em>{{ conf.name }} has no presentation.</em>
           </div>
         </ng-switch>
-      </div>
+      </li>
       
-      <div class="tab-pane" id="details">
-        <table class="table">
+      <li ng-class="isTabActive('details')">
+        <table class="twelve">
           <tr>
-            <th>Conference number</th>
+            <td>Conference number</td>
             <td>{{conf.conf_no}}</td>
           </tr>
           <tr>
-            <th>Creation time</th>
+            <td>Creation time</td>
             <td>{{conf.creation_time}}</td>
           </tr>
           <tr>
-            <th>Creator</th>
+            <td>Creator</td>
             <td>{{conf.creator|personName}}</td>
           </tr>
           <tr>
-            <th>Supervisor</th>
+            <td>Supervisor</td>
             <td>{{conf.supervisor|confName}}</td>
           </tr>
           <tr>
-            <th>Presentation</th>
+            <td>Presentation</td>
             <td>
               <span ng-switch="conf.presentation">
                 <jskom:a text-no="{{ conf.presentation }}" ng-switch-default>
@@ -61,42 +63,42 @@
             </td>
           </tr> 
           <tr>
-            <th>Number of members</th>
+            <td>Number of members</td>
             <td>{{conf.no_of_members}}</td>
           </tr>
           <tr>
-            <th>Number of texts</th>
+            <td>Number of texts</td>
             <td>{{conf.no_of_texts}}</td>
           </tr>
           <tr>
-            <th>Last written</th>
+            <td>Last written</td>
             <td>{{conf.last_written}}</td>
           </tr>
           <tr>
-            <th>Closed</th>
+            <td>Closed</td>
             <td>{{conf.type.rd_prot}}</td>
           </tr>
         </table>
-      </div>
+      </li>
       
-      <div class="tab-pane" id="membership">
+      <li ng-class="isTabActive('membership')">
         <span ng-show="isLoadingMembership">Loading...</span>
         
         <div ng-hide="isLoadingMembership">
           
           
           <div class="form-inline pull-right">
-            <label>
+            <span>
               <em ng-show="membership">You are a member of this conference.</em>
               <em ng-hide="membership">You are not a member of this conference.</em>
-            </label>
+            </span>
             
-            <button class="btn" ng-disabled="isLeaving" ng-click="leaveConf()"
+            <button class="button" ng-disabled="isLeaving" ng-click="leaveConf()"
                     ng-show="membership">
               Leave
             </button>
             
-            <button class="btn" ng-disabled="isLeaving" ng-click="joinConf()"
+            <button class="button" ng-disabled="isLeaving" ng-click="joinConf()"
                     ng-hide="membership">
               Join
             </button>
@@ -120,49 +122,51 @@
           
           <p class="clearfix"></p>
           
-          <table class="table" ng-show="membership">
+          <table class="twelve" ng-show="membership">
             <tbody>
               <tr>
-                <th>Joined</th>
+                <td>Joined</td>
                 <td>{{membership.added_at}}</td>
               </tr>
               <tr>
-                <th>Last time read</th>
+                <td>Last time read</td>
                 <td>{{membership.last_time_read}}</td>
               </tr>
               <tr>
-                <th>Priority</th>
+                <td>Priority</td>
                 <td>{{membership.priority}}</td>
               </tr>
               <tr>
-                <th>Number of unread texts</th>
+                <td>Number of unread texts</td>
                 <td>{{membership.no_of_unread}}</td>
               </tr>
               <tr>
-                <th>Passive member</th>
+                <td>Passive member</td>
                 <td>{{membership.type.passive}}</td>
               </tr>
               <tr>
-                <th>Secret member</th>
+                <td>Secret member</td>
                 <td>{{membership.type.secret}}</td>
               </tr>
               <tr ng-hide="membership.added_by.pers_no == session.person.pers_no">
-                <th>Added by</th>
+                <td>Added by</td>
                 <td>{{membership.added_by|personName}}</td>
               </tr>
             </tbody>
           </table>
         </div>
-      </div>
+      </li>
       
-    </div>
+    </ul>
   </div>
 
-  <div id="jskomControlBar" class="navbar">
-    <div class="navbar-inner">
-
-      <div class="pull-right">
-        <a class="btn" href="/conferences/{{conf.conf_no}}/set-unread">Set unread</a>
+  <div id="jskomControlBar" class="panel">
+    <div class="row">
+      <div class="twelve columns">
+        <button type="button right" class="secondary button"
+                href="/conferences/{{conf.conf_no}}/set-unread">
+          Set unread
+        </button>
       </div>
     </div>
   </div>

@@ -1,78 +1,81 @@
 <div class="jskomTextForm">
-  <ul class="nav nav-tabs">
-    <li ng-class="isTabActive('simple')">
-      <a data-target="#simple" data-toggle="tab">Simple</a>
-    </li>
-    <li ng-class="isTabActive('advanced')">
-      <a data-target="#advanced" data-toggle="tab">Complete</a>
-    </li>
-  </ul>
+  <dl class="tabs">
+    <dd ng-class="isTabActive('simple')">
+      <a ng-click="selectTab('simple')">Simple</a>
+    </dd>
+    <dd ng-class="isTabActive('advanced')">
+      <a ng-click="selectTab('advanced')">Complete</a>
+    </dd>
+  </dl>
   
-  <div class="tab-content">
+  <ul class="tabs-content">
     
-    <div class="tab-pane" id="simple" ng-class="isTabActive('simple')">
+    <li ng-class="isTabActive('simple')">
       <div ng-repeat="commentTo in text.comment_to_list">
         <span>
-          <span class="jskomCapitalize">{{ commentTo.type }}</span>
-          to: 
+          {{ commentTo.type|capitalize }} to: 
         </span>
         <em>{{ commentTo.text_no }}</em>
       </div>
       
       <div ng-repeat="recipient in text.recipient_list">
-        <span class="jskomCapitalize">{{ recipient.type }}:</span>
+        {{ recipient.type|capitalize }}:
         <em>{{ recipient.recpt|confName }}</em>
       </div>
       
       <span>Subject:</span> <em>{{ text.subject }}</em>
-    </div>
+    </li>
     
-    <div class="tab-pane" id="advanced" ng-class="isTabActive('advanced')">
-      <div ng-repeat="commentTo in text.comment_to_list">
-        <fieldset class="row form-inline">
-          <div class="span8 jskomCommentType">
-            <select class="span2" ng-model="commentTo.type"
-                    ng-options="ct.type as ct.name for ct in commentTypes"></select>
-            to
-            <input type="number" class="span2" ng-model="commentTo.text_no" />
-          </div>
-        </fieldset>
+    <li ng-class="isTabActive('advanced')">
+      
+      <div ng-repeat="commentTo in text.comment_to_list" class="row">
+        <div class="three mobile-one columns jskomCommentType">
+          <select class="" ng-model="commentTo.type"
+                  ng-options="ct.type as ct.name for ct in commentTypes"></select>
+        </div>
+        <div class="nine mobile-three columns">
+          <input type="number" class="" ng-model="commentTo.text_no" />
+        </div>
       </div>
       
       <p/>
       
       <label>Recipients</label>
       
-      <div ng-repeat="recipient in text.recipient_list">
-        <fieldset class="row form-inline">
-          <div class="span8">
-            <button class="btn btn-small btn-danger"
-                    ng-click="text.recipient_list.splice($index, 1)">
-              <i class="icon-minus-sign icon-white"></i>
-            </button>
-            <select class="span1 jskomRecipientType" ng-model="recipient.type"
+      <div ng-repeat="recipient in text.recipient_list" class="row">
+        <div class="one mobile-one columns">
+          <button class="small alert button" type="button"
+                  ng-click="text.recipient_list.splice($index, 1)">
+            <i class="icon-minus-sign icon-white"></i>
+          </button>
+        </div>
+        <div class="two mobile-one columns">
+          <select class="jskomRecipientType" ng-model="recipient.type"
                     ng-options="rt.type as rt.name for rt in recipientTypes"></select>
-            
-            <jskom:conf-input class="span6" conn="connection" model="recipient.recpt.conf_no">
-            </jskom:conf-input>
-          </div>
-        </fieldset>
+        </div>
+        <div class="nine mobile-two columns">
+          <jskom:conf-input conn="connection" model="recipient.recpt.conf_no">
+          </jskom:conf-input>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="four mobile-one columns end">
+          <button class="small success button"
+                  ng-click="text.recipient_list.push(newRecipient())">
+            <i class="icon-plus-sign icon-white"></i> Recipient
+          </button>
+        </div>
       </div>
       
       <p/>
       
-      <button class="btn btn-small btn-success"
-              ng-click="text.recipient_list.push(newRecipient())">
-        <i class="icon-plus-sign icon-white"></i> Recipient
-      </button>
-      <p/>
-      
       <label>Subject</label>
-      <input class="span8" type="text" name="subject" ng-model="text.subject" />
-    </div>
-  </div>
+      <input class="" type="text" name="subject" ng-model="text.subject" />
+    </li>
+  </ul>
   
   <label>Body</label>
-  <textarea class="span8" name="body" rows="5" ng-model="text.body" jskom-autofocus>
+  <textarea class="" name="body" rows="5" ng-model="text.body" jskom-autofocus>
   </textarea>
 </div>

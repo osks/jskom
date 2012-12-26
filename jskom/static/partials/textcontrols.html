@@ -1,15 +1,14 @@
-  <div>
-    <div class="form-actions">
-      <button class="btn" ng-click="writeComment()">
-        Comment
-      </button>
+  <div class="panel">
+    <div class="row">
+      <div class="six mobile-two columns">
+        <button class="secondary button" ng-click="writeComment()">
+          Comment
+        </button>
+      </div>
       
-      <div class="pull-right">
-        <div class="btn-group">
-          <button class="btn dropdown-toggle" data-toggle="dropdown">
-            Actions
-            <span class="caret"></span>
-          </button>
+      <div class="six mobile-two columns">
+        <div class="button dropdown right">
+          Actions
           <ul class="dropdown-menu">
             <li>
               <a ng-click="showCommented()" ng-hide="showCommented == null">Show commented</a>
@@ -27,13 +26,12 @@
             </li>
           </ul>
         </div>
-      </div>
       
-      <div class="pull-right">
-        <span class="label label-info" ng-show="text._is_unread == true">Unread</span>
-        <span class="label label-success" ng-show="text._is_unread == false">Read</span>
-        &nbsp;
+        <div>
+          <span class="label label-info" ng-show="text._is_unread == true">Unread</span>
+          <span class="label label-success" ng-show="text._is_unread == false">Read</span>
+          &nbsp;
+        </div>
       </div>
     </div>
-    
   </div>

@@ -45,11 +45,6 @@ js_angular = Bundle('lib/angular.js',
                     output='gen/packed_angular.js')
 assets.register('js_angular', js_angular)
 
-js_bootstrap = Bundle('bootstrap/js/bootstrap.js',
-                     filters='rjsmin',
-                     output='gen/packed_bootstrap.js')
-assets.register('js_bootstrap', js_bootstrap)
-
 js_jskom = Bundle('jskom.js',
                   'jskom.controllers.js',
                   'jskom.connections.js',
@@ -60,16 +55,6 @@ js_jskom = Bundle('jskom.js',
                   filters='rjsmin',
                   output='gen/packed_jskom.js')
 assets.register('js_jskom', js_jskom)
-
-css_bootstrap = Bundle('bootstrap/css/bootstrap.css',
-                       filters='cssmin',
-                       output='gen/packed_bootstrap.css')
-assets.register('css_bootstrap', css_bootstrap)
-
-css_bootstrap_responsive = Bundle('bootstrap/css/bootstrap-responsive.css',
-                                  filters='cssmin',
-                                  output='gen/packed_bootstrap_responsive.css')
-assets.register('css_bootstrap_responsive', css_bootstrap_responsive)
 
 css_jskom = Bundle('style.css',
                    filters='cssmin',

@@ -4,6 +4,102 @@
 
 // ngSanitize is needed for bind-html, which we use in jskom:text-body.
 angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
+  directive('jskomTopBar', [
+    '$log', 'templatePath',
+    function($log, templatePath) {
+      var getLargestUL = function(element) {
+        var uls = element.find('section ul ul');
+        var largest = uls.first();
+        var total = 0;
+        
+        uls.each(function() {
+          if (angular.element(this).children('li').length > largest.children('li').length) {
+            largest = angular.element(this);
+          }
+        });
+        
+        largest.children('li:visible').each(function () {
+          $log.log(angular.element(this).outerHeight(true));
+          total += angular.element(this).outerHeight(true);
+        });
+        
+        return total;
+      };
+      
+      return {
+        restrict: 'E',
+        templateUrl: templatePath('topbar.html'),
+        link: function($scope, iElement, iAttrs) {
+          $scope.topbar = iElement.find('nav.top-bar');
+          $scope.section = $scope.topbar.find('section');
+          $scope.titleBar = $scope.topbar.children('ul:first');
+          
+          $scope.isTopBarExpanded = false;
+          $scope.menuLevel = 0;
+          $scope.activeMenu = null;
+          
+          $scope.isExpanded = function() {
+            if ($scope.isTopBarExpanded) {
+              return 'expanded';
+            } else {
+              return '';
+            }
+          };
+          
+          $scope.toggleExpanded = function($event) {
+            $event.stopPropagation();
+            $event.preventDefault();
+            if ($scope.isTopBarExpanded) {
+              $scope.unexpandTopBar();
+            } else {
+              $scope.expandTopBar();
+            }
+          };
+          
+          $scope.expandTopBar = function() {
+            $scope.isTopBarExpanded = true;
+          };
+          
+          $scope.unexpandTopBar = function() {
+            $scope.isTopBarExpanded = false;
+            $scope.closeMenu();
+          };
+          
+          $scope.closeMenu = function() {
+            $scope.activeMenu = null;
+            $scope.menuLevel = 0; // only support for one sub menu yet
+            $scope.topbar.css('min-height', '');
+          };
+          
+          $scope.openMenu = function(menu, $event) {
+            $scope.activeMenu = menu;
+            $scope.menuLevel = 1; // only support for one sub menu yet
+            
+            var target = angular.element($event.target);
+            var selectedLi = target.closest('li');
+            
+            var height = getLargestUL(iElement);
+            var titleBarHeight = $scope.titleBar.outerHeight(true);
+            $log.log("open");
+            $log.log(titleBarHeight);
+            $log.log(height);
+            $log.log(height + titleBarHeight);
+            
+            target.siblings('ul').height(height + titleBarHeight);
+            $scope.topbar.css('min-height', height + titleBarHeight*2);
+          };
+          
+          $scope.isMenuOpen = function(menu) {
+            if ($scope.activeMenu == menu) {
+              return 'moved';
+            } else {
+              return '';
+            }
+          };
+        }
+      };
+    }
+  ]).
   directive('jskomBindBody', [
     // Example:
     // <div jskom-bind-body="text.body"></div>
@@ -177,6 +273,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             // angular has done the processing, so the conf input
             // flickers.
             scope.getLoadingClass = function() {
+              // FIXME: this is not used since we switched to zurb foundation
               if (scope.isLoading) {
                 return 'icon-refresh';
               } else {
@@ -293,7 +390,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             //$log.log("<jskom:conf-input> - resize");
             var elWidth = iElement.width();
             
-            if (matchesInputEl.is(':visible')) {
+            /*if (matchesInputEl.is(':visible')) {
               matchesInputEl.width(
                 elWidth - matchesButtonEl.outerWidth() -
                   (matchesInputEl.outerWidth() - matchesInputEl.width()) -
@@ -312,7 +409,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
                 elWidth - confNameButtonEl.outerWidth() -
                   (confNameInputEl.outerWidth() - confNameInputEl.width()) -
                   0);
-            }
+            }*/
           };
           var delayedResizePromise = null;
           scope.delayedResize = function() {

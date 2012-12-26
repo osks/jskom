@@ -1,0 +1,180 @@
+/* font-face */
+@font-face {
+  font-family: "SocialFoundicons";
+  src: url("../../../fonts/foundicons/social/social_foundicons.eot");
+  src: url("../../../fonts/foundicons/social/social_foundicons.eot?#iefix") format("embedded-opentype"), url("../../../fonts/foundicons/social/social_foundicons.woff") format("woff"), url("../../../fonts/foundicons/social/social_foundicons.ttf") format("truetype"), url("../../../fonts/foundicons/social/social_foundicons.svg#SocialFoundicons") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* global foundicon styles */
+/* line 7, ../../../scss/foundicons/social/social_foundicons.scss */
+[class*="foundicon-social-"] {
+  display: inline;
+  width: auto;
+  height: auto;
+  line-height: inherit;
+  vertical-align: baseline;
+  background-image: none;
+  background-position: 0 0;
+  background-repeat: repeat;
+}
+
+/* line 17, ../../../scss/foundicons/social/social_foundicons.scss */
+[class*="foundicon-social-"]:before {
+  font-family: "SocialFoundicons";
+  font-weight: normal;
+  font-style: normal;
+  text-decoration: inherit;
+}
+
+/* icons */
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-thumb-up:before {
+  content: "\f000";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-thumb-down:before {
+  content: "\f001";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-rss:before {
+  content: "\f002";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-facebook:before {
+  content: "\f003";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-twitter:before {
+  content: "\f004";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-pinterest:before {
+  content: "\f005";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-github:before {
+  content: "\f006";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-path:before {
+  content: "\f007";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-linkedin:before {
+  content: "\f008";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-dribbble:before {
+  content: "\f009";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-stumble-upon:before {
+  content: "\f00a";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-behance:before {
+  content: "\f00b";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-reddit:before {
+  content: "\f00c";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-google-plus:before {
+  content: "\f00d";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-youtube:before {
+  content: "\f00e";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-vimeo:before {
+  content: "\f00f";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-flickr:before {
+  content: "\f010";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-slideshare:before {
+  content: "\f011";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-picassa:before {
+  content: "\f012";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-skype:before {
+  content: "\f013";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-steam:before {
+  content: "\f014";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-instagram:before {
+  content: "\f015";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-foursquare:before {
+  content: "\f016";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-delicious:before {
+  content: "\f017";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-chat:before {
+  content: "\f018";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-torso:before {
+  content: "\f019";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-tumblr:before {
+  content: "\f01a";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-video-chat:before {
+  content: "\f01b";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-digg:before {
+  content: "\f01c";
+}
+
+/* line 6, ../../../scss/foundicons/social/_settings.scss */
+.foundicon-social-wordpress:before {
+  content: "\f01d";
+}

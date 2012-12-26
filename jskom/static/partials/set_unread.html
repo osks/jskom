@@ -2,16 +2,18 @@
 
 <form>
   <label>Conference</label>
-  <jskom:conf-input class="span8" conn="connection" model="confNo" jskom-autofocus>
+  <jskom:conf-input conn="connection" model="confNo" jskom-autofocus>
   </jskom:conf-input>
   
   <label>Number of unread texts</label> 
-  <input type="number" class="span8" name="unread" ng-model="noOfUnread" />
+  <input type="number" name="unread" ng-model="noOfUnread" />
   
-  <div id="jskomControlBar" class="navbar">
-    <div class="navbar-inner">
-      <div class="pull-right">
-        <button type="submit" class="btn btn-primary"
+  <div id="jskomControlBar" class="panel">
+    <div class="row">
+      <div class="nine mobile-three columns"></div>
+      
+      <div class="three mobile-one columns">
+        <button type="submit" class="button right"
                 ng-disabled="isLoading || !confNo"
                 ng-click="setNumberOfUnreadTexts()">
           Set unread

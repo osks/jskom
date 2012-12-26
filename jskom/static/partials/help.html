@@ -1,47 +1,55 @@
-<br />
-<div class="well well-small" ng-controller="HelpCtrl" ng-hide="hasTouch">
-  <div>
-    <button class="btn btn-mini pull-right dropup"
-            ng-show="isVisible" ng-click="isVisible = false">
-      <span class="caret"></span>
-    </button>
-    <button class="btn btn-mini pull-right"
-            ng-hide="isVisible" ng-click="isVisible = true">
-      <span class="caret"></span>
-    </button>
-    <h5>Keyboard shortcuts</h5>
-    
-    <div ng-show="isVisible">
-      <div>
-        <h6>General</h6>
-        <table class="table table-condensed">
-          <tr ng-repeat="keyBinding in generalKeys">
-            <td>
-              <span ng-repeat="key in keyBinding.keys">
-                <span ng-hide="$index == 0"> or </span>
-                <span class="label label-inverse">{{ key }}</span>
-              </span>
-            </td>
-            <td>{{ keyBinding.description }}</td>
-          </tr>
-        </table>
+<br/>
+<div class="hide-for-touch" ng-controller="HelpCtrl">
+  <div class="hide-for-small">
+    <div class="panel">
+      <div class="row">
+        <div class="nine mobile-three columns">
+          <h5>Keyboard shortcuts</h5>
+        </div>
+        
+        <div class="three mobile-one columns">
+          <button class="tiny secondary button"
+                  ng-show="isVisible" ng-click="isVisible = false">
+            <i class="foundicon-general-minus"></i>
+          </button>
+          <button class="tiny secondary button"
+                  ng-hide="isVisible" ng-click="isVisible = true">
+            <i class="foundicon-general-plus"></i>
+          </button>
+        </div>
       </div>
       
-      <div ng-show="pageSpecificKeys">
-        <h6>Page specific</h6>
-        <table class="table table-condensed">
-          <tr ng-repeat="keyBinding in pageSpecificKeys">
-            <td>
-              <span ng-repeat="key in keyBinding.keys">
-                <span ng-hide="$index == 0"> or </span>
-                <span class="label label-inverse">{{ key }}</span>
-              </span>
-            </td>
-            <td>{{ keyBinding.description }}</td>
-          </tr>
-        </table>
+      <div ng-show="isVisible">
+        <div>
+          <h6>General</h6>
+          <table class="table table-condensed">
+            <tr ng-repeat="keyBinding in generalKeys">
+              <td>
+                <span ng-repeat="key in keyBinding.keys">
+                  <span ng-hide="$index == 0"> or </span>
+                  <span class="label label-inverse">{{ key }}</span>
+                </span>
+              </td>
+              <td>{{ keyBinding.description }}</td>
+            </tr>
+          </table>
+        </div>
+        
+        <div ng-show="pageSpecificKeys">
+          <h6>Page specific</h6>
+          <table class="table table-condensed">
+            <tr ng-repeat="keyBinding in pageSpecificKeys">
+              <td>
+                <span ng-repeat="key in keyBinding.keys">
+                  <span ng-hide="$index == 0"> or </span>
+                  <span class="label label-inverse">{{ key }}</span>
+                </span>
+              </td>
+              <td>{{ keyBinding.description }}</td>
+            </tr>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 </div>
-

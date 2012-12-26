@@ -1,37 +1,83 @@
-<span ng-show="readerIsLoading">Loading...</span>
-<div ng-show="reader">
-  <h1 class="jskomNoWrap">
-    {{ reader.unreadSize() }} unread in
-    <a href="/conferences/{{conf.conf_no}}">{{ conf|confName }}</a>
-  </h1>
-  
-  <span ng-show="textIsLoading">Loading...</span>
-  <div ng-controller="TextCtrl" ng-show="text">
-    <ng-include src="'text.html'|jskomTemplate"></ng-include>
-    <ng-include src="'textcontrols.html'|jskomTemplate"></ng-include>
-  </div>
-  <div id="jskomBelowText"></div>
-</div>
-  
-<div id="jskomControlBar" class="navbar">
-  <div class="navbar-inner">
-    <button class="btn"
-            ng-disabled="readerIsLoading || !reader"
-            ng-click="refresh()">
-      <i class="icon-refresh"></i>
-    </button>
+<p ng-show="readerIsLoading">Loading...</p>
+<div ng-controller="TextCtrl">
+  <div ng-show="reader">
+    <h1 class="jskomNoWrap">
+      {{ reader.unreadSize() }} unread in
+      <a href="/conferences/{{conf.conf_no}}">{{ conf|confName }}</a>
+    </h1>
     
-    <div class="pull-right">
-      <button class="btn btn-primary"
-              ng-click="readNext()" ng-disabled="!reader || textIsLoading">
-        <span ng-show="reader.isEmpty()">Conference list</span>
-        <span ng-hide="reader.isEmpty()">
-          <span ng-show="reader.hasPending()">
-            Show pending ({{ reader.pendingSize() }})
+    <span ng-show="textIsLoading">Loading...</span>
+    <div ng-show="text">
+      <ng-include src="'text.html'|jskomTemplate"></ng-include>
+    </div>
+    <div id="jskomBelowText"></div>
+    
+    <div class="row">
+      <div class="twelve columns">
+        <div class="right">
+          <span class="alert label" ng-show="text._is_unread == true">Unread</span>
+          <span class="success label" ng-show="text._is_unread == false">Read</span>
+          &nbsp;
+        </div>
+        <div style="clear: both;">&nbsp;</div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="jskomControlBar" class="panel">
+    <div class="row">
+      <!--<div class="four mobile-one columns">
+        <button class="secondary button"
+                ng-disabled="readerIsLoading || !reader"
+                ng-click="refresh()">
+          <i class="foundicon-general-refresh"></i>
+        </button>
+      </div>-->
+      
+      <div class="three mobile-one columns">
+        <button type="button" class="secondary button" ng-click="writeComment()">
+          Comment
+        </button>
+      </div>
+      
+      <div class="three mobile-one columns">
+        <div class="secondary button dropdown up">
+          Actions
+          <ul class="dropdown-menu">
+            <li>
+              <a ng-click="showCommented()" ng-hide="showCommented == null">Show commented</a>
+            </li>
+            <li>
+              <a ng-click="showAllComments()" ng-hide="showAllComments == null">
+                Show all comments
+              </a>
+            </li>
+            <li ng-hide="text._is_unread == false">
+              <a ng-click="markAsRead()" ng-disabled="readmarkIsLoading">Mark as read</a>
+            </li>
+            <li ng-hide="text._is_unread == true">
+              <a ng-click="markAsUnread()" ng-disabled="readmarkIsLoading">Mark as unread</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="three mobile-one columns">
+      </div>
+      
+      <div class="three mobile-one columns">
+        <button type="button" class="button right"
+                ng-click="readNext()" ng-disabled="!reader || textIsLoading">
+          <span ng-show="reader.isEmpty()">Conferences</span>
+          <span ng-hide="reader.isEmpty()">
+            <span ng-show="reader.hasPending()">
+              Show pending ({{ reader.pendingSize() }})
+            </span>
+            <span ng-hide="reader.hasPending()">Read next</span>
           </span>
-          <span ng-hide="reader.hasPending()">Read next</span>
-        </span>
-      </button>
+        </button>
+      </div>
+      
     </div>
   </div>
 </div>

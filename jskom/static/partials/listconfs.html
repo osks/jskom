@@ -3,11 +3,11 @@
 <form>
   <label>Conference name</label>
   
-  <input type="text" class="span8" ng-model="lookupName" jskom-autofocus
+  <input type="text" ng-model="lookupName" jskom-autofocus
          spellcheck="false" autocorrect="off" autocapitalize="off"/>
   
   <div ng-hide="confs == null">
-    <table class="table">
+    <table class="twelve">
       <thead>
         <tr>
           <th>Name</th>
@@ -22,21 +22,22 @@
       </tbody>
     </table>
     
-    <ul class="pager">
-      <li ng-class="{'disabled': currentPage < 1 }">
+    <ul class="pagination">
+      <li ng-class="{'unavailable': currentPage < 1 }">
         <a ng-click="previousPage()">Previous</a>
       </li>
       <li>{{currentPage+1}} / {{numberOfPages}}</li>
-      <li ng-class="{'disabled': currentPage >= numberOfPages - 1}">
+      <li ng-class="{'unavailable': currentPage >= numberOfPages - 1}">
         <a ng-click="nextPage()">Next</a>
       </li>
     </ul>
   </div>
   
-  <div id="jskomControlBar" class="navbar">
-    <div class="navbar-inner">
-      <div class="pull-right">
-        <button type="submit" class="btn btn-primary"
+  <div id="jskomControlBar" class="panel">
+    <div class="row">
+      <div class="nine mobile-three columns"></div>
+      <div class="three mobile-one columns">
+        <button type="submit" class="button right"
                 ng-disabled="isLoading"
                 ng-click="listConfs()">
           Search

@@ -1,37 +1,47 @@
-<h1 ng-hide="commentedText">New text</h1>
-<h1 ng-show="commentedText">New comment to {{commentedText.text_no}}</h1>
+<h1>
+  <span ng-hide="commentedText">New text</span>
+  <span ng-show="commentedText">New comment to {{commentedText.text_no}}</span>
+</h1>
 
-<span ng-hide="text">Loading...</span>
+<p ng-hide="text">Loading...</p>
 <form ng-show="text">
 
-  <div ng-show="commentedText" ng-init="isCommentedTextVisible = false">
-    <p>
-      <button class="btn btn-small dropup"
-              ng-show="isCommentedTextVisible" ng-click="isCommentedTextVisible = false">
-        Hide commented text<span class="caret"></span>
-      </button>
-      <button class="btn btn-small"
-              ng-hide="isCommentedTextVisible" ng-click="isCommentedTextVisible = true">
-        Show commented text<span class="caret"></span>
-      </button>
-    </p>
-    
-    <blockquote ng-show="isCommentedTextVisible" class="jskomTextBody">
-      <p jskom-bind-body="commentedText.body"></p>
-      <small>{{ commentedText.author|personName }}</small>
-    </blockquote>
+  <div class="row" ng-show="commentedText" ng-init="isCommentedTextVisible = false">
+    <div class="twelve mobile-two columns end">
+      <p>
+        <button class="secondary button dropup"
+                ng-show="isCommentedTextVisible" ng-click="isCommentedTextVisible = false">
+          Hide commented text<span class="caret"></span>
+        </button>
+        <button class="secondary button"
+                ng-hide="isCommentedTextVisible" ng-click="isCommentedTextVisible = true">
+          Show commmented text<span class="caret"></span>
+        </button>
+      </p>
+      
+      <blockquote ng-show="isCommentedTextVisible" class="jskomTextBody">
+        <p jskom-bind-body="commentedText.body"></p>
+        <cite>{{ commentedText.author|personName }}</cite>
+      </blockquote>
+    </div>
   </div>
   
   <ng-include src="'textform.html'|jskomTemplate"></ng-include>
   
-  <div id="jskomControlBar" class="navbar">
-    <div class="navbar-inner">
-      <button type="button" class="btn" ng-show="returnUrl" ng-click="goToReturnUrl()">
-        Cancel
-      </button>
+  <div id="jskomControlBar" class="panel">
+    <div class="row">
+      <div class="three mobile-one columns">
+        <button type="button" class="secondary button"
+                ng-show="returnUrl" ng-click="goToReturnUrl()">
+          Cancel
+        </button>
+      </div>
       
-      <div class="pull-right">
-        <button type="submit" class="btn btn-primary"
+      <div class="three mobile-one columns"></div>
+      <div class="three mobile-one columns"></div>
+      
+      <div class="three mobile-one columns">
+        <button type="submit" class="button right"
                 ng-disabled="isCreating"
                 ng-click="createText()">
           Post

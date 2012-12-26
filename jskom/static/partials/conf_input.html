@@ -1,35 +1,45 @@
 <div class="jskomConfInput">
-  <div ng-hide="matches" class="input-append jskomConfInputLookup">
-    <input type="text" spellcheck="false" autocorrect="off" autocapitalize="off"
-           ng-disabled="conf"
-           ng-model="lookup" />
-    <button type="button" class="btn btn-info" tabindex="-1"
-            ng-disabled="isLoading || lookup.length < 1 || matches.length > 0"
-            ng-readonly="isLoading"
-            ng-click="getConf()">
-      <i class="icon-search icon-white" ng-class="getLoadingClass()"></i>
-    </button>
+  <div ng-hide="matches" class="row collapse jskomConfInputLookup">
+    <div class="ten mobile-three columns">
+      <input type="text" spellcheck="false" autocorrect="off" autocapitalize="off"
+             ng-disabled="conf" ng-model="lookup" />
+    </div>
+    <div class="two mobile-one columns">
+      <button class="secondary button expand postfix" tabindex="-1"
+         ng-disabled="isLoading || lookup.length < 1 || matches.length > 0"
+         ng-readonly="isLoading" ng-click="getConf()">
+        <i class="foundicon-general-refresh"></i>
+      </button>
+    </div>
   </div>
   
-  <div ng-show="matches.length == 1" class="input-append jskomConfInputConfName">
-    <input type="text" class="" tabindex="-1" readonly autocorrect="off" autocapitalize="off"
-           ng-disabled="!conf"
-           ng-model="conf.conf_name" />
-    <button type="button" class="btn btn-warning"
-            ng-click="clearMatching()">
-      <i class="icon-remove icon-white"></i>
-    </button>
+  <div ng-show="matches.length == 1" class="row collapse jskomConfInputConfName">
+    <div class="ten mobile-three columns">
+      <input type="text" class="" tabindex="-1" readonly autocorrect="off" autocapitalize="off"
+             ng-disabled="!conf"
+             ng-model="conf.conf_name" />
+    </div>
+    <div class="two mobile-one columns">
+      <button type="button" class="alert button expand postfix"
+              ng-click="clearMatching()">
+        <i class="foundicon-general-remove"></i>
+      </button>
+    </div>
   </div>
   
-  <div ng-show="matches.length > 1" class="jskomConfInputMatches">
-    <select class=""
-            ng-model="model"
+  <div ng-show="matches.length > 1" class="row collapse jskomConfInputMatches">
+    <div class="ten mobile-three columns">
+      <select class=""
+              ng-model="model"
             ng-disabled="!conf"
-            ng-options="mp.conf_no as mp.conf_name for mp in matches">
-    </select>
-    <button type="button" class="btn btn-warning"
-            ng-click="clearMatching()">
-      <i class="icon-remove icon-white"></i>
-    </button>
+              ng-options="mp.conf_no as mp.conf_name for mp in matches">
+      </select>
+    </div>
+    <div class="two mobile-one columns">
+      <button type="button" class="alert button expand postfix"
+              ng-click="clearMatching()">
+        <i class="foundicon-general-remove"></i>
+      </button>
+    </div>
   </div>
 </div>
