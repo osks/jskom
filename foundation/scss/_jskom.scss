@@ -1,0 +1,49 @@
+select {
+    background-color: $inputBgColor;
+    font-family: inherit;
+    border: $inputBorderWidth $inputBorderStyle $inputBorderColor;
+    @include border-radius($inputBorderRadius);
+    color: $inputFontColor;
+    display: block;
+    font-size: $inputFontSize;
+    margin: 0 0 $formSpacing 0;
+    padding: ($formSpacing / 2);
+    height: (ms(0) + ($formSpacing * 1.5));
+    width: 100%; @include transition(all 0.15s linear);
+    
+    &.oversize { font-size: ms(1); padding: (($formSpacing - 4) / 2) ($formSpacing / 2); }
+    
+    &:focus { background: $inputFocusBgColor; border-color: $inputFocusBorderColor; }
+    &[disabled] { background-color: #ddd; }
+}
+
+
+div.alert-box {
+    border-color: #bce8f1; background-color: #d9edf7; color: #3a87ad; text-shadow: none;
+    h1, h2, h3, h4, h5, h6 { color: #3a87ad; font-weight: bold; }
+    
+    &.success {
+        border-color: #d6e9c6; background-color: #dff0d8; color: #468847; text-shadow: none;
+        h1, h2, h3, h4, h5, h6 { color: #468847; font-weight: bold; }
+    }
+    &.alert {
+        border-color: #eed3d7; background-color: #f2dede; color: #b94a48; text-shadow: none;
+        h1, h2, h3, h4, h5, h6 { color: #b94a48; font-weight: bold; }
+    }
+    &.secondary {
+        background-color: $secondaryColor; color: darken($secondaryColor, 60%); text-shadow: none;
+        h1, h2, h3, h4, h5, h6 { color: darken($secondaryColor, 60%); font-weight: bold; }
+    }
+    
+    a.close { color: #000; }
+}
+
+
+@media only screen and (max-width: $topBarBreakPoint) {
+    .top-bar { margin-bottom: 15px; }
+}
+
+@media only screen and (min-width: $topBarBreakPoint + 1) {
+    /* Override default height: inherit. */
+    .top-bar.expanded { height: $topBarHeight; }
+}

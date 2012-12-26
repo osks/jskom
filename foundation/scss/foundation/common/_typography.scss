@@ -24,11 +24,11 @@
     small { font-size: 60%; color: lighten($headerFontColor, 30%); line-height: 0; }
   }
 
-  h1 { font-size: ms(5); }
-  h2 { font-size: ms(4); }
-  h3 { font-size: ms(3); }
-  h4 { font-size: ms(2); }
-  h5 { font-size: ms(1); }
+  h1 { font-size: ms(3); }
+  h2 { font-size: ms(2); }
+  h3 { font-size: ms(1); }
+  h4 { font-size: ms(0); }
+  h5 { font-size: ms(0); }
   h6 { font-size: ms(0); }
 
   hr { border: solid #ddd; border-width: 1px 0 0; clear: both; margin: 22px 0 21px; height: 0; }

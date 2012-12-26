@@ -2,9 +2,20 @@
 
 // Settings file containing Foundation defaults
 
+// Media Queries
+
+$screenSmall: 768px !default;
+$screenMedium: 1279px !default;
+$screenXlarge: 1441px !default;
+
+// Saving for better em-based testing
+// $screenSmall: 44em !default;
+// $screenMedium: 77em !default;
+// $screenXlarge: 104em !default;
+
 // Grid Settings
 
-// $rowWidth: 1000px;
+$rowWidth: 1200px;
 // $columnGutter: 30px;
 // $totalColumns: 12;
 // $mobileTotalColumns: 4;
@@ -27,7 +38,9 @@
 
 // $fontSmoothing: antialiased;
 // $headerFontFamily: "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+$headerFontFamily: "Open Sans", sans-serif;
 // $headerFontWeight: bold;
+$headerFontWeight: 400;
 // $headerFontStyle: normal;
 // $headerFontColor: #222;
 // $bodyFontFamily: "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
@@ -111,6 +124,7 @@
 // $topBarDropToggleAlpha: 0.5;
 // $topBarSearchWidth: 200px;
 // $topBarBreakPoint: 940px; // Change to 9999px for always mobile layout
+$topBarBreakPoint: $screenSmall;
 // $topBarNavToggleSize: 8px;
 
 // UI Settings
@@ -141,96 +155,6 @@
 // $tooltipFontSizeScreenSm: 14;
 // $tooltipBgOpacityScreenSm: 0.85;
 // $tooltipBorderRadius: 4px;
-
-// Pricing Table Settings
-
-// $priceTableBorder: solid 1px #ddd;
-// $priceTitleBgColor: #ddd;
-// $priceTitlePadding: 15px 20px;
-// $priceTitleAlign: center;
-// $priceTitleColor: #333;
-// $priceTitleWeight: bold;
-// $priceTitleSize: 16px;
-
-// $priceMoneyBgColor: #eee;
-// $priceMoneyPadding: 15px 20px;
-// $priceMoneyAlign: center;
-// $priceMoneyColor: #333;
-// $priceMoneyWeight: normal;
-// $priceMoneySize: 20px;
-
-// $priceBgColor: #fff;
-// $priceDescColor: #777;
-// $priceDescPadding: 15px;
-// $priceDescAlign: center;
-// $priceDescFontSize: 12px;
-// $priceDescWeight: normal;
-// $priceDescLineHeight: 1.4;
-// $priceDescBtmBorder: dotted 1px #ddd;
-
-// $priceItemColor: #333;
-// $priceItemPadding: 15px;
-// $priceItemAlign: center;
-// $priceItemFontSize: 14px;
-// $priceItemWeight: normal;
-// $priceItemBtmBorder: dotted 1px #ddd;
-
-// $priceCtaBgColor: #f5f5f5;
-// $priceCtaAlign: center;
-// $priceCtaPadding: 20px;
-
-// Orbit Settings
-
-// $orbitCaptionBgColorOldBrowser: #000;
-// $orbitCaptionBgColor: rgba(0,0,0,.6);
-// $orbitCaptionFontColor: #fff;
-// $orbitBulletNavColor: #999;
-// $orbitBulletNavColorActive: #222;
-// $orbitHasThumbBorderColor: #000;
-// $orbitHasThumbBorderWidth: 2px;
-// $orbitHasThumbBorderStyle: solid;
-// $orbitSlideNumBgColor: rgba(0,0,0,0.7);
-// $orbitSlideNumFontColor: #fff;
-// $orbitSlideNumPadding: 5px;
-
-// Clearing Settings
-
-// $clearingBg: rgba(0,0,0,0.8);
-// $clearingOldBrowserBg: rgb(0,0,0);
-// $clearingCaptionBg: rgba(0,0,0,0.7);
-// $clearingCaptionOldBrowserBg: rgb(0,0,0);
-// $clearingCaptionFontColor: #fff;
-// $clearingCloseColor: #fff;
-// $clearingArrowColor: #fff;
-// $clearingArrowSize: 16px;
-// $clearingCarouselBg: rgba(0,0,0,0.75);
-// $clearingCarouselOldBrowserBg: rgb(0,0,0);
-// $clearingCarouselHeight: 150px;
-// $clearingActiveImgHeight: 75%;
-// $clearingCarouselThumbWidth: 175px;
-// $clearingCarouselThumbActiveBorder: 4px solid rgb(255,255,255);
-// $clearingImgBg: rgba(0,0,0,0.75);
-// $clearingImgOldBrowserBg: rgb(0,0,0);
-
-// Joyride Settings
-
-// $tipBg: rgba(0,0,0,0.8);
-// $tipBgIE8: #000;
-// $tipFontColor: #fff;
-// $tipHeaderWeight: bold;
-// $tipDefaultWidth: 300px;
-// $tipBorderRadius: 4px;
-// $tipPadding: 18px 20px 24px;
-// $tipNubSize: 14px;
-// $tipFontSize: 14px;
-// $tipTimerWidth: 50px;
-// $tipTimerHeight: 3px;
-// $tipTimerBorder: solid 1px #555;
-// $tipTimerColor: #666;
-// $tipCloseColor: #777;
-// $tipCloseSize: 20px;
-// $tipCloseWeight: normal;
-// $tipScreenFill: rgba(0,0,0,0.5);
 
 // Modular Scale Settings
 

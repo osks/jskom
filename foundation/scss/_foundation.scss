@@ -1,0 +1,46 @@
+
+// ----------------------------------------
+// Import specific parts of Foundation by commenting the import "foundation"
+// and uncommenting what you want below. You must uncomment the following if customizing
+
+@import "compass/css3";
+
+@import "modular-scale";
+
+@import "foundation/settings";
+@import "foundation/functions/all";
+
+// Control which mixins you have access too
+
+@import "foundation/mixins/clearfix";
+@import "foundation/mixins/css-triangle";
+@import "foundation/mixins/font-size";
+
+// Must include next two for semantic grid to work
+
+@import "foundation/mixins/respond-to";
+@import "foundation/mixins/semantic-grid";
+
+@import "foundation/common/globals";
+
+// Must include the grid for any responsiveness
+
+@import "foundation/components/grid";
+
+// Control which common styles get compiled
+
+@import "foundation/common/typography";
+@import "foundation/common/forms";
+@import "foundation/common/ratios"; // added
+
+// Control which components you get if customizing
+
+@import "foundation/components/modules/buttons";
+@import "foundation/components/modules/navbar";
+//@import "foundation/components/modules/offcanvas"; // commenting out fixes the tabs border
+@import "foundation/components/modules/tabs";
+@import "foundation/components/modules/topbar";
+@import "foundation/components/modules/ui";
+
+// Media Queries Overrides
+@import "foundation/components/modules/mqueries";
