@@ -39,6 +39,15 @@ div.alert-box {
 }
 
 
+
+.top-bar {
+    /* Fix for firefox getting a horizontal scroll bar. There seem to be a
+       1px margin on the right side of the entire page. Could also add
+       padding 1 to body to get rid of it, but this felt less
+       obtrusive. The problem seem related to border-box. */
+    padding-right: 1px;
+}
+
 @media only screen and (max-width: $topBarBreakPoint) {
     .top-bar { margin-bottom: 15px; }
 }

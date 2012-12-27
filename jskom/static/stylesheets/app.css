@@ -5084,15 +5084,24 @@ div.alert-box a.close {
   color: #000;
 }
 
+/* line 43, ../scss/_jskom.scss */
+.top-bar {
+  /* Fix for firefox getting a horizontal scroll bar. There seem to be a
+     1px margin on the right side of the entire page. Could also add
+     padding 1 to body to get rid of it, but this felt less
+     obtrusive. The problem seem related to border-box. */
+  padding-right: 1px;
+}
+
 @media only screen and (max-width: 768px) {
-  /* line 43, ../scss/_jskom.scss */
+  /* line 52, ../scss/_jskom.scss */
   .top-bar {
     margin-bottom: 15px;
   }
 }
 @media only screen and (min-width: 769px) {
   /* Override default height: inherit. */
-  /* line 48, ../scss/_jskom.scss */
+  /* line 57, ../scss/_jskom.scss */
   .top-bar.expanded {
     height: 45px;
   }
