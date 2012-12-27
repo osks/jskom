@@ -28,7 +28,6 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
       
       return {
         restrict: 'E',
-        replace: true,
         templateUrl: templatePath('topbar.html'),
         link: function($scope, iElement, iAttrs) {
           $scope.topbar = iElement.find('nav.top-bar');
