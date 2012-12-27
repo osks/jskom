@@ -5,8 +5,8 @@
 // ngSanitize is needed for bind-html, which we use in jskom:text-body.
 angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
   directive('jskomTopBar', [
-    '$log', 'templatePath',
-    function($log, templatePath) {
+    '$log', '$window', 'templatePath',
+    function($log, $window, templatePath) {
       var getLargestUL = function(element) {
         var uls = element.find('section ul ul');
         var largest = uls.first();
@@ -28,6 +28,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
       
       return {
         restrict: 'E',
+        replace: true,
         templateUrl: templatePath('topbar.html'),
         link: function($scope, iElement, iAttrs) {
           $scope.topbar = iElement.find('nav.top-bar');
@@ -96,6 +97,14 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
               return '';
             }
           };
+
+          angular.element($window).resize(function() {
+            $scope.$apply(function() {
+              if ($scope.isTopBarExpanded) {
+                $scope.unexpandTopBar();
+              }
+            });
+          });
         }
       };
     }
