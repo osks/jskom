@@ -629,48 +629,52 @@ h1, h2, h3, h4, h5, h6 {
   font-style: normal;
   color: #222222;
   text-rendering: optimizeLegibility;
-  line-height: 1.1;
-  margin-bottom: 14px;
-  margin-top: 14px;
+  line-height: 1.6;
 }
-/* line 24, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 22, ../../../foundation/scss/foundation/common/_typography.scss */
 h1 small, h2 small, h3 small, h4 small, h5 small, h6 small {
   font-size: 60%;
   color: #6f6f6f;
   line-height: 0;
 }
 
-/* line 27, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 25, ../../../foundation/scss/foundation/common/_typography.scss */
 h1 {
   font-size: 27px;
+  margin: 9px 0px;
+}
+
+/* line 26, ../../../foundation/scss/foundation/common/_typography.scss */
+h2 {
+  font-size: 23px;
+  margin: 7.66667px 0px;
+}
+
+/* line 27, ../../../foundation/scss/foundation/common/_typography.scss */
+h3 {
+  font-size: 17px;
+  margin: 5.66667px 0px;
 }
 
 /* line 28, ../../../foundation/scss/foundation/common/_typography.scss */
-h2 {
-  font-size: 23px;
+h4 {
+  font-size: 14px;
+  margin: 4.66667px 0px;
 }
 
 /* line 29, ../../../foundation/scss/foundation/common/_typography.scss */
-h3 {
-  font-size: 17px;
+h5 {
+  font-size: 14px;
+  margin: 4.66667px 0px;
 }
 
 /* line 30, ../../../foundation/scss/foundation/common/_typography.scss */
-h4 {
+h6 {
   font-size: 14px;
-}
-
-/* line 31, ../../../foundation/scss/foundation/common/_typography.scss */
-h5 {
-  font-size: 14px;
+  margin: 4.66667px 0px;
 }
 
 /* line 32, ../../../foundation/scss/foundation/common/_typography.scss */
-h6 {
-  font-size: 14px;
-}
-
-/* line 34, ../../../foundation/scss/foundation/common/_typography.scss */
 hr {
   border: solid #ddd;
   border-width: 1px 0 0;
@@ -679,7 +683,7 @@ hr {
   height: 0;
 }
 
-/* line 36, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 34, ../../../foundation/scss/foundation/common/_typography.scss */
 .subheader {
   line-height: 1.3;
   color: #6f6f6f;
@@ -687,32 +691,32 @@ hr {
   margin-bottom: 17px;
 }
 
-/* line 38, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 36, ../../../foundation/scss/foundation/common/_typography.scss */
 em, i {
   font-style: italic;
   line-height: inherit;
 }
 
-/* line 39, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 37, ../../../foundation/scss/foundation/common/_typography.scss */
 strong, b {
   font-weight: bold;
   line-height: inherit;
 }
 
-/* line 40, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 38, ../../../foundation/scss/foundation/common/_typography.scss */
 small {
   font-size: 60%;
   line-height: inherit;
 }
 
-/* line 41, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 39, ../../../foundation/scss/foundation/common/_typography.scss */
 code {
   font-weight: bold;
   background: #ffff99;
 }
 
 /* Lists ---------------------- */
-/* line 44, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 42, ../../../foundation/scss/foundation/common/_typography.scss */
 ul, ol, dl {
   font-size: 14px;
   line-height: 1.6;
@@ -720,87 +724,87 @@ ul, ol, dl {
   list-style-position: outside;
 }
 
-/* line 47, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 45, ../../../foundation/scss/foundation/common/_typography.scss */
 ul li ul, ul li ol {
   margin-left: 20px;
   margin-bottom: 0;
 }
-/* line 49, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 47, ../../../foundation/scss/foundation/common/_typography.scss */
 ul.square, ul.circle, ul.disc {
   margin-left: 17px;
 }
-/* line 50, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 48, ../../../foundation/scss/foundation/common/_typography.scss */
 ul.square {
   list-style-type: square;
 }
-/* line 51, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 49, ../../../foundation/scss/foundation/common/_typography.scss */
 ul.square li ul {
   list-style: inherit;
 }
-/* line 53, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 51, ../../../foundation/scss/foundation/common/_typography.scss */
 ul.circle {
   list-style-type: circle;
 }
-/* line 54, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 52, ../../../foundation/scss/foundation/common/_typography.scss */
 ul.circle li ul {
   list-style: inherit;
 }
-/* line 56, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 54, ../../../foundation/scss/foundation/common/_typography.scss */
 ul.disc {
   list-style-type: disc;
 }
-/* line 57, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 55, ../../../foundation/scss/foundation/common/_typography.scss */
 ul.disc li ul {
   list-style: inherit;
 }
-/* line 59, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 57, ../../../foundation/scss/foundation/common/_typography.scss */
 ul.no-bullet {
   list-style: none;
 }
-/* line 60, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 58, ../../../foundation/scss/foundation/common/_typography.scss */
 ul.large li {
   line-height: 21px;
 }
 
-/* line 62, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 60, ../../../foundation/scss/foundation/common/_typography.scss */
 ol {
   margin-left: 20px;
 }
-/* line 64, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 62, ../../../foundation/scss/foundation/common/_typography.scss */
 ol li ul, ol li ol {
   margin-left: 20px;
   margin-bottom: 0;
 }
 
 /* Blockquotes ---------------------- */
-/* line 69, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 67, ../../../foundation/scss/foundation/common/_typography.scss */
 blockquote, blockquote p {
   line-height: 1.5;
   color: #6f6f6f;
 }
 
-/* line 70, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 68, ../../../foundation/scss/foundation/common/_typography.scss */
 blockquote {
   margin: 0 0 17px;
   padding: 9px 20px 0 19px;
   border-left: 1px solid #ddd;
 }
-/* line 71, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 69, ../../../foundation/scss/foundation/common/_typography.scss */
 blockquote cite {
   display: block;
   font-size: 13px;
   color: #555555;
 }
-/* line 72, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 70, ../../../foundation/scss/foundation/common/_typography.scss */
 blockquote cite:before {
   content: "\2014 \0020";
 }
-/* line 73, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 71, ../../../foundation/scss/foundation/common/_typography.scss */
 blockquote cite a, blockquote cite a:visited {
   color: #555555;
 }
 
-/* line 77, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 75, ../../../foundation/scss/foundation/common/_typography.scss */
 abbr, acronym {
   text-transform: uppercase;
   font-size: 90%;
@@ -809,7 +813,7 @@ abbr, acronym {
   cursor: help;
 }
 
-/* line 78, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 76, ../../../foundation/scss/foundation/common/_typography.scss */
 abbr {
   text-transform: none;
 }
@@ -820,13 +824,13 @@ abbr {
  * Inlined to avoid required HTTP connection: www.phpied.com/delay-loading-your-print-css/
  * Credit to Paul Irish and HTML5 Boilerplate (html5boilerplate.com)
 */
-/* line 86, ../../../foundation/scss/foundation/common/_typography.scss */
+/* line 84, ../../../foundation/scss/foundation/common/_typography.scss */
 .print-only {
   display: none !important;
 }
 
 @media print {
-  /* line 88, ../../../foundation/scss/foundation/common/_typography.scss */
+  /* line 86, ../../../foundation/scss/foundation/common/_typography.scss */
   * {
     background: transparent !important;
     color: black !important;
@@ -837,45 +841,45 @@ abbr {
   }
 
   /* Black prints faster: h5bp.com/s */
-  /* line 89, ../../../foundation/scss/foundation/common/_typography.scss */
+  /* line 87, ../../../foundation/scss/foundation/common/_typography.scss */
   a, a:visited {
     text-decoration: underline;
   }
 
-  /* line 90, ../../../foundation/scss/foundation/common/_typography.scss */
+  /* line 88, ../../../foundation/scss/foundation/common/_typography.scss */
   a[href]:after {
     content: " (" attr(href) ")";
   }
 
-  /* line 91, ../../../foundation/scss/foundation/common/_typography.scss */
+  /* line 89, ../../../foundation/scss/foundation/common/_typography.scss */
   abbr[title]:after {
     content: " (" attr(title) ")";
   }
 
-  /* line 92, ../../../foundation/scss/foundation/common/_typography.scss */
+  /* line 90, ../../../foundation/scss/foundation/common/_typography.scss */
   .ir a:after, a[href^="javascript:"]:after, a[href^="#"]:after {
     content: "";
   }
 
   /* Don't show links for images, or javascript/internal links */
-  /* line 93, ../../../foundation/scss/foundation/common/_typography.scss */
+  /* line 91, ../../../foundation/scss/foundation/common/_typography.scss */
   pre, blockquote {
     border: 1px solid #999;
     page-break-inside: avoid;
   }
 
-  /* line 94, ../../../foundation/scss/foundation/common/_typography.scss */
+  /* line 92, ../../../foundation/scss/foundation/common/_typography.scss */
   thead {
     display: table-header-group;
   }
 
   /* h5bp.com/t */
-  /* line 95, ../../../foundation/scss/foundation/common/_typography.scss */
+  /* line 93, ../../../foundation/scss/foundation/common/_typography.scss */
   tr, img {
     page-break-inside: avoid;
   }
 
-  /* line 96, ../../../foundation/scss/foundation/common/_typography.scss */
+  /* line 94, ../../../foundation/scss/foundation/common/_typography.scss */
   img {
     max-width: 100% !important;
   }
@@ -884,33 +888,33 @@ abbr {
     margin: 0.5cm;
 }
 
-  /* line 98, ../../../foundation/scss/foundation/common/_typography.scss */
+  /* line 96, ../../../foundation/scss/foundation/common/_typography.scss */
   p, h2, h3 {
     orphans: 3;
     widows: 3;
   }
 
-  /* line 99, ../../../foundation/scss/foundation/common/_typography.scss */
+  /* line 97, ../../../foundation/scss/foundation/common/_typography.scss */
   h2, h3 {
     page-break-after: avoid;
   }
 
-  /* line 100, ../../../foundation/scss/foundation/common/_typography.scss */
+  /* line 98, ../../../foundation/scss/foundation/common/_typography.scss */
   .hide-on-print {
     display: none !important;
   }
 
-  /* line 101, ../../../foundation/scss/foundation/common/_typography.scss */
+  /* line 99, ../../../foundation/scss/foundation/common/_typography.scss */
   .print-only {
     display: block !important;
   }
 
-  /* line 102, ../../../foundation/scss/foundation/common/_typography.scss */
+  /* line 100, ../../../foundation/scss/foundation/common/_typography.scss */
   .hide-for-print {
     display: none !important;
   }
 
-  /* line 103, ../../../foundation/scss/foundation/common/_typography.scss */
+  /* line 101, ../../../foundation/scss/foundation/common/_typography.scss */
   .show-for-print {
     display: inherit !important;
   }
