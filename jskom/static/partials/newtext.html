@@ -6,23 +6,29 @@
 <p ng-hide="text">Loading...</p>
 <form ng-show="text">
 
-  <div class="row" ng-show="commentedText" ng-init="isCommentedTextVisible = false">
-    <div class="twelve mobile-two columns end">
-      <p>
-        <button class="secondary button dropup"
-                ng-show="isCommentedTextVisible" ng-click="isCommentedTextVisible = false">
-          Hide commented text<span class="caret"></span>
-        </button>
-        <button class="secondary button"
-                ng-hide="isCommentedTextVisible" ng-click="isCommentedTextVisible = true">
-          Show commmented text<span class="caret"></span>
-        </button>
-      </p>
-      
-      <blockquote ng-show="isCommentedTextVisible" class="jskomTextBody">
-        <p jskom-bind-body="commentedText.body"></p>
-        <cite>{{ commentedText.author|personName }}</cite>
-      </blockquote>
+  <div ng-show="commentedText" ng-init="isCommentedTextVisible = false">
+    <div class="row">
+      <div class="twelve mobile-two columns end">
+        <p>
+          <button class="secondary button dropup"
+                  ng-show="isCommentedTextVisible" ng-click="isCommentedTextVisible = false">
+            Hide commented text<span class="caret"></span>
+          </button>
+          <button class="secondary button"
+                  ng-hide="isCommentedTextVisible" ng-click="isCommentedTextVisible = true">
+            Show commmented text<span class="caret"></span>
+          </button>
+        </p>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="twelve columns">
+        <blockquote ng-show="isCommentedTextVisible" class="jskomTextBody">
+          <p jskom-bind-body="commentedText.body"></p>
+          <cite>{{ commentedText.author|personName }}</cite>
+        </blockquote>
+      </div>
     </div>
   </div>
   
