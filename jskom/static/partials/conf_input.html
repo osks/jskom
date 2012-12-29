@@ -5,7 +5,7 @@
              ng-disabled="conf" ng-model="lookup" />
     </div>
     <div class="two mobile-one columns">
-      <button class="secondary button expand postfix" tabindex="-1"
+      <button type="button" class="secondary button expand postfix" tabindex="-1"
          ng-disabled="isLoading || lookup.length < 1 || matches.length > 0"
          ng-readonly="isLoading" ng-click="getConf()">
         <i class="icon-search"></i>
@@ -31,7 +31,7 @@
     <div class="ten mobile-three columns">
       <select class=""
               ng-model="model"
-            ng-disabled="!conf"
+              ng-disabled="!conf"
               ng-options="mp.conf_no as mp.conf_name for mp in matches">
       </select>
     </div>
