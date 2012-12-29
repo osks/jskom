@@ -1,8 +1,10 @@
 <nav class="top-bar" ng-class="isExpanded()" ng-cloak>
 
-  <ul ng-click="toggleExpanded($event)">
+  <ul>
     <li class="name"><h1><a href="/">jskom</a></h1></li>
-    <li class="toggle-topbar"><a ng-click="toggleExpanded($event)"></a></li>
+    <li class="toggle-topbar" ng-click="toggleExpanded($event)">
+      <a ng-click="toggleExpanded($event)"></a>
+    </li>
   </ul>
   
   <section ng-style="{ left: '-' + (menuLevel * 100) + '%' }">
