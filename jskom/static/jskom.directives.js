@@ -331,7 +331,6 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             scope.clearMatching = function() {
               scope.conf = null;
               scope.matches = [];
-              scope.delayedResize();
             };
             
             scope.getConf = function() {
@@ -359,7 +358,6 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
                                                   errorMsgText(scope.wantPers, scope.wantConfs) +
                                                   ' with that name.');
                     }
-                    scope.delayedResize();
                   },
                   function(response) {
                     $log.log("<jskom:conf-input> - lookupConferences(" + scope.lookup +
@@ -374,11 +372,6 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
         ],
         link: function(scope, iElement, iAttrs) {
           var lookupInputEl = iElement.find('.jskomConfInputLookup input');
-          var lookupButtonEl = iElement.find('.jskomConfInputLookup button');
-          var confNameInputEl = iElement.find('.jskomConfInputConfName input');
-          var confNameButtonEl = iElement.find('.jskomConfInputConfName button');
-          var matchesInputEl = iElement.find('.jskomConfInputMatches select');
-          var matchesButtonEl = iElement.find('.jskomConfInputMatches button');
           
           angular.element(lookupInputEl).bind('keydown', function(e) {
             if (e.keyCode == 13) {
@@ -401,48 +394,6 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           if (('autofocus' in iAttrs)) {
             lookupInputEl.focus();
           }
-          
-          var resize = function() {
-            //$log.log("<jskom:conf-input> - resize");
-            var elWidth = iElement.width();
-            
-            /*if (matchesInputEl.is(':visible')) {
-              matchesInputEl.width(
-                elWidth - matchesButtonEl.outerWidth() -
-                  (matchesInputEl.outerWidth() - matchesInputEl.width()) -
-                  4);
-            }
-            
-            if (lookupInputEl.is(':visible')) {
-              lookupInputEl.width(
-                elWidth - lookupButtonEl.outerWidth() -
-                  (lookupInputEl.outerWidth() - lookupInputEl.width()) -
-                  0);
-            }
-            
-            if (confNameInputEl.is(':visible')) {
-              confNameInputEl.width(
-                elWidth - confNameButtonEl.outerWidth() -
-                  (confNameInputEl.outerWidth() - confNameInputEl.width()) -
-                  0);
-            }*/
-          };
-          var delayedResizePromise = null;
-          scope.delayedResize = function() {
-            if (!delayedResizePromise) {
-              delayedResizePromise = $timeout(function() {
-                resize();
-                delayedResizePromise = null;
-              }, 200);
-            }
-          };
-          angular.element($window).resize(function() {
-            scope.$apply(function() {
-              scope.delayedResize();
-            });
-          });
-          resize();
-          scope.delayedResize();
         }
       };
     }
