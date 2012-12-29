@@ -14,7 +14,7 @@
     </dd>
     
     <dd ng-repeat="r in text.recipient_list">
-      <span class="secondary label">{{ r.type|capitalize }}:</span>
+      <span class="secondary label">{{ r.type|capitalize }}</span>
       
       <a href="/conferences/{{r.recpt.conf_no}}">{{ r.recpt|confName }}</a>
       <span ng-show="r.sent_by">
@@ -26,14 +26,14 @@
   
   <div class="row">
     <div class="eight mobile-three columns">
-      <p><span class="label">Subject:</span> {{ text.subject }}</p>
+      <p><span class="label">Subject</span> {{ text.subject }}</p>
     </div>
     
     <div class="four mobile-one columns">
       <ul class="button-group right" data-toggle="buttons-radio"
           ng-show="text.jskomBodyType == 'text'">
         <li>
-          <a ng-click="textMode = 'default'" class="small secondary button active">
+          <a ng-click="textMode = 'default'" class="small secondary button">
             <i class="icon-align-left"></i>
           </a>
         </li>
@@ -55,7 +55,7 @@
     <div ng-switch-when="image"><img ng-src="{{ text.jskomImageUrl }}" /></div>
     <div ng-switch-when="text">
       <ng-switch on="textMode">
-        <div class="jskomTextBody" ng-switch-default jskom-bind-body="text.body"></div>
+        <div ng-switch-default jskom-bind-body="text.body"></div>
         <pre ng-switch-when="raw" jskom-bind-body="text.body"></pre>
         <!--<div ng-switch-when="html" ng-bind-html="text.body"></div>-->
       </ng-switch>

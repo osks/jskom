@@ -29,7 +29,7 @@
     <li ng-class="isTabActive('advanced')">
       
       <div ng-repeat="commentTo in text.comment_to_list" class="row">
-        <div class="three mobile-one columns jskomCommentType">
+        <div class="three mobile-one columns">
           <select class="" ng-model="commentTo.type"
                   ng-options="ct.type as ct.name for ct in commentTypes"></select>
         </div>
@@ -50,8 +50,8 @@
           </button>
         </div>
         <div class="two mobile-one columns">
-          <select class="jskomRecipientType" ng-model="recipient.type"
-                    ng-options="rt.type as rt.name for rt in recipientTypes"></select>
+          <select ng-model="recipient.type"
+                  ng-options="rt.type as rt.name for rt in recipientTypes"></select>
         </div>
         <div class="nine mobile-two columns">
           <jskom:conf-input conn="connection" model="recipient.recpt.conf_no">
