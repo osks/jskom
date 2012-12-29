@@ -48,11 +48,15 @@ div.alert-box {
     padding-right: 1px;
 }
 
-@media only screen and (max-width: $topBarBreakPoint) {
-    .top-bar { margin-bottom: 15px; }
-}
-
 @media only screen and (min-width: $topBarBreakPoint + 1) {
     /* Override default height: inherit. */
     .top-bar.expanded { height: $topBarHeight; }
+}
+
+
+pre, pre * {
+    font-family: "Inconsolata", monospace;
+    word-break: break-all;
+    word-wrap: break-word;
+    white-space: pre-wrap;
 }

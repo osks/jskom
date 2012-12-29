@@ -15,8 +15,9 @@ $screenXlarge: 1441px !default;
 
 // Grid Settings
 
-$rowWidth: 1200px;
+$rowWidth: 1100px;
 // $columnGutter: 30px;
+$columnGutter: 20px;
 // $totalColumns: 12;
 // $mobileTotalColumns: 4;
 // $blockGridElements: 12; // Highest number of block grid elements, Maximum of 24 supported
@@ -28,6 +29,7 @@ $rowWidth: 1200px;
 // $alertColor: #c60f13;
 // $successColor: #5da423;
 // $txtColor: #222;
+$txtColor: #333;
 // $highlightColor: #ffff99;
 // $black: #000;
 // $white: #fff;
@@ -36,7 +38,6 @@ $rowWidth: 1200px;
 
 // Font Settings
 
-// $fontSmoothing: antialiased;
 // $headerFontFamily: "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
 $headerFontFamily: "Open Sans", sans-serif;
 // $headerFontWeight: bold;
@@ -44,6 +45,7 @@ $headerFontWeight: 400;
 // $headerFontStyle: normal;
 // $headerFontColor: #222;
 // $bodyFontFamily: "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+$bodyFontFamily: "Open Sans", sans-serif;
 // $bodyFontWeight: normal;
 // $bodyFontStyle: normal;
 // $bodyFontColor: $txtColor;
@@ -112,10 +114,12 @@ $headerFontWeight: 400;
 // $topBarHeight: 45px;
 // $topBarHeightMobile: 45px;
 // $topBarBtmMargin: 30px;
+$topBarBtmMargin: 10px;
 // $topBarTitleWeight: bold;
 // $topBarTitleSize: 17px;
 // $topBarLinkColor: #fff;
 // $topBarLinkWeight: bold;
+$topBarLinkWeight: normal;
 // $topBarLinkSize: 13px;
 // $topBarDropBgColor: #222;
 // $topBarDropLinkColor: #fff;
