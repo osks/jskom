@@ -36,7 +36,11 @@
       
       <div class="three mobile-one columns">
         <button type="button" class="secondary button" ng-click="writeComment()">
-          Comment
+          <i class="icon-pencil"></i>
+          <span>
+            <!-- Must nest hide-for-small in span because of "display: inherit" -->
+            <span class="hide-for-small">Comment</span>
+          </span>
         </button>
       </div>
       
@@ -68,12 +72,18 @@
       <div class="three mobile-one columns">
         <button type="button" class="button right"
                 ng-click="readNext()" ng-disabled="!reader || textIsLoading">
-          <span ng-show="reader.isEmpty()">Conferences</span>
-          <span ng-hide="reader.isEmpty()">
-            <span ng-show="reader.hasPending()">
-              Show pending ({{ reader.pendingSize() }})
+          <i class="icon-arrow-right"></i>
+          <span>
+            <!-- Must nest hide-for-small in span because of "display: inherit" -->
+            <span class="hide-for-small">
+              <span ng-show="reader.isEmpty()">Conferences</span>
+              <span ng-hide="reader.isEmpty()">
+                <span ng-show="reader.hasPending()">
+                  Show pending ({{ reader.pendingSize() }})
+                </span>
+                <span ng-hide="reader.hasPending()">Read next</span>
+              </span>
             </span>
-            <span ng-hide="reader.hasPending()">Read next</span>
           </span>
         </button>
       </div>
