@@ -56,7 +56,9 @@ js_jskom = Bundle('jskom.js',
                   output='gen/packed_jskom.js')
 assets.register('js_jskom', js_jskom)
 
-css_jskom = Bundle('style.css',
+css_jskom = Bundle('stylesheets/app.css',
+                   'stylesheets/font-awesome.css',
+                   'style.css',
                    filters='cssmin',
                    output='gen/packed_jskom.css')
 assets.register('css_jskom', css_jskom)

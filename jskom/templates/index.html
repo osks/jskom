@@ -9,18 +9,9 @@
     
     <link href='http://fonts.googleapis.com/css?family=Inconsolata|Open+Sans:400italic,700italic,400,700' rel='stylesheet' type='text/css'>
     
-    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/app.css') }}">
-    
-    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/foundicons/general/general_foundicons.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/foundicons/general_enclosed/general_enclosed_foundicons.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/foundicons/social/social_foundicons.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/foundicons/accessibility/accessibility_foundicons.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/font-awesome.css') }}">
-    
-    
-    {# % assets "css_jskom" %}
+    {% assets "css_jskom" %}
     <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}" />
-    {%- endassets % #}
+    {%- endassets %}
     
     {% assets "js_libs" %}
     <script type="text/javascript" src="{{ ASSET_URL }}"></script>
