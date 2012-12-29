@@ -27,7 +27,7 @@
   <div id="jskomControlBar">
     <div class="row">
       <!--<div class="four mobile-one columns">
-        <button class="secondary button"
+        <button type="button" class="secondary button"
                 ng-disabled="readerIsLoading || !reader"
                 ng-click="refresh()">
           <i class="foundicon-general-refresh"></i>
@@ -70,7 +70,7 @@
       </div>
       
       <div class="three mobile-one columns">
-        <button type="button" class="button right"
+        <button type="submit" class="button right"
                 ng-click="readNext()" ng-disabled="!reader || textIsLoading">
           <i class="icon-arrow-right"></i>
           <span>
