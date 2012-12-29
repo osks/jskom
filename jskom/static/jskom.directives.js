@@ -19,7 +19,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
         });
         
         largest.children('li:visible').each(function () {
-          $log.log(angular.element(this).outerHeight(true));
+          //$log.log(angular.element(this).outerHeight(true));
           total += angular.element(this).outerHeight(true);
         });
         
@@ -49,6 +49,8 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           $scope.toggleExpanded = function($event) {
             $event.stopPropagation();
             $event.preventDefault();
+            $log.log("jskomTopBar - toggleExpanded");
+            
             if ($scope.isTopBarExpanded) {
               $scope.unexpandTopBar();
             } else {
@@ -72,6 +74,12 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           };
           
           $scope.openMenu = function(menu, $event) {
+            // Don't open unless expanded. We get clicks when in
+            // non-mobile mode and then we don't want to do anything.
+            if (!$scope.isExpanded()) {
+              return;
+            }
+            
             $scope.activeMenu = menu;
             $scope.menuLevel = 1; // only support for one sub menu yet
             
@@ -80,10 +88,10 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             
             var height = getLargestUL(iElement);
             var titleBarHeight = $scope.titleBar.outerHeight(true);
-            $log.log("open");
+            /*$log.log("open");
             $log.log(titleBarHeight);
             $log.log(height);
-            $log.log(height + titleBarHeight);
+            $log.log(height + titleBarHeight);*/
             
             target.siblings('ul').height(height + titleBarHeight);
             $scope.topbar.css('min-height', height + titleBarHeight*2);
