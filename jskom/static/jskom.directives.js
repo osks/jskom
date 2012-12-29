@@ -128,7 +128,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
               str = value.toString();
             }
             var formattedBody = htmlFormattingService.formatBody(str);
-            var templateHtml = angular.element('<article>' + formattedBody + '</article>');
+            var templateHtml = angular.element('<p>' + formattedBody + '</p>');
             $compile(templateHtml)(scope);
             iElement.html(templateHtml);
           });
