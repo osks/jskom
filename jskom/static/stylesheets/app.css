@@ -5099,10 +5099,14 @@ div.alert-box a.close {
     height: 45px;
   }
 }
-/* line 57, ../../../foundation/scss/_jskom.scss */
-pre, pre * {
-  font-family: "Inconsolata", monospace;
+/* line 56, ../../../foundation/scss/_jskom.scss */
+article {
   word-break: break-all;
   word-wrap: break-word;
+}
+
+/* line 61, ../../../foundation/scss/_jskom.scss */
+pre, pre * {
+  font-family: "Inconsolata", monospace;
   white-space: pre-wrap;
 }

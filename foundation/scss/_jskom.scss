@@ -53,10 +53,12 @@ div.alert-box {
     .top-bar.expanded { height: $topBarHeight; }
 }
 
+article {
+    word-break: break-all;
+    word-wrap: break-word;
+}
 
 pre, pre * {
     font-family: "Inconsolata", monospace;
-    word-break: break-all;
-    word-wrap: break-word;
     white-space: pre-wrap;
 }

@@ -48,7 +48,7 @@
   
   <hr />
   
-  <ng-switch on="text.jskomBodyType">
+  <article ng-switch="text.jskomBodyType">
     <div ng-switch-default>
       [unknown content-type: &quot;{{ text.content_type }}&quot;]
     </div>
@@ -60,7 +60,7 @@
         <!--<div ng-switch-when="html" ng-bind-html="text.body"></div>-->
       </ng-switch>
     </div>
-  </ng-switch>
+  </article>
   
   <hr />
   
