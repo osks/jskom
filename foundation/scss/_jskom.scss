@@ -48,6 +48,12 @@ div.alert-box {
     padding-right: 1px;
 }
 
+@media only screen and (max-width: $topBarBreakPoint) {
+    /* Add some extra bottom margin to fix tab borders (blue bar on top)
+       in mobile mode . Otherwise it shows on-top of the top-bar. */
+    .top-bar { margin-bottom: 10px; }
+}
+
 @media only screen and (min-width: $topBarBreakPoint + 1) {
     /* Override default height: inherit. */
     .top-bar.expanded { height: $topBarHeight; }

@@ -5092,20 +5092,28 @@ div.alert-box a.close {
   padding-right: 1px;
 }
 
+@media only screen and (max-width: 768px) {
+  /* Add some extra bottom margin to fix tab borders (blue bar on top)
+     in mobile mode . Otherwise it shows on-top of the top-bar. */
+  /* line 54, ../../../foundation/scss/_jskom.scss */
+  .top-bar {
+    margin-bottom: 10px;
+  }
+}
 @media only screen and (min-width: 769px) {
   /* Override default height: inherit. */
-  /* line 53, ../../../foundation/scss/_jskom.scss */
+  /* line 59, ../../../foundation/scss/_jskom.scss */
   .top-bar.expanded {
     height: 45px;
   }
 }
-/* line 56, ../../../foundation/scss/_jskom.scss */
+/* line 62, ../../../foundation/scss/_jskom.scss */
 article {
   word-break: break-all;
   word-wrap: break-word;
 }
 
-/* line 61, ../../../foundation/scss/_jskom.scss */
+/* line 67, ../../../foundation/scss/_jskom.scss */
 pre, pre * {
   font-family: "Inconsolata", monospace;
   white-space: pre-wrap;
