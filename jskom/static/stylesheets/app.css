@@ -5151,3 +5151,30 @@ pre, pre * {
 .button.dropdown > ul.show-dropdown {
   display: block !important;
 }
+
+/* Control bar in touch mode */
+/* line 103, ../../../foundation/scss/_jskom.scss */
+.touch body {
+  padding-bottom: 60px;
+}
+/* line 107, ../../../foundation/scss/_jskom.scss */
+.touch #jskomControlBar {
+  /* colors from panel class */
+  background: #f2f2f2;
+  border: solid 1px #e6e6e6;
+  position: fixed;
+  bottom: 0px;
+  width: 100%;
+  left: 0px;
+  margin: 0;
+  padding: 5px 10px;
+  z-index: 10000;
+}
+/* line 120, ../../../foundation/scss/_jskom.scss */
+.touch #jskomControlBar > :first-child {
+  margin-top: 0;
+}
+/* line 121, ../../../foundation/scss/_jskom.scss */
+.touch #jskomControlBar > :last-child {
+  margin-bottom: 0;
+}

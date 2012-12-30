@@ -98,3 +98,26 @@ pre, pre * {
 }
 
 
+/* Control bar in touch mode */
+.touch {
+    body {
+        padding-bottom: 60px;
+    }
+    
+    #jskomControlBar {
+        /* colors from panel class */
+        background: darken($white, 5%);
+        border: solid 1px darken($white, 10%);
+        
+        position: fixed;
+        bottom: 0px;
+        width: 100%;
+        left: 0px;
+        margin: 0;
+        padding: 5px 10px;
+        z-index: 10000;
+        
+        > :first-child { margin-top: 0; }
+        > :last-child { margin-bottom: 0; }
+    }
+}
