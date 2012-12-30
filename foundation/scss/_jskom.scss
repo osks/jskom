@@ -60,12 +60,16 @@ div.alert-box {
 }
 
 
+article {
+    margin-bottom: ms(1);
+}
+
 /* Wrap text lines */
 article {
     overflow-wrap: break-word;
     border-top: 1px solid darken($white, 20%);
     border-bottom: 1px solid darken($white, 20%);
-    padding-top: 17px;
+    padding-top: ms(1);
 }
 pre, pre * {
     font-family: "Inconsolata", monospace;
