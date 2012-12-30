@@ -5122,3 +5122,32 @@ pre, pre * {
   font-family: "Inconsolata", monospace;
   white-space: pre-wrap;
 }
+
+/* Fix button dropdowns. */
+/* line 74, ../../../foundation/scss/_jskom.scss */
+.button.dropdown {
+  /* Instead of setting top/bottom with px based on height calculated in
+     javascript, just use 100%. No idea why Foundation doesn't do
+     this. Could be some browser bug, but it just seem like bad
+     code. */
+  /* Show the dropdown even if the javascripts haven't added the
+     no-hover class (which didn't seem to really do anything). */
+}
+/* line 76, ../../../foundation/scss/_jskom.scss */
+.button.dropdown > ul {
+  /* Always show the border. */
+  border: 1px solid #cccccc !important;
+}
+/* line 85, ../../../foundation/scss/_jskom.scss */
+.button.dropdown > ul {
+  top: 100%;
+}
+/* line 88, ../../../foundation/scss/_jskom.scss */
+.button.dropdown.up > ul {
+  top: auto;
+  bottom: 100%;
+}
+/* line 95, ../../../foundation/scss/_jskom.scss */
+.button.dropdown > ul.show-dropdown {
+  display: block !important;
+}
