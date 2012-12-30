@@ -59,11 +59,11 @@ div.alert-box {
     .top-bar.expanded { height: $topBarHeight; }
 }
 
-article {
-    word-break: break-all;
-    word-wrap: break-word;
-}
 
+/* Wrap text lines */
+article {
+    overflow-wrap: break-word;
+}
 pre, pre * {
     font-family: "Inconsolata", monospace;
     white-space: pre-wrap;

@@ -5111,10 +5111,10 @@ div.alert-box a.close {
     height: 45px;
   }
 }
-/* line 62, ../../../foundation/scss/_jskom.scss */
+/* Wrap text lines */
+/* line 64, ../../../foundation/scss/_jskom.scss */
 article {
-  word-break: break-all;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* line 67, ../../../foundation/scss/_jskom.scss */
