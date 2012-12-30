@@ -5115,16 +5115,19 @@ div.alert-box a.close {
 /* line 64, ../../../foundation/scss/_jskom.scss */
 article {
   overflow-wrap: break-word;
+  border-top: 1px solid #cccccc;
+  border-bottom: 1px solid #cccccc;
+  padding-top: 17px;
 }
 
-/* line 67, ../../../foundation/scss/_jskom.scss */
+/* line 70, ../../../foundation/scss/_jskom.scss */
 pre, pre * {
   font-family: "Inconsolata", monospace;
   white-space: pre-wrap;
 }
 
 /* Fix button dropdowns. */
-/* line 74, ../../../foundation/scss/_jskom.scss */
+/* line 77, ../../../foundation/scss/_jskom.scss */
 .button.dropdown {
   /* Instead of setting top/bottom with px based on height calculated in
      javascript, just use 100%. No idea why Foundation doesn't do
@@ -5133,31 +5136,31 @@ pre, pre * {
   /* Show the dropdown even if the javascripts haven't added the
      no-hover class (which didn't seem to really do anything). */
 }
-/* line 76, ../../../foundation/scss/_jskom.scss */
+/* line 79, ../../../foundation/scss/_jskom.scss */
 .button.dropdown > ul {
   /* Always show the border. */
   border: 1px solid #cccccc !important;
 }
-/* line 85, ../../../foundation/scss/_jskom.scss */
+/* line 88, ../../../foundation/scss/_jskom.scss */
 .button.dropdown > ul {
   top: 100%;
 }
-/* line 88, ../../../foundation/scss/_jskom.scss */
+/* line 91, ../../../foundation/scss/_jskom.scss */
 .button.dropdown.up > ul {
   top: auto;
   bottom: 100%;
 }
-/* line 95, ../../../foundation/scss/_jskom.scss */
+/* line 98, ../../../foundation/scss/_jskom.scss */
 .button.dropdown > ul.show-dropdown {
   display: block !important;
 }
 
 /* Control bar in touch mode */
-/* line 103, ../../../foundation/scss/_jskom.scss */
+/* line 106, ../../../foundation/scss/_jskom.scss */
 .touch body {
   padding-bottom: 60px;
 }
-/* line 107, ../../../foundation/scss/_jskom.scss */
+/* line 110, ../../../foundation/scss/_jskom.scss */
 .touch #jskomControlBar {
   /* colors from panel class */
   background: #f2f2f2;
@@ -5170,11 +5173,16 @@ pre, pre * {
   padding: 5px 10px;
   z-index: 10000;
 }
-/* line 120, ../../../foundation/scss/_jskom.scss */
+/* line 123, ../../../foundation/scss/_jskom.scss */
 .touch #jskomControlBar > :first-child {
   margin-top: 0;
 }
-/* line 121, ../../../foundation/scss/_jskom.scss */
+/* line 124, ../../../foundation/scss/_jskom.scss */
 .touch #jskomControlBar > :last-child {
   margin-bottom: 0;
+}
+
+/* line 128, ../../../foundation/scss/_jskom.scss */
+.jskomRight {
+  float: right;
 }

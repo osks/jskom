@@ -1,14 +1,20 @@
-  <div class="panel">
     <div class="row">
-      <div class="six mobile-two columns">
-        <button class="secondary button" ng-click="writeComment()">
-          Comment
+      <div class="three mobile-one columns">
+        <button type="button" class="secondary button" ng-click="writeComment()">
+          <i class="icon-pencil"></i>
+          <span>
+            <!-- Must nest hide-for-small in span because of "display: inherit" -->
+            <span class="hide-for-small">Comment</span>
+          </span>
         </button>
       </div>
       
-      <div class="six mobile-two columns">
-        <div class="button dropdown right">
-          Actions
+      <div class="three mobile-one columns">
+        <div class="secondary button dropdown up">
+          <i class="icon-cogs"></i>
+          <span>
+            <span class="hide-for-small">Actions</span>
+          </span>
           <ul class="dropdown-menu">
             <li>
               <a ng-click="showCommented()" ng-hide="showCommented == null">Show commented</a>
@@ -26,12 +32,29 @@
             </li>
           </ul>
         </div>
-      
-        <div>
-          <span class="label label-info" ng-show="text._is_unread == true">Unread</span>
-          <span class="label label-success" ng-show="text._is_unread == false">Read</span>
-          &nbsp;
-        </div>
       </div>
+      
+      <div class="three mobile-one columns">
+      </div>
+      
+      <div class="three mobile-one columns">
+        <button type="submit" class="button right"
+                ng-show="reader"
+                ng-click="readNext()" ng-disabled="!reader || textIsLoading">
+          <i class="icon-arrow-right"></i>
+          <span>
+            <!-- Must nest hide-for-small in span because of "display: inherit" -->
+            <span class="hide-for-small">
+              <span ng-show="reader.isEmpty()">Conferences</span>
+              <span ng-hide="reader.isEmpty()">
+                <span ng-show="reader.hasPending()">
+                  Show pending ({{ reader.pendingSize() }})
+                </span>
+                <span ng-hide="reader.hasPending()">Read next</span>
+              </span>
+            </span>
+          </span>
+        </button>
+      </div>
+      
     </div>
-  </div>

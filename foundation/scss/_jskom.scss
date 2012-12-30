@@ -63,6 +63,9 @@ div.alert-box {
 /* Wrap text lines */
 article {
     overflow-wrap: break-word;
+    border-top: 1px solid darken($white, 20%);
+    border-bottom: 1px solid darken($white, 20%);
+    padding-top: 17px;
 }
 pre, pre * {
     font-family: "Inconsolata", monospace;
@@ -120,4 +123,8 @@ pre, pre * {
         > :first-child { margin-top: 0; }
         > :last-child { margin-bottom: 0; }
     }
+}
+
+.jskomRight {
+    float: right;
 }

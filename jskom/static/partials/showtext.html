@@ -4,6 +4,8 @@
   <span ng-show="textIsLoading">Loading...</span>
   <div ng-controller="TextCtrl" ng-show="text">
     <ng-include src="'text.html'|jskomTemplate"></ng-include>
+  </div>
+  <div id="jskomControlBar">
     <ng-include src="'textcontrols.html'|jskomTemplate"></ng-include>
   </div>
 </div>

@@ -22,31 +22,9 @@
         <br/>Sent at: {{ r.sent_at }}
       </span>
     </dd>
-  </dl>
-  
-  <div class="row">
-    <div class="eight mobile-three columns">
-      <p><span class="label">Subject</span> {{ text.subject }}</p>
-    </div>
     
-    <div class="four mobile-one columns">
-      <ul class="button-group right" data-toggle="buttons-radio"
-          ng-show="text.jskomBodyType == 'text'">
-        <li>
-          <a ng-click="textMode = 'default'" class="small secondary button">
-            <i class="icon-align-left"></i>
-          </a>
-        </li>
-        <li>
-          <a ng-click="textMode = 'raw'" class="small secondary button">
-            <i class="icon-align-justify"></i>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </div>
-  
-  <hr />
+    <dd><span class="label">Subject</span> {{ text.subject }}</dd>
+  </dl>
   
   <article ng-switch="text.jskomBodyType">
     <div ng-switch-default>
@@ -61,8 +39,6 @@
       </ng-switch>
     </div>
   </article>
-  
-  <hr />
   
   <div ng-show="text.jskomFastReplies">
     <span class="secondary label">Remarks</span>
@@ -81,4 +57,33 @@
       by {{ ci.author|personName }}
     </dd>
   </dl>
+  
+  <div class="row">
+    <div class="six mobile-two columns">
+      <ul class="button-group" data-toggle="buttons-radio"
+          ng-show="text.jskomBodyType == 'text'">
+        <li>
+          <a ng-click="textMode = 'default'" class="small secondary button">
+            <i class="icon-align-left"></i>
+          </a>
+        </li>
+        <li>
+          <a ng-click="textMode = 'raw'" class="small secondary button">
+            <i class="icon-align-justify"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+    
+    <div class="three mobile-one columns"></div>
+    
+    <div class="three mobile-one columns">
+      <div class="jskomRight">
+        <span class="alert label" ng-show="text._is_unread == true">Unread</span>
+        <span class="success label" ng-show="text._is_unread == false">Read</span>
+        &nbsp;
+      </div>
+      <div style="clear: both;">&nbsp;</div>
+    </div>
+  </div>
 </div>
