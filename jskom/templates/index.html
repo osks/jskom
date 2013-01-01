@@ -29,7 +29,7 @@
   </head>
   <body ng-controller="ConnectionsCtrl">
     
-    <jskom-top-bar></jskom-top-bar>
+    <jskom:top-bar></jskom:top-bar>
     
     <ng-switch on="connection.isLoggedIn()" ng-show="connection" ng-cloak>
       <div class="row" ng-switch-default>
@@ -101,7 +101,6 @@
     <!--script src="{{ url_for('static', filename='javascripts/foundation/jquery.event.move.js') }}"></script-->
     <!--script src="{{ url_for('static', filename='javascripts/foundation/jquery.event.swipe.js') }}"></script-->
     <script src="{{ url_for('static', filename='javascripts/foundation/jquery.foundation.alerts.js') }}"></script>
-    <script src="{{ url_for('static', filename='javascripts/foundation/jquery.foundation.buttons.js') }}"></script>
     <!--script src="{{ url_for('static', filename='javascripts/foundation/jquery.foundation.forms.js') }}"></script-->
     <!--script src="{{ url_for('static', filename='javascripts/foundation/jquery.foundation.navigation.js') }}"></script-->
     <!--script src="{{ url_for('static', filename='javascripts/foundation/jquery.placeholder.js') }}"></script-->

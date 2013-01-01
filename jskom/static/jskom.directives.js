@@ -4,6 +4,34 @@
 
 // ngSanitize is needed for bind-html, which we use in jskom:text-body.
 angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
+  directive('jskomDropdownToggle', [
+    '$log', 'templatePath',
+    function($log, templatePath) {
+      var showDropdownClass = "show-dropdown";
+      
+      return {
+        restrict: 'E',
+        template: '<div ng-click="toggleDropdown($event)" ng-transclude></div>',
+        transclude: true,
+        replace: true,
+        scope: true,
+        link: function($scope, iElement, iAttrs) {
+          var dropdown = iElement.find('ul.dropdown-menu');
+          $scope.isOpen = false;
+          
+          $scope.toggleDropdown = function($event) {
+            if ($scope.isOpen) {
+              dropdown.removeClass(showDropdownClass);
+              $scope.isOpen = false;
+            } else {
+              dropdown.addClass(showDropdownClass);
+              $scope.isOpen = true;
+            }
+          };
+        }
+      };
+    }
+  ]).
   directive('jskomTopBar', [
     '$log', '$window', 'templatePath',
     function($log, $window, templatePath) {

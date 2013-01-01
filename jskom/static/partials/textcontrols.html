@@ -10,7 +10,7 @@
       </div>
       
       <div class="three mobile-one columns">
-        <div class="secondary button dropdown up">
+        <jskom:dropdown-toggle class="secondary dropdown button up">
           <i class="icon-bolt"></i>
           <span>
             <span class="hide-for-small">Actions</span>
@@ -24,6 +24,8 @@
                 Show all comments
               </a>
             </li>
+            
+            <!-- TODO: idea: disable instead of hiding -->
             <li ng-hide="text._is_unread == false">
               <a ng-click="markAsRead()" ng-disabled="readmarkIsLoading">Mark as read</a>
             </li>
@@ -31,7 +33,7 @@
               <a ng-click="markAsUnread()" ng-disabled="readmarkIsLoading">Mark as unread</a>
             </li>
           </ul>
-        </div>
+        </jskom:dropdown-toggle>
       </div>
       
       <div class="three mobile-one columns">
