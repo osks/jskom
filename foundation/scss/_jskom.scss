@@ -19,8 +19,10 @@ select {
 
 
 div.alert-box {
+    font-weight: normal;
+    
     border-color: #bce8f1; background-color: #d9edf7; color: #3a87ad; text-shadow: none;
-    h1, h2, h3, h4, h5, h6 { color: #3a87ad; font-weight: bold; }
+    h4 { color: #3a87ad; font-weight: bold; }
     
     &.success {
         border-color: #d6e9c6; background-color: #dff0d8; color: #468847; text-shadow: none;
@@ -99,7 +101,6 @@ div.alert-box {
         }
     }
 }
-
 
 article {
     margin-bottom: ms(1);

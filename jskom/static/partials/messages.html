@@ -1,7 +1,7 @@
 <div ng-controller="MessagesCtrl">
   <div class="alert-box {{message.level|alertBoxClass}}" ng-repeat="message in messages">
     <a class="close" ng-click="messages.splice($index, 1)">&times;</a>
-    <h4 class="" jskom-bind-linkified="message.heading"></h4>
+    <h4 jskom-bind-linkified="message.heading"></h4>
     <span jskom-bind-linkified="message.text"></span>
   </div>
 </div>

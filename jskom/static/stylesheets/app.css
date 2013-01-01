@@ -5037,57 +5037,58 @@ select[disabled] {
 
 /* line 21, ../../../foundation/scss/_jskom.scss */
 div.alert-box {
+  font-weight: normal;
   border-color: #bce8f1;
   background-color: #d9edf7;
   color: #3a87ad;
   text-shadow: none;
 }
-/* line 23, ../../../foundation/scss/_jskom.scss */
-div.alert-box h1, div.alert-box h2, div.alert-box h3, div.alert-box h4, div.alert-box h5, div.alert-box h6 {
+/* line 25, ../../../foundation/scss/_jskom.scss */
+div.alert-box h4 {
   color: #3a87ad;
   font-weight: bold;
 }
-/* line 25, ../../../foundation/scss/_jskom.scss */
+/* line 27, ../../../foundation/scss/_jskom.scss */
 div.alert-box.success {
   border-color: #d6e9c6;
   background-color: #dff0d8;
   color: #468847;
   text-shadow: none;
 }
-/* line 27, ../../../foundation/scss/_jskom.scss */
+/* line 29, ../../../foundation/scss/_jskom.scss */
 div.alert-box.success h1, div.alert-box.success h2, div.alert-box.success h3, div.alert-box.success h4, div.alert-box.success h5, div.alert-box.success h6 {
   color: #468847;
   font-weight: bold;
 }
-/* line 29, ../../../foundation/scss/_jskom.scss */
+/* line 31, ../../../foundation/scss/_jskom.scss */
 div.alert-box.alert {
   border-color: #eed3d7;
   background-color: #f2dede;
   color: #b94a48;
   text-shadow: none;
 }
-/* line 31, ../../../foundation/scss/_jskom.scss */
+/* line 33, ../../../foundation/scss/_jskom.scss */
 div.alert-box.alert h1, div.alert-box.alert h2, div.alert-box.alert h3, div.alert-box.alert h4, div.alert-box.alert h5, div.alert-box.alert h6 {
   color: #b94a48;
   font-weight: bold;
 }
-/* line 33, ../../../foundation/scss/_jskom.scss */
+/* line 35, ../../../foundation/scss/_jskom.scss */
 div.alert-box.secondary {
   background-color: #e9e9e9;
   color: #505050;
   text-shadow: none;
 }
-/* line 35, ../../../foundation/scss/_jskom.scss */
+/* line 37, ../../../foundation/scss/_jskom.scss */
 div.alert-box.secondary h1, div.alert-box.secondary h2, div.alert-box.secondary h3, div.alert-box.secondary h4, div.alert-box.secondary h5, div.alert-box.secondary h6 {
   color: #505050;
   font-weight: bold;
 }
-/* line 38, ../../../foundation/scss/_jskom.scss */
+/* line 40, ../../../foundation/scss/_jskom.scss */
 div.alert-box a.close {
   color: #000;
 }
 
-/* line 43, ../../../foundation/scss/_jskom.scss */
+/* line 45, ../../../foundation/scss/_jskom.scss */
 .top-bar {
   /* Fix for firefox getting a horizontal scroll bar. There seem to be a
      1px margin on the right side of the entire page. Could also add
@@ -5095,7 +5096,7 @@ div.alert-box a.close {
      obtrusive. The problem seem related to border-box. */
   padding-right: 1px;
 }
-/* line 51, ../../../foundation/scss/_jskom.scss */
+/* line 53, ../../../foundation/scss/_jskom.scss */
 .top-bar ul > li.has-dropdown .dropdown li:first-child label {
   font-size: 12px !important;
   color: #a2a2a2;
@@ -5104,58 +5105,58 @@ div.alert-box a.close {
 @media only screen and (max-width: 768px) {
   /* Add some extra bottom margin to fix tab borders (blue bar on top)
      in mobile mode . Otherwise it shows on-top of the top-bar. */
-  /* line 61, ../../../foundation/scss/_jskom.scss */
+  /* line 63, ../../../foundation/scss/_jskom.scss */
   .top-bar {
     margin-bottom: 10px;
   }
-  /* line 63, ../../../foundation/scss/_jskom.scss */
+  /* line 65, ../../../foundation/scss/_jskom.scss */
   .top-bar > ul {
     height: 45px;
   }
-  /* line 65, ../../../foundation/scss/_jskom.scss */
+  /* line 67, ../../../foundation/scss/_jskom.scss */
   .top-bar > ul > li.toggle-topbar i {
     color: white;
     font-size: 17px;
     padding-right: 15px;
   }
-  /* line 73, ../../../foundation/scss/_jskom.scss */
+  /* line 75, ../../../foundation/scss/_jskom.scss */
   .top-bar ul > li.has-dropdown .dropdown li:first-child {
     display: block;
   }
-  /* line 77, ../../../foundation/scss/_jskom.scss */
+  /* line 79, ../../../foundation/scss/_jskom.scss */
   .top-bar ul > li.has-dropdown .dropdown li.title.back h5 {
     padding-left: 0px;
   }
-  /* line 79, ../../../foundation/scss/_jskom.scss */
+  /* line 81, ../../../foundation/scss/_jskom.scss */
   .top-bar ul > li.has-dropdown .dropdown li.title.back h5 a {
     font-size: 14px;
     font-weight: normal;
     padding-left: 33.75px !important;
   }
-  /* line 83, ../../../foundation/scss/_jskom.scss */
+  /* line 85, ../../../foundation/scss/_jskom.scss */
   .top-bar ul > li.has-dropdown .dropdown li.title.back h5 a:hover, .top-bar ul > li.has-dropdown .dropdown li.title.back h5 a:focus {
     background: #3c3c3c;
   }
 }
 @media only screen and (min-width: 769px) {
   /* Override default height: inherit. */
-  /* line 92, ../../../foundation/scss/_jskom.scss */
+  /* line 94, ../../../foundation/scss/_jskom.scss */
   .top-bar.expanded {
     height: 45px;
   }
 
-  /* line 96, ../../../foundation/scss/_jskom.scss */
+  /* line 98, ../../../foundation/scss/_jskom.scss */
   .top-bar ul > li.has-dropdown .dropdown li:first-child {
     display: none;
   }
 }
-/* line 104, ../../../foundation/scss/_jskom.scss */
+/* line 105, ../../../foundation/scss/_jskom.scss */
 article {
   margin-bottom: 17px;
 }
 
 /* Wrap text lines */
-/* line 109, ../../../foundation/scss/_jskom.scss */
+/* line 110, ../../../foundation/scss/_jskom.scss */
 article {
   overflow-wrap: break-word;
   border-top: 1px solid #cccccc;
@@ -5163,14 +5164,14 @@ article {
   padding-top: 17px;
 }
 
-/* line 115, ../../../foundation/scss/_jskom.scss */
+/* line 116, ../../../foundation/scss/_jskom.scss */
 pre, pre * {
   font-family: "Inconsolata", monospace;
   white-space: pre-wrap;
 }
 
 /* Fix button dropdowns. */
-/* line 122, ../../../foundation/scss/_jskom.scss */
+/* line 123, ../../../foundation/scss/_jskom.scss */
 .button.dropdown {
   /* Instead of setting top/bottom with px based on height calculated in
      javascript, just use 100%. No idea why Foundation doesn't do
@@ -5179,31 +5180,31 @@ pre, pre * {
   /* Show the dropdown even if the javascripts haven't added the
      no-hover class (which didn't seem to really do anything). */
 }
-/* line 124, ../../../foundation/scss/_jskom.scss */
+/* line 125, ../../../foundation/scss/_jskom.scss */
 .button.dropdown > ul {
   /* Always show the border. */
   border: 1px solid #cccccc !important;
 }
-/* line 133, ../../../foundation/scss/_jskom.scss */
+/* line 134, ../../../foundation/scss/_jskom.scss */
 .button.dropdown > ul {
   top: 100%;
 }
-/* line 136, ../../../foundation/scss/_jskom.scss */
+/* line 137, ../../../foundation/scss/_jskom.scss */
 .button.dropdown.up > ul {
   top: auto;
   bottom: 100%;
 }
-/* line 143, ../../../foundation/scss/_jskom.scss */
+/* line 144, ../../../foundation/scss/_jskom.scss */
 .button.dropdown > ul.show-dropdown {
   display: block !important;
 }
 
 /* Control bar in touch mode */
-/* line 151, ../../../foundation/scss/_jskom.scss */
+/* line 152, ../../../foundation/scss/_jskom.scss */
 .touch body {
   padding-bottom: 60px;
 }
-/* line 155, ../../../foundation/scss/_jskom.scss */
+/* line 156, ../../../foundation/scss/_jskom.scss */
 .touch #jskomControlBar {
   /* colors from panel class */
   background: #f2f2f2;
@@ -5216,16 +5217,16 @@ pre, pre * {
   padding: 5px 10px;
   z-index: 10000;
 }
-/* line 168, ../../../foundation/scss/_jskom.scss */
+/* line 169, ../../../foundation/scss/_jskom.scss */
 .touch #jskomControlBar > :first-child {
   margin-top: 0;
 }
-/* line 169, ../../../foundation/scss/_jskom.scss */
+/* line 170, ../../../foundation/scss/_jskom.scss */
 .touch #jskomControlBar > :last-child {
   margin-bottom: 0;
 }
 
-/* line 173, ../../../foundation/scss/_jskom.scss */
+/* line 174, ../../../foundation/scss/_jskom.scss */
 .jskomRight {
   float: right;
 }
