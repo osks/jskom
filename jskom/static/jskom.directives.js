@@ -7,23 +7,17 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
   directive('jskomTopBar', [
     '$log', '$window', 'templatePath',
     function($log, $window, templatePath) {
-      var getLargestUL = function(element) {
-        var uls = element.find('section ul ul');
-        var largest = uls.first();
+      var getMenuHeight = function(element) {
         var total = 0;
-        
-        uls.each(function() {
-          if (angular.element(this).children('li').length > largest.children('li').length) {
-            largest = angular.element(this);
-          }
-        });
-        
-        largest.children('li:visible').each(function () {
-          //$log.log(angular.element(this).outerHeight(true));
+        var count = 0;
+        element.children('li:visible').each(function() {
+          //$log.log("child: " + angular.element(this).outerHeight(true));
           total += angular.element(this).outerHeight(true);
+          count += 1;
         });
-        
-        return total;
+        // For some reason the height isn't correct, this is a heuristic for fixing the height.
+        var extra = 10 + ((count-1) * 3);
+        return total + extra;
       };
       
       return {
@@ -49,7 +43,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           $scope.toggleExpanded = function($event) {
             $event.stopPropagation();
             $event.preventDefault();
-            $log.log("jskomTopBar - toggleExpanded");
+            //$log.log("jskomTopBar - toggleExpanded");
             
             if ($scope.isTopBarExpanded) {
               $scope.unexpandTopBar();
@@ -71,6 +65,10 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             $scope.activeMenu = null;
             $scope.menuLevel = 0; // only support for one sub menu yet
             $scope.topbar.css('min-height', '');
+            $scope.topbar.css('height', '');
+            $scope.topbar.find('section ul ul').each(function () {
+              angular.element(this).css('height', '');
+            });
           };
           
           $scope.openMenu = function(menu, $event) {
@@ -85,16 +83,21 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             
             var target = angular.element($event.target);
             var selectedLi = target.closest('li');
+            var dropdownUl = selectedLi.find('ul');
+            //$log.log(selectedLi);
             
-            var height = getLargestUL(iElement);
+            var height = getMenuHeight(dropdownUl);
             var titleBarHeight = $scope.titleBar.outerHeight(true);
-            /*$log.log("open");
-            $log.log(titleBarHeight);
-            $log.log(height);
-            $log.log(height + titleBarHeight);*/
             
-            target.siblings('ul').height(height + titleBarHeight);
-            $scope.topbar.css('min-height', height + titleBarHeight*2);
+            //$log.log(height);
+            //$log.log(titleBarHeight);
+            //$log.log(height + titleBarHeight);
+            
+            //$log.log("outer height before: " + dropdownUl.outerHeight(true));
+            dropdownUl.height(height);
+            var outerHeight = dropdownUl.outerHeight(true);
+            
+            $scope.topbar.height(outerHeight + titleBarHeight);
           };
           
           $scope.isMenuOpen = function(menu) {

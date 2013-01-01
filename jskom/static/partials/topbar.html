@@ -1,15 +1,16 @@
 <nav class="top-bar" ng-class="isExpanded()" ng-cloak>
 
   <ul>
-    <li class="name"><h1><a href="/">jskom</a></h1></li>
+    <li class="name" ng-click="unexpandTopBar()"><h1><a href="/">jskom</a></h1></li>
     <li class="toggle-topbar" ng-click="toggleExpanded($event)">
-      <a ng-click="toggleExpanded($event)"></a>
+      <i ng-hide="isExpanded()" class="icon-plus jskomRight"></i>
+      <i ng-show="isExpanded()" class="icon-minus jskomRight"></i>
     </li>
   </ul>
   
   <section ng-style="{ left: '-' + (menuLevel * 100) + '%' }">
     <ul class="left">
-      <li>
+      <li ng-click="unexpandTopBar()">
         <a class="home" ng-href="/">Home</a>
       </li>
       
@@ -18,10 +19,11 @@
         <a ng-click="openMenu('texts', $event)">Texts</a>
         
         <ul class="dropdown">
-          <li class="title back js-generated">
-            <h5><a ng-click="closeMenu()">Texts</a></h5>
+          <li class="title back">
+            <h5><a ng-click="closeMenu()">Back</a></h5>
+            <label>Texts</label>
           </li>
-          <li><a href="/texts/new">New text</a></li>
+          <li ng-click="unexpandTopBar()"><a href="/texts/new">New text</a></li>
         </ul>
       </li>
 
@@ -30,12 +32,13 @@
         <a ng-click="openMenu('conferences', $event)">Conferences</a>
         
         <ul class="dropdown">
-          <li class="title back js-generated">
-            <h5><a ng-click="closeMenu()">Conferences</a></h5>
+          <li class="title back">
+            <h5><a ng-click="closeMenu()">Back</a></h5>
+            <label>Conferences</label>
           </li>
-          <li><a href="/conferences/go-to">Go to conference</a></li>
-          <li><a href="/conferences/list">List conferences</a></li>
-          <li><a href="/conferences/set-unread">Set unread</a></li>
+          <li ng-click="unexpandTopBar()"><a href="/conferences/go-to">Go to conference</a></li>
+          <li ng-click="unexpandTopBar()"><a href="/conferences/list">List conferences</a></li>
+          <li ng-click="unexpandTopBar()"><a href="/conferences/set-unread">Set unread</a></li>
         </ul>
       </li>
     </ul>
@@ -56,8 +59,9 @@
         </a>
         
         <ul class="dropdown">
-          <li class="title back js-generated">
-            <h5><a ng-click="closeMenu()">Sessions</a></h5>
+          <li class="title back">
+            <h5><a ng-click="closeMenu()">Back</a></h5>
+            <label>Sessions</label>
           </li>
           <li ng-show="connection.isLoggedIn()" ng-click="unexpandTopBar()">
             <a ng-click="logout()">Logout {{conn.session.person|personName}}</a>
@@ -65,7 +69,7 @@
           
           <li class="divider" ng-show="connection.isLoggedIn()"></li>
           
-          <li><label>Sessions</label></li>
+          <li><label>Active sessions</label></li>
           <li ng-repeat="conn in connections" ng-click="unexpandTopBar()">
             <a ng-click="selectConnection(conn)">
               <i class="icon-user" ng-show="conn.id == connection.id"></i>
