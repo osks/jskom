@@ -1,8 +1,8 @@
-<div>
+<div ng-controller="TextCtrl" >
   <h2>Text number: {{ textNo }}</h2>
   
-  <span ng-show="textIsLoading">Loading...</span>
-  <div ng-controller="TextCtrl" ng-show="text">
+  <p ng-show="textIsLoading">Loading...</p>
+  <div ng-show="text">
     <ng-include src="'text.html'|jskomTemplate"></ng-include>
   </div>
   <div id="jskomControlBar">
