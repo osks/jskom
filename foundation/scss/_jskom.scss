@@ -125,6 +125,27 @@ pre, pre * {
     >ul {
         /* Always show the border. */
         border: 1px solid darken($white, 20%) !important;
+        
+        li {
+            /* Make it possible to have buttons in the dropdown (they can be disabled) */
+            button {
+                cursor: pointer;
+                display: block;
+                color: #555;
+                font-size: ms(0) - 1;
+                font-weight: $bodyFontWeight;
+                padding: 6px 14px;
+                text-align: $defaultFloat;
+                
+                -webkit-appearance: none;
+                border: none;
+                background: none;
+                
+                &.disabled, &[disabled] {
+                    opacity: 0.6; cursor: default;
+                }
+            }
+        }
     }
     
     /* Instead of setting top/bottom with px based on height calculated in
@@ -147,6 +168,13 @@ pre, pre * {
 }
 
 
+/* Control bar */
+#jskomControlBar {
+    .panel {
+        padding: 10px;
+    }
+}
+
 /* Control bar in touch mode */
 .touch {
     body {
@@ -168,6 +196,12 @@ pre, pre * {
         
         > :first-child { margin-top: 0; }
         > :last-child { margin-bottom: 0; }
+        
+        .panel {
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
     }
 }
 

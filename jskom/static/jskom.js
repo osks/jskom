@@ -105,6 +105,10 @@ angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
           templateUrl: templatePathProvider.path('newtext.html'),
           controller: 'NewTextCtrl'
         }).
+        when('/texts/marks/', {
+          templateUrl: templatePathProvider.path('listmarks.html'),
+          controller: 'ListMarksCtrl'
+        }).
         when('/texts/:textNo', {
           templateUrl: templatePathProvider.path('showtext.html'),
           controller: 'ShowTextCtrl'

@@ -1,62 +1,117 @@
-    <div class="row">
+<ng-switch on="markTextFormIsVisible">
+  <!-- Use ng-switch to create a new scope each time it is closed. --> 
+  <form ng-controller="MarkTextCtrl" class="panel" ng-switch-when="true">
+    <h3>Mark text</h3>
+    <div class="row collapse">
       <div class="three mobile-one columns">
-        <button type="button" class="secondary button" ng-click="writeComment()">
-          <i class="icon-pencil"></i>
+        <button type="button" class="secondary button prefix"
+                ng-click="hideMarkTextForm()">
+          <i class="icon-remove"></i>
           <span>
-            <!-- Must nest hide-for-small in span because of "display: inherit" -->
-            <span class="hide-for-small">Comment</span>
+            <span class="hide-for-small">Close</span>
+          </span>
+        </button> 
+      </div>
+      <div class="two mobile-one columns">
+        <span class="prefix">Type:</span>
+      </div>
+      <div class="four mobile-one columns">
+        <input type="number" name="markType" ng-model="markType" />
+      </div>
+      <div class="three mobile-one columns">
+        <button type="submit" class="success button expand postfix"
+                ng-disabled="isMarking" ng-click="markText()">
+          <i class="icon-ok"></i>
+          <span>
+            <span class="hide-for-small">Mark</span>
           </span>
         </button>
       </div>
-      
-      <div class="three mobile-one columns">
-        <jskom:dropdown-toggle class="secondary dropdown button up">
-          <i class="icon-bolt"></i>
-          <span>
-            <span class="hide-for-small">Actions</span>
-          </span>
-          <ul class="dropdown-menu">
-            <li ng-hide="showCommented == null">
-              <a ng-click="showCommented()" >Show commented</a>
-            </li>
-            <li ng-hide="showAllComments == null">
-              <a ng-click="showAllComments()">
-                Show all comments
-              </a>
-            </li>
-            
-            <!-- TODO: idea: disable instead of hiding -->
-            <li ng-hide="text._is_unread == false">
-              <a ng-click="markAsRead()" ng-disabled="readmarkIsLoading">Mark as read</a>
-            </li>
-            <li ng-hide="text._is_unread == true">
-              <a ng-click="markAsUnread()" ng-disabled="readmarkIsLoading">Mark as unread</a>
-            </li>
-          </ul>
-        </jskom:dropdown-toggle>
-      </div>
-      
-      <div class="three mobile-one columns">
-      </div>
-      
-      <div class="three mobile-one columns">
-        <button type="submit" class="button right"
-                ng-show="reader"
-                ng-click="readNext()" ng-disabled="!reader || textIsLoading">
-          <i class="icon-arrow-right"></i>
-          <span>
-            <!-- Must nest hide-for-small in span because of "display: inherit" -->
-            <span class="hide-for-small">
-              <span ng-show="reader.isEmpty()">Conferences</span>
-              <span ng-hide="reader.isEmpty()">
-                <span ng-show="reader.hasPending()">
-                  Show pending ({{ reader.pendingSize() }})
-                </span>
-                <span ng-hide="reader.hasPending()">Read next</span>
-              </span>
-            </span>
-          </span>
-        </button>
-      </div>
-      
     </div>
+  </form>
+</ng-switch>
+
+<div class="row">
+  <div class="three mobile-one columns">
+    <button type="button" class="secondary button" ng-click="writeComment()"
+            ng-disabled="!text">
+      <i class="icon-pencil"></i>
+      <span>
+        <!-- Must nest hide-for-small in span because of "display: inherit" -->
+        <span class="hide-for-small">Comment</span>
+      </span>
+    </button>
+  </div>
+  
+  <div class="three mobile-one columns">
+    <jskom:dropdown-toggle class="secondary dropdown button up" ng-show="text">
+      <i class="icon-bolt"></i>
+      <span>
+        <span class="hide-for-small">Actions</span>
+      </span>
+      
+      <ul class="dropdown-menu">
+        <li>
+          <button ng-click="showMarkTextForm()" ng-disabled="markTextFormIsVisible">
+            Mark text...
+          </button>
+        </li>
+        <li ng-controller="UnmarkTextCtrl">
+          <button ng-click="unmarkText()" ng-disabled="isUnmarking">
+            Unmark text
+          </button>
+        </li>
+        
+        <li class="divider"></li>
+        <li>
+          <button ng-click="markAsRead()"
+                  ng-disabled="readmarkIsLoading || text._is_unread == false">
+            Mark as read
+          </button>
+        </li>
+        <li>
+          <button ng-click="markAsUnread()"
+                  ng-disabled="readmarkIsLoading || text._is_unread == true">
+            Mark as unread
+          </button>
+        </li>
+        
+        <li class="divider" ng-hide="showCommented == null && showAllComments == null"></li>
+        <li ng-hide="showCommented == null">
+          <button ng-click="showCommented()" >Show commented</button>
+        </li>
+        <li ng-hide="showAllComments == null">
+          <button ng-click="showAllComments()">
+            Show all comments
+          </button>
+        </li>
+      </ul>
+    </jskom:dropdown-toggle>
+  </div>
+  
+  <div class="three mobile-one columns">
+  </div>
+  
+  <div class="three mobile-one columns">
+    <button type="submit" class="button right"
+            ng-show="reader"
+            ng-click="readNext()" ng-disabled="!reader || textIsLoading">
+      <i class="icon-arrow-right"></i>
+      <span>
+        <!-- Must nest hide-for-small in span because of "display: inherit" -->
+        <span class="hide-for-small">
+          <span ng-show="reader.isEmpty()">Conferences</span>
+          <span ng-hide="reader.isEmpty()">
+            <span ng-show="reader.hasPending()">
+              Show pending ({{ reader.pendingSize() }})
+            </span>
+            <span ng-hide="reader.hasPending()">Read next</span>
+          </span>
+        </span>
+      </span>
+    </button>
+  </div>
+  
+</div>
+
+

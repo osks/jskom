@@ -610,20 +610,19 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
   ]).
   controller('TextCtrl', [
     '$scope', '$log', '$window', '$location',
-    'httpkomServer', 'keybindingService', 'readMarkingsService', 'textsService',
+    'httpkomServer', 'keybindingService', 'readMarkingsService', 'textsService', 'marksService',
     'messagesService',
     function($scope, $log, $window, $location,
-             httpkomServer, keybindingService, readMarkingsService, textsService,
+             httpkomServer, keybindingService, readMarkingsService, textsService, marksService,
              messagesService) {
       $scope.readmarkIsLoading = false;
+      $scope.markIsLoading = false;
       
       $scope.writeComment = function() {
-        if ($scope.text) {
-          var returnUrl = $location.url();
-          $location.url("/texts/new");
-          $location.search({ returnUrl: returnUrl,
-                             commentTo: $scope.text.text_no });
-        }
+        var returnUrl = $location.url();
+        $location.url("/texts/new");
+        $location.search({ returnUrl: returnUrl,
+                           commentTo: $scope.text.text_no });
       };
       
       keybindingService.bindPageSpecific('k', 'Write comment', function(e) {
@@ -634,39 +633,171 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       });
       
       $scope.markAsRead = function() {
-        if ($scope.text) {
-          var text = $scope.text;
-          $scope.readmarkIsLoading = true;
-          readMarkingsService.createGlobalReadMarking($scope.connection, text).then(
-            function(response) {
-              $log.log("TextCtrl - markAsRead(" + text.text_no + ") - success");
-              $scope.readmarkIsLoading = false;
-              text._is_unread = false;
-            },
-            function(response) {
-              $log.log("TextCtrl - markAsRead(" + text.text_no + ") - error");
-              $scope.readmarkIsLoading = false;
-              messagesService.showMessage('error', 'Failed to mark text as read.', response.data);
-            });
-        }
+        var text = $scope.text;
+        $scope.readmarkIsLoading = true;
+        readMarkingsService.createGlobalReadMarking($scope.connection, text).then(
+          function(response) {
+            $log.log("TextCtrl - markAsRead(" + text.text_no + ") - success");
+            $scope.readmarkIsLoading = false;
+            text._is_unread = false;
+          },
+          function(response) {
+            $log.log("TextCtrl - markAsRead(" + text.text_no + ") - error");
+            $scope.readmarkIsLoading = false;
+            messagesService.showMessage(
+              'error', 'Failed to mark text ' + text.text_no + ' as read.', response.data);
+          });
       };
       
       $scope.markAsUnread = function() {
-        if ($scope.text) {
-          var text = $scope.text;
-          $scope.readmarkIsLoading = false;
-          readMarkingsService.deleteGlobalReadMarking($scope.connection, text).then(
-            function(response) {
-              $log.log("TextCtrl - markAsUnread(" + text.text_no + ") - success");
-              $scope.readmarkIsLoading = false;
-              text._is_unread = true;
-            },
-            function(response) {
-              $log.log("TextCtrl - markAsUnread(" + text.text_no + ") - error");
-              $scope.readmarkIsLoading = false;
-              messagesService.showMessage('error', 'Failed to mark text as read.', response.data);
-            });
+        var text = $scope.text;
+        $scope.readmarkIsLoading = false;
+        readMarkingsService.deleteGlobalReadMarking($scope.connection, text).then(
+          function(response) {
+            $log.log("TextCtrl - markAsUnread(" + text.text_no + ") - success");
+            $scope.readmarkIsLoading = false;
+            text._is_unread = true;
+          },
+          function(response) {
+            $log.log("TextCtrl - markAsUnread(" + text.text_no + ") - error");
+            $scope.readmarkIsLoading = false;
+            messagesService.showMessage(
+              'error', 'Failed to mark text ' + text.text_no + ' as read.', response.data);
+          });
+      };
+      
+      
+      $scope.markTextFormIsVisible = false;
+      $scope.showMarkTextForm = function() {
+        $scope.markTextFormIsVisible = true;
+      };
+      $scope.hideMarkTextForm = function() {
+        $scope.markTextFormIsVisible = false;
+      };
+      
+      keybindingService.bindPageSpecific('M', 'Mark text', function(e) {
+        $scope.$apply(function() {
+          if ($scope.markTextFormIsVisible) {
+            $scope.hideMarkTextForm();
+          } else {
+            $scope.showMarkTextForm();
+          }
+        });
+        return false;
+      });
+      
+      $scope.$watch('text.text_no', function() {
+        $scope.hideMarkTextForm();
+      });
+    }
+  ]).
+  controller('UnmarkTextCtrl', [
+    '$scope', '$log',
+    'marksService', 'messagesService',
+    function($scope, $log, marksService, messagesService) {
+      $scope.isUnmarking = false;
+      
+      var unmarkText = function(textNo) {
+        $scope.isUnmarking = true;
+        marksService.deleteMark($scope.connection, textNo).then(
+          function(response) {
+            $log.log("UnmarkTextCtrl - markText(" + textNo + ") - success");
+            $scope.isUnmarking = false;
+            messagesService.showMessage('success', 'Successfully unmarked text ' + textNo + '.');
+          },
+          function(response) {
+            $log.log("UnmarkTextCtrl - markText(" + textNo + ") - error");
+            $scope.isUnmarking = false;
+            if (response.data.error_code === 44) {
+              messagesService.showMessage(
+                '', 'The text ' + response.data.error_status + ' was not marked.');
+            } else {
+              messagesService.showMessage('error', 'Failed to unmark text.', response.data);
+            }
+          });
+      };
+      
+      $scope.unmarkText = function() {
+        unmarkText($scope.text.text_no);
+      };
+    }
+  ]).
+  controller('MarkTextCtrl', [
+    '$scope', '$log',
+    'marksService', 'messagesService',
+    function($scope, $log, marksService, messagesService) {
+      $scope.markType = 100;
+      $scope.isMarking = false;
+      
+      var markText = function(textNo, markType) {
+        $scope.isMarking = true;
+        marksService.createMark($scope.connection, textNo, markType).then(
+          function(response) {
+            $log.log("MarkTextCtrl - markText(" + textNo + ", " + markType + ") - success");
+            $scope.isMarking = false;
+            $scope.hideMarkTextForm();
+            messagesService.showMessage('success', 'Successfully marked text ' + textNo + '.');
+          },
+          function(response) {
+            $log.log("MarkTextCtrl - markText(" + textNo + ", " + markType + ") - error");
+            $scope.isMarking = false;
+            // TODO: How will it work on mobile when we don't hide on
+            // error? Will the error message fit?
+            messagesService.showMessage(
+              'error', 'Failed to mark text ' + textNo + '.', response.data);
+          });
+      };
+      
+      $scope.markText = function() {
+        markText($scope.text.text_no, $scope.markType);
+      };
+    }
+  ]).
+  controller('ListMarksCtrl', [
+    '$scope', '$log',
+    'marksService', 'messagesService', 'pageTitleService',
+    function($scope, $log, marksService, messagesService, pageTitleService) {
+      pageTitleService.set("Marked texts");
+      
+      $scope.marks = null;
+      $scope.isLoading = false;
+      $scope.pageSize = 10;
+      $scope.currentPage = 0;
+      $scope.numberOfPages = 1;
+      
+      var getMarks = function() {
+        $scope.isLoading = true;
+        marksService.getMarks($scope.connection).then(
+          function(response) {
+            $log.log("ListMarksCtrl - getMarks() - success");
+            $scope.isLoading = false;
+            $scope.marks = _.sortBy(response.data, function(mark) {
+                return mark.type;
+              });
+            
+            $scope.currentPage = 0;
+            $scope.numberOfPages = Math.ceil($scope.marks.length / $scope.pageSize);
+          },
+          function(response) {
+            $log.log("ListMarksCtrl - getMarks() - error");
+            $scope.isLoading = false;
+            messagesService.showMessage('error', 'Failed to get text marks.', response.data);
+        });
+      };
+      getMarks();
+      
+      $scope.refresh = function() {
+        if (!$scope.isLoading) {
+          getMarks();
         }
+      };
+      
+      $scope.previousPage = function() {
+        $scope.currentPage = ($scope.currentPage < 1 ? 0 : $scope.currentPage - 1);
+      };
+      $scope.nextPage = function() {
+        $scope.currentPage = ($scope.currentPage >= $scope.numberOfPages -1 ?
+                              $scope.currentPage : $scope.currentPage + 1);
       };
     }
   ]).

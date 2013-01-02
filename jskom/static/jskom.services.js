@@ -714,6 +714,30 @@ angular.module('jskom.services', ['jskom.settings']).
       };
     }
   ]).
+  factory('marksService', [
+    '$log',
+    function($log) {
+      return {
+        getMarks: function(conn) {
+          return conn.http({ method: 'get', url: '/texts/marks/'}, true, true).then(
+            function(response) {
+              response.data = response.data.marks;
+              return response;
+            });
+        },
+        
+        createMark: function(conn, textNo, type) {
+          var request = { method: 'put', url: '/texts/' + textNo + '/mark', data: { type: type } };
+          return conn.http(request, true, true);
+        },
+        
+        deleteMark: function(conn, textNo) {
+          var request = { method: 'delete', url: '/texts/' + textNo + '/mark' };
+          return conn.http(request, true, true);
+        }
+      };
+    }
+  ]).
   factory('readMarkingsService', [
     '$log', 'membershipsService',
     function($log, membershipsService) {

@@ -5185,26 +5185,54 @@ pre, pre * {
   /* Always show the border. */
   border: 1px solid #cccccc !important;
 }
-/* line 134, ../../../foundation/scss/_jskom.scss */
+/* line 129, ../../../foundation/scss/_jskom.scss */
+.button.dropdown > ul li {
+  /* Make it possible to have buttons in the dropdown (they can be disabled) */
+}
+/* line 131, ../../../foundation/scss/_jskom.scss */
+.button.dropdown > ul li button {
+  cursor: pointer;
+  display: block;
+  color: #555;
+  font-size: 13px;
+  font-weight: normal;
+  padding: 6px 14px;
+  text-align: left;
+  -webkit-appearance: none;
+  border: none;
+  background: none;
+}
+/* line 144, ../../../foundation/scss/_jskom.scss */
+.button.dropdown > ul li button.disabled, .button.dropdown > ul li button[disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+/* line 155, ../../../foundation/scss/_jskom.scss */
 .button.dropdown > ul {
   top: 100%;
 }
-/* line 137, ../../../foundation/scss/_jskom.scss */
+/* line 158, ../../../foundation/scss/_jskom.scss */
 .button.dropdown.up > ul {
   top: auto;
   bottom: 100%;
 }
-/* line 144, ../../../foundation/scss/_jskom.scss */
+/* line 165, ../../../foundation/scss/_jskom.scss */
 .button.dropdown > ul.show-dropdown {
   display: block !important;
 }
 
+/* Control bar */
+/* line 173, ../../../foundation/scss/_jskom.scss */
+#jskomControlBar .panel {
+  padding: 10px;
+}
+
 /* Control bar in touch mode */
-/* line 152, ../../../foundation/scss/_jskom.scss */
+/* line 180, ../../../foundation/scss/_jskom.scss */
 .touch body {
   padding-bottom: 60px;
 }
-/* line 156, ../../../foundation/scss/_jskom.scss */
+/* line 184, ../../../foundation/scss/_jskom.scss */
 .touch #jskomControlBar {
   /* colors from panel class */
   background: #f2f2f2;
@@ -5217,16 +5245,22 @@ pre, pre * {
   padding: 5px 10px;
   z-index: 10000;
 }
-/* line 169, ../../../foundation/scss/_jskom.scss */
+/* line 197, ../../../foundation/scss/_jskom.scss */
 .touch #jskomControlBar > :first-child {
   margin-top: 0;
 }
-/* line 170, ../../../foundation/scss/_jskom.scss */
+/* line 198, ../../../foundation/scss/_jskom.scss */
 .touch #jskomControlBar > :last-child {
   margin-bottom: 0;
 }
+/* line 200, ../../../foundation/scss/_jskom.scss */
+.touch #jskomControlBar .panel {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
 
-/* line 174, ../../../foundation/scss/_jskom.scss */
+/* line 208, ../../../foundation/scss/_jskom.scss */
 .jskomRight {
   float: right;
 }

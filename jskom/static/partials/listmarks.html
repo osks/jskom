@@ -1,0 +1,45 @@
+<h2>List marked texts</h2>
+
+<p ng-show="isLoading">Loading...</p>
+<div ng-hide="marks == null">
+  <table class="twelve">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Text number</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-show="marks.length == 0"><td>No marked texts</td></tr>
+      
+      <tr ng-repeat="mark in marks | startFrom:currentPage*pageSize | limitTo:pageSize">
+        <td>{{mark.type}}</td>
+        <td><a href="/texts/{{mark.text_no}}">{{mark.text_no}}</a></td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <ul class="pagination">
+    <li ng-class="{'unavailable': currentPage < 1 }">
+      <a ng-click="previousPage()">Previous</a>
+    </li>
+    <li>{{currentPage+1}} / {{numberOfPages}}</li>
+    <li ng-class="{'unavailable': currentPage >= numberOfPages - 1}">
+      <a ng-click="nextPage()">Next</a>
+    </li>
+  </ul>
+</div>
+
+<div id="jskomControlBar">
+  <div class="row">
+    <div class="three mobile-one columns">
+      <button type="button" class="secondary button"
+              ng-disabled="isLoading"
+              ng-click="refresh()">
+        <i class="icon-repeat"></i>
+      </button>
+    </div>
+    
+    <div class="nine mobile-three columns"></div>
+  </div>
+</div>
