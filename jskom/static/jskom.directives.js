@@ -60,36 +60,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           $scope.menuLevel = 0;
           $scope.activeMenu = null;
           
-          $scope.isExpanded = function() {
-            if ($scope.isTopBarExpanded) {
-              return 'expanded';
-            } else {
-              return '';
-            }
-          };
-          
-          $scope.toggleExpanded = function($event) {
-            $event.stopPropagation();
-            $event.preventDefault();
-            //$log.log("jskomTopBar - toggleExpanded");
-            
-            if ($scope.isTopBarExpanded) {
-              $scope.unexpandTopBar();
-            } else {
-              $scope.expandTopBar();
-            }
-          };
-          
-          $scope.expandTopBar = function() {
-            $scope.isTopBarExpanded = true;
-          };
-          
-          $scope.unexpandTopBar = function() {
-            $scope.isTopBarExpanded = false;
-            $scope.closeMenu();
-          };
-          
-          $scope.closeMenu = function() {
+          var resetMenu = function() {
             $scope.activeMenu = null;
             $scope.menuLevel = 0; // only support for one sub menu yet
             $scope.topbar.css('min-height', '');
@@ -99,13 +70,47 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             });
           };
           
-          $scope.openMenu = function(menu, $event) {
+          $scope.isExpanded = function() {
+            if ($scope.isTopBarExpanded) {
+              return 'expanded';
+            } else {
+              return '';
+            }
+          };
+          
+          $scope.toggleExpanded = function($event) {
+            //$log.log("jskomTopBar - toggleExpanded()");
+            $event.stopPropagation();
+            
+            if ($scope.isTopBarExpanded) {
+              $scope.unexpandTopBar();
+            } else {
+              $scope.isTopBarExpanded = true;
+            }
+          };
+          
+          $scope.unexpandTopBar = function() {
+            //$log.log("jskomTopBar - unexpandTopBar()");
+            $scope.isTopBarExpanded = false;
+            resetMenu();
+          };
+          
+          $scope.closeMenu = function($event) {
+            //$log.log("jskomTopBar - closeMenu()");
+            $event.stopPropagation();
+            resetMenu();
+          };
+          
+          $scope.openMenu = function($event, menu) {
+            //$log.log("jskomTopBar - openMenu()");
+            
             // Don't open unless expanded. We get clicks when in
             // non-mobile mode and then we don't want to do anything.
             if (!$scope.isExpanded()) {
               return;
             }
             
+            $event.stopPropagation();
             $scope.activeMenu = menu;
             $scope.menuLevel = 1; // only support for one sub menu yet
             
