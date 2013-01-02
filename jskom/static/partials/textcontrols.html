@@ -16,11 +16,11 @@
             <span class="hide-for-small">Actions</span>
           </span>
           <ul class="dropdown-menu">
-            <li>
-              <a ng-click="showCommented()" ng-hide="showCommented == null">Show commented</a>
+            <li ng-hide="showCommented == null">
+              <a ng-click="showCommented()" >Show commented</a>
             </li>
-            <li>
-              <a ng-click="showAllComments()" ng-hide="showAllComments == null">
+            <li ng-hide="showAllComments == null">
+              <a ng-click="showAllComments()">
                 Show all comments
               </a>
             </li>
