@@ -35,9 +35,21 @@ js_libs = Bundle('lib/jquery.js',
                  'lib/underscore.js',
                  'lib/mousetrap.js',
                  'lib/modernizr.custom.js',
+                 
+                 # These are from Foundation, but we don't need
+                 # them. Should probably be removed.
+                 #'javascripts/foundation/jquery.cookie.js',
+                 #'javascripts/foundation/jquery.event.move.js',
+                 #'javascripts/foundation/jquery.event.swipe.js',
+                 #'javascripts/foundation/jquery.foundation.forms.js',
+                 #'javascripts/foundation/jquery.foundation.navigation.js',
+                 #'javascripts/foundation/jquery.placeholder.js',
+                 
                  filters='rjsmin',
                  output='gen/packed_libs.js')
 assets.register('js_libs', js_libs)
+
+
 
 js_angular = Bundle('lib/angular.js',
                     'lib/angular-sanitize.js',
@@ -52,6 +64,10 @@ js_jskom = Bundle('jskom.js',
                   'jskom.filters.js',
                   'jskom.services.js',
                   'jskom.templates.js',
+                  
+                  # app.js is probably not needed, was introduced with Foundation
+                  'javascripts/foundation/app.js',
+                  
                   filters='rjsmin',
                   output='gen/packed_jskom.js')
 assets.register('js_jskom', js_jskom)
