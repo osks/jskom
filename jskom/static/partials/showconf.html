@@ -86,41 +86,14 @@
         
         <div ng-hide="isLoadingMembership">
           
-          
-          <div class="form-inline pull-right">
-            <span>
-              <em ng-show="membership">You are a member of this conference.</em>
-              <em ng-hide="membership">You are not a member of this conference.</em>
-            </span>
-            
-            <button class="button" ng-disabled="isLeaving" ng-click="leaveConf()"
-                    ng-show="membership">
-              Leave
-            </button>
-            
-            <button class="button" ng-disabled="isLeaving" ng-click="joinConf()"
-                    ng-hide="membership">
-              Join
-            </button>
-            
-            <div class="btn-group" ng-show="false">
-              <button class="btn dropdown-toggle" data-toggle="dropdown"
-                      ng-disabled="isJoining || isLeaving">
-                Change membership
-                <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu">
-                <li ng-show="membership">
-                </li>
-                <li ng-hide="membership">
-                  <a data-target="#" ng-click="joinConf()">Join</a>
-                </li>
-              </ul>
+          <div class="row">
+            <div class="twelve columns">
+              <span>
+                <em ng-show="membership">You are a member of this conference.</em>
+                <em ng-hide="membership">You are not a member of this conference.</em>
+              </span>
             </div>
-            
           </div>
-          
-          <p class="clearfix"></p>
           
           <table class="twelve" ng-show="membership">
             <tbody>
@@ -162,12 +135,27 @@
 
   <div id="jskomControlBar">
     <div class="row">
-      <div class="twelve columns">
-        <button type="button right" class="secondary button"
-                href="/conferences/{{conf.conf_no}}/set-unread">
+      <div class="three mobile-one columns">
+        <a class="secondary button" href="/conferences/{{conf.conf_no}}/set-unread">
           Set unread
+        </a>
+      </div>
+      
+      <div class="three mobile-one columns">
+        <button class="secondary button"
+                ng-disabled="!membership || isLeaving || isJoining" ng-click="leaveConf()">
+          Leave
         </button>
       </div>
+      
+      <div class="three mobile-one columns">
+        <button class="secondary button"
+                ng-disabled="membership || isLeaving || isJoining" ng-click="joinConf()">
+          Join
+        </button>
+      </div>
+      
+      <div class="three mobile-one columns"></div>
     </div>
   </div>
 </div>
