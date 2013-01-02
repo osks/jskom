@@ -18,9 +18,16 @@
       
       <a href="/conferences/{{r.recpt.conf_no}}">{{ r.recpt|confName }}</a>
       <span ng-show="r.sent_by">
-        <br/>Sent by: {{ r.sent_by|personName }}
-        <br/>Sent at: {{ r.sent_at }}
+        <span class="hide-for-small">
+          <br/>Sent by: {{ r.sent_by|personName }}
+          <br/>Sent at: {{ r.sent_at }}
+        </span>
       </span>
+    </dd>
+    
+    <dd ng-class="hide-for-small" ng-show="text.no_of_marks > 0">
+      <span class="secondary label">Marked by</span>
+      {{text.no_of_marks}} persons
     </dd>
     
     <dd><span class="label">Subject</span> {{ text.subject }}</dd>
