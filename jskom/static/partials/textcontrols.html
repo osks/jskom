@@ -2,9 +2,10 @@
   <!-- Use ng-switch to create a new scope each time it is closed. --> 
   <form ng-controller="MarkTextCtrl" class="panel" ng-switch-when="true">
     <h3>Mark text</h3>
-    <div class="row collapse">
+    
+    <div class="row">
       <div class="three mobile-one columns">
-        <button type="button" class="secondary button prefix"
+        <button type="button" class="secondary button"
                 ng-click="hideMarkTextForm()">
           <i class="icon-remove"></i>
           <span>
@@ -12,14 +13,20 @@
           </span>
         </button> 
       </div>
-      <div class="two mobile-one columns">
-        <span class="prefix">Type:</span>
+      
+      <div class="six mobile-two columns">
+        <div class="row collapse">
+          <div class="four mobile-two columns">
+            <span class="prefix">Type:</span>
+          </div>
+          <div class="eight mobile-two columns">
+            <input type="number" name="markType" ng-model="markType" />
+          </div>
+        </div>
       </div>
-      <div class="four mobile-one columns">
-        <input type="number" name="markType" ng-model="markType" />
-      </div>
+      
       <div class="three mobile-one columns">
-        <button type="submit" class="success button expand postfix"
+        <button type="submit" class="success button jskomRight"
                 ng-disabled="isMarking" ng-click="markText()">
           <i class="icon-ok"></i>
           <span>
