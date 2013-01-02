@@ -1,29 +1,27 @@
 <br/>
 <div class="hide-for-touch" ng-controller="HelpCtrl">
   <div class="hide-for-small">
-    <div class="panel">
+    <div class="">
       <div class="row">
-        <div class="nine mobile-three columns">
-          <p>Keyboard shortcuts</p>
-        </div>
-        
-        <div class="three mobile-one columns">
-          <button class="tiny secondary button"
+        <div class="twelve columns">
+          <button class="twelve small secondary button"
                   ng-show="isVisible" ng-click="isVisible = false">
-            <i class="icon-minus"></i>
+            Keyboard shortcuts
+            <i class="icon-minus jskomRight"></i>
           </button>
-          <button class="tiny secondary button"
+          <button class="twelve small secondary button"
                   ng-hide="isVisible" ng-click="isVisible = true">
-            <i class="icon-plus"></i>
+            Keyboard shortcuts
+            <i class="icon-plus jskomRight"></i>
           </button>
         </div>
       </div>
       
       <div ng-show="isVisible">
-        <div>
-          <h6>General</h6>
+        <div ng-show="pageSpecificKeys">
+          <h6>Page specific</h6>
           <table class="twelve">
-            <tr ng-repeat="keyBinding in generalKeys">
+            <tr ng-repeat="keyBinding in pageSpecificKeys">
               <td>
                 <span ng-repeat="key in keyBinding.keys">
                   <span ng-hide="$index == 0"> or </span>
@@ -35,10 +33,10 @@
           </table>
         </div>
         
-        <div ng-show="pageSpecificKeys">
-          <h6>Page specific</h6>
+        <div>
+          <h6>General</h6>
           <table class="twelve">
-            <tr ng-repeat="keyBinding in pageSpecificKeys">
+            <tr ng-repeat="keyBinding in generalKeys">
               <td>
                 <span ng-repeat="key in keyBinding.keys">
                   <span ng-hide="$index == 0"> or </span>
