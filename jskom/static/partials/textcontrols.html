@@ -107,13 +107,7 @@
       <span>
         <!-- Must nest hide-for-small in span because of "display: inherit" -->
         <span class="hide-for-small">
-          <span ng-show="reader.isEmpty()">Conferences</span>
-          <span ng-hide="reader.isEmpty()">
-            <span ng-show="reader.hasPending()">
-              Show pending ({{ reader.pendingSize() }})
-            </span>
-            <span ng-hide="reader.hasPending()">Read next</span>
-          </span>
+          Next <span ng-show="reader.hasPending()">({{ reader.pendingSize() }})</span>
         </span>
       </span>
     </button>
