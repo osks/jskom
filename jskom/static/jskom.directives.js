@@ -4,6 +4,15 @@
 
 // ngSanitize is needed for bind-html, which we use in jskom:text-body.
 angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
+  directive('jskomLoading', [
+    function() {
+      return {
+        restrict: 'E',
+        replace: true,
+        template: '<p><i class="icon-spinner icon-spin"></i> Loading...</p>',
+      };
+    }
+  ]).
   directive('jskomDropdownToggle', [
     '$log', 'templatePath',
     function($log, templatePath) {

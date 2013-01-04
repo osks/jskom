@@ -1,4 +1,5 @@
-<p ng-hide="conf">Loading...</p>
+<jskom:loading ng-hide="conf"></jskom:loading>
+
 <div ng-show="conf">
   <h2>{{ conf|confType }}: {{ conf.name }}</h2>
   
@@ -22,7 +23,7 @@
       <li ng-class="isTabActive('presentation')">
         <ng-switch on="conf.presentation">
           <div ng-switch-default>
-            <span ng-show="isLoadingPresentation">Loading...</span>
+            <jskom:loading ng-show="isLoadingPresentation"></jskom:loading>
             <div ng-show="text">
               <ng-include src="'text.html'|jskomTemplate"></ng-include>
             </div>
@@ -82,8 +83,7 @@
       </li>
       
       <li ng-class="isTabActive('membership')">
-        <span ng-show="isLoadingMembership">Loading...</span>
-        
+        <jskom:loading ng-show="isLoadingMembership"></jskom:loading>
         <div ng-hide="isLoadingMembership">
           
           <div class="row">

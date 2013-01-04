@@ -8,7 +8,8 @@
       <button type="button" class="secondary button expand postfix" tabindex="-1"
          ng-disabled="isLoading || lookup.length < 1 || matches.length > 0"
          ng-readonly="isLoading" ng-click="getConf()">
-        <i class="icon-search"></i>
+        <i class="icon-search" ng-hide="isLoading"></i>
+        <i class="icon-spinner icon-spin" ng-show="isLoading"></i>
       </button>
     </div>
   </div>
