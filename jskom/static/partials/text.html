@@ -1,4 +1,4 @@
-<div>
+<div ng-controller="TextCtrl">
   <dl>
     <dd>
       <strong class="jskomNoWrap">
@@ -27,7 +27,11 @@
     
     <dd ng-class="hide-for-small" ng-show="text.no_of_marks > 0">
       <span class="secondary label">Marked by</span>
-      {{text.no_of_marks}} persons
+      <span ng-show="currentMark != null">
+        you (type: {{ currentMark.type }})
+        <span ng-show="text.no_of_marks > 1"> and {{text.no_of_marks - 1}} other persons</span>
+      </span>
+      <span ng-show="currentMark == null">{{text.no_of_marks}} persons</span>
     </dd>
     
     <dd><span class="label">Subject</span> {{ text.subject }}</dd>

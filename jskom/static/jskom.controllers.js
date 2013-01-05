@@ -609,6 +609,40 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
     }
   ]).
   controller('TextCtrl', [
+    '$scope', '$log',
+    'messagesService', 'marksService',
+    function($scope, $log,
+             messagesService, marksService) {
+      $scope.marks = null;
+      $scope.currentMark = null;
+      
+      function update() {
+        $scope.currentMark = false;
+        if ($scope.marks != null && $scope.text != null && $scope.text.text_no != null) {
+          $scope.currentMark = _.find($scope.marks, function(m) {
+            return m.text_no === $scope.text.text_no;
+          });
+        }
+      }
+      
+      marksService.getMarks($scope.connection).then(
+        function(response) {
+          $scope.marks = response.data;
+        },
+        function(response) {
+          messagesService.showMessage('error', 'Failed to get marked texts.', response.data);
+        });
+      
+      $scope.$watch('text.text_no', function(newTextNo) {
+        update();
+      });
+      
+      $scope.$watch('marks', function(newMarks) {
+        update();
+      }, true);
+    }
+  ]).
+  controller('TextControlsCtrl', [
     '$scope', '$log', '$window', '$location',
     'httpkomServer', 'keybindingService', 'readMarkingsService', 'textsService', 'marksService',
     'messagesService',
@@ -637,12 +671,12 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         $scope.readmarkIsLoading = true;
         readMarkingsService.createGlobalReadMarking($scope.connection, text).then(
           function(response) {
-            $log.log("TextCtrl - markAsRead(" + text.text_no + ") - success");
+            $log.log("TextControlsCtrl - markAsRead(" + text.text_no + ") - success");
             $scope.readmarkIsLoading = false;
             text._is_unread = false;
           },
           function(response) {
-            $log.log("TextCtrl - markAsRead(" + text.text_no + ") - error");
+            $log.log("TextControlsCtrl - markAsRead(" + text.text_no + ") - error");
             $scope.readmarkIsLoading = false;
             messagesService.showMessage(
               'error', 'Failed to mark text ' + text.text_no + ' as read.', response.data);
@@ -654,12 +688,12 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         $scope.readmarkIsLoading = false;
         readMarkingsService.deleteGlobalReadMarking($scope.connection, text).then(
           function(response) {
-            $log.log("TextCtrl - markAsUnread(" + text.text_no + ") - success");
+            $log.log("TextControlsCtrl - markAsUnread(" + text.text_no + ") - success");
             $scope.readmarkIsLoading = false;
             text._is_unread = true;
           },
           function(response) {
-            $log.log("TextCtrl - markAsUnread(" + text.text_no + ") - error");
+            $log.log("TextControlsCtrl - markAsUnread(" + text.text_no + ") - error");
             $scope.readmarkIsLoading = false;
             messagesService.showMessage(
               'error', 'Failed to mark text ' + text.text_no + ' as read.', response.data);
@@ -736,7 +770,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             $log.log("MarkTextCtrl - markText(" + textNo + ", " + markType + ") - success");
             $scope.isMarking = false;
             $scope.hideMarkTextForm();
-            messagesService.showMessage('success', 'Successfully marked text ' + textNo + '.');
           },
           function(response) {
             $log.log("MarkTextCtrl - markText(" + textNo + ", " + markType + ") - error");
