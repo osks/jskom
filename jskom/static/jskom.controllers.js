@@ -737,7 +737,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           function(response) {
             $log.log("UnmarkTextCtrl - markText(" + textNo + ") - success");
             $scope.isUnmarking = false;
-            messagesService.showMessage('success', 'Successfully unmarked text ' + textNo + '.');
           },
           function(response) {
             $log.log("UnmarkTextCtrl - markText(" + textNo + ") - error");
