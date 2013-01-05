@@ -40,6 +40,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         
         this.textsCache = jskomCacheFactory(this.id + '-texts', { capacity: 100 });
         this.membershipsCache = jskomCacheFactory(this.id + '-memberships', { capacity: 100 });
+        this.marksCache = jskomCacheFactory(this.id + '-marks', { capacity: 100 });
         
         this._createSessionPromise = null;
         this._pendingRequests = [];
@@ -312,11 +313,13 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
           $log.log("connection(id: " + this.id + ") - clearing all caches");
           this.textsCache.removeAll();
           this.membershipsCache.removeAll();
+          this.marksCache.removeAll();
         },
         
         destroyAllCaches: function() {
           this.textsCache.destroy();
           this.membershipsCache.destroy();
+          this.marksCache.destroy();
         },
         
         urlFor: function(path, addHttpkomIdQueryParameter) {

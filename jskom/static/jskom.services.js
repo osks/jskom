@@ -729,22 +729,66 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('marksService', [
-    '$log', 'textsService',
-    function($log, textsService) {
+    '$log', '$q', 'textsService',
+    function($log, $q, textsService) {
+      // We only cache the list of marks in the marksCache, so we just
+      // use this constant as cache key.
+      var cacheKey = "marks";
+      
+      function updateMarksCache(conn, updateFunction) {
+        var cachedResp = conn.marksCache.get(cacheKey);
+        if (cachedResp != null) {
+          cachedResp.then(function(response) {
+            updateFunction(response.data);
+          });
+        }
+      }
+      
       return {
         getMarks: function(conn) {
-          return conn.http({ method: 'get', url: '/texts/marks/'}, true, true).then(
-            function(response) {
-              response.data = response.data.marks;
-              return response;
-            });
+          var cachedResp = conn.marksCache.get(cacheKey);
+          
+          if (cachedResp) {
+            $log.log("marksService - getMarks() - cached");
+            return cachedResp;
+          } else {
+            var deferred = $q.defer();
+            var promise = deferred.promise;
+            
+            conn.http({ method: 'get', url: '/texts/marks/'}, true, true).then(
+              function(response) {
+                $log.log("marksService - getMarks() - success");
+                response.data = response.data.marks;
+                deferred.resolve(response);
+              },
+              function(response) {
+                $log.log("marksService - getMarks() - error");
+                conn.marksCache.remove(cacheKey);
+                deferred.reject(response);
+              });
+            
+            conn.marksCache.put(cacheKey, promise);
+            return promise;
+          }
         },
         
         createMark: function(conn, textNo, type) {
           var request = { method: 'put', url: '/texts/' + textNo + '/mark', data: { type: type } };
           return conn.http(request, true, true).then(
             function(response) {
-              // Update text in cache (better than only invalidating)
+              // Update cached marks
+              updateMarksCache(conn, function(marks) {
+                var existing = _.find(marks, function(m) {
+                  return m.text_no === textNo;
+                });
+                if (existing == null) {
+                  marks.push({ text_no: textNo, type: type });
+                } else {
+                  existing.type = type;
+                }
+              });
+              
+              // Update cached text
               textsService.updateTextInCache(conn, textNo, function(text) {
                 if (text.no_of_marks != null) {
                   text.no_of_marks += 1;
@@ -758,6 +802,20 @@ angular.module('jskom.services', ['jskom.settings']).
           var request = { method: 'delete', url: '/texts/' + textNo + '/mark' };
           return conn.http(request, true, true).then(
             function(response) {
+              // Update cached marks
+              updateMarksCache(conn, function(marks) {
+                var existing = _.find(marks, function(m) {
+                  return m.text_no === textNo;
+                });
+                if (existing != null) {
+                  var idx = marks.indexOf(existing);
+                  // Since we just found it, it should be there, but we check the index anyway
+                  if (idx !== -1) {
+                    marks.splice(idx, 1);
+                  }
+                }
+              });
+              
               // Update text in cache (better than only invalidating)
               textsService.updateTextInCache(conn, textNo, function(text) {
                 if (text.no_of_marks != null) {
