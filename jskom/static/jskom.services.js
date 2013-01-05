@@ -475,6 +475,20 @@ angular.module('jskom.services', ['jskom.settings']).
               });
               return response;
             });
+        },
+        
+        // Is this a good way? Not sure if we want this or not.
+        updateTextInCache: function(conn, textNo, textUpdateFunction) {
+          // The cache stores promises
+          var cachedResp = conn.textsCache.get(textNo.toString());
+          if (cachedResp != null) {
+            cachedResp.then(function(response) {
+              var cachedText = response.data;
+              if (cachedText != null) {
+                textUpdateFunction(cachedText);
+              }
+            });
+          }
         }
       };
     }
@@ -715,8 +729,8 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('marksService', [
-    '$log',
-    function($log) {
+    '$log', 'textsService',
+    function($log, textsService) {
       return {
         getMarks: function(conn) {
           return conn.http({ method: 'get', url: '/texts/marks/'}, true, true).then(
@@ -728,12 +742,30 @@ angular.module('jskom.services', ['jskom.settings']).
         
         createMark: function(conn, textNo, type) {
           var request = { method: 'put', url: '/texts/' + textNo + '/mark', data: { type: type } };
-          return conn.http(request, true, true);
+          return conn.http(request, true, true).then(
+            function(response) {
+              // Update text in cache (better than only invalidating)
+              textsService.updateTextInCache(conn, textNo, function(text) {
+                if (text.no_of_marks != null) {
+                  text.no_of_marks += 1;
+                }
+              });
+              return response;
+            });
         },
         
         deleteMark: function(conn, textNo) {
           var request = { method: 'delete', url: '/texts/' + textNo + '/mark' };
-          return conn.http(request, true, true);
+          return conn.http(request, true, true).then(
+            function(response) {
+              // Update text in cache (better than only invalidating)
+              textsService.updateTextInCache(conn, textNo, function(text) {
+                if (text.no_of_marks != null) {
+                  text.no_of_marks -= 1;
+                }
+              });
+              return response;
+            });
         }
       };
     }
