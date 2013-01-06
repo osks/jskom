@@ -65,14 +65,14 @@
             <label>Sessions</label>
           </li>
           <li ng-show="connection.isLoggedIn()">
-            <a ng-click="logout()">Logout {{conn.session.person|personName}}</a>
+            <a ng-click="logout(); unexpandTopBar()">Logout {{conn.session.person|personName}}</a>
           </li>
           
           <li class="divider" ng-show="connection.isLoggedIn()"></li>
           
           <li><label>Active sessions</label></li>
           <li ng-repeat="conn in connections">
-            <a ng-click="selectConnection(conn)">
+            <a ng-click="selectConnection(conn); unexpandTopBar()">
               <i class="icon-user" ng-show="conn.id == connection.id"></i>
               <span ng-show="conn.isLoggedIn()">
                 {{conn.session.person|personName}}
@@ -84,7 +84,7 @@
           <li class="divider"></li>
           
           <li>
-            <a ng-click="newConnection()">New session...</a>
+            <a ng-click="newConnection(); unexpandTopBar()">New session...</a>
           </li>
         </ul>
       </li>
