@@ -658,13 +658,25 @@ angular.module('jskom.services', ['jskom.settings']).
         },
         
         getUnreadMembershipsForPerson: function(conn, persNo, options) {
+          options = options || { cache: true };
+          
           var deferred = $q.defer();
           var promise = deferred.promise;
           
+          // TODO: Should this really call getUnreadConfNos? I don't
+          // think so. I think it's a legacy thing from an uncompleted
+          // rewrite/refactoring.
           var self = this;
           this.getUnreadConfNosForPerson(conn, persNo, options).then(
             function(unreadConfNos) {
               var promises = _.map(unreadConfNos, function(confNo) {
+                // In this case we want to allow cache, regardless of
+                // what the option was. This is because
+                // getUnreadConfNosForPerson will put the (fresh)
+                // result in the cache, and we expect to use it - not
+                // for this to re-fetch it again. Also, see the TODO
+                // in respective method about refactoring.
+                options.cache = true;
                 return self.getMembershipForPerson(conn, persNo, confNo, options);
               });
               $q.all(promises).then(
