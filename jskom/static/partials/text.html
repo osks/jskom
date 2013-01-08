@@ -8,8 +8,8 @@
     </dd>
     
     <dd class="jskomNoWrap" ng-repeat="ct in text.comment_to_list">
-      <span class="secondary label">{{ ct.type|capitalize }}</span> to
-      <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
+      <span class="secondary label">{{ ct.type|capitalize }}</span>
+      to <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
       by {{ ct.author|personName }}
     </dd>
     

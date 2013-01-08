@@ -11,19 +11,20 @@
   <ul class="tabs-content">
     
     <li ng-class="isTabActive('simple')">
-      <div ng-repeat="commentTo in text.comment_to_list">
-        <span>
-          {{ commentTo.type|capitalize }} to: 
+      <div class="jskomNoWrap" ng-repeat="commentTo in text.comment_to_list">
+        <span class="secondary label">{{ commentTo.type|capitalize }}</span>
+        to <jskom:a text-no="{{ commentTo.text_no }}"><em>{{ commentTo.text_no }}</em></jskom:a>
+        <span ng-show="commentTo.text_no == commentedText.text_no">
+          by {{ commentedText.author|personName }}
         </span>
-        <em>{{ commentTo.text_no }}</em>
       </div>
       
       <div ng-repeat="recipient in text.recipient_list">
-        {{ recipient.type|capitalize }}:
+        <span class="secondary label">{{ recipient.type|capitalize }}</span>
         <em>{{ recipient.recpt|confName }}</em>
       </div>
       
-      <span>Subject:</span> <em>{{ text.subject }}</em>
+      <span class="label">Subject</span> <em>{{ text.subject }}</em>
     </li>
     
     <li ng-class="isTabActive('advanced')">
@@ -33,8 +34,13 @@
           <select class="" ng-model="commentTo.type"
                   ng-options="ct.type as ct.name for ct in commentTypes"></select>
         </div>
-        <div class="nine mobile-three columns">
+        <div class="three mobile-one columns">
           <input type="number" class="" ng-model="commentTo.text_no" />
+        </div>
+        <div class="six mobile-two columns">
+          <label class="inline jskomNoWrap" ng-show="commentTo.text_no == commentedText.text_no">
+            by {{ commentedText.author|personName }}
+          </label>
         </div>
       </div>
       
@@ -75,7 +81,6 @@
     </li>
   </ul>
   
-  <label>Body</label>
   <textarea class="" name="body" rows="5" ng-model="text.body" jskom-autofocus>
   </textarea>
 </div>
