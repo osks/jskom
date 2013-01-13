@@ -340,6 +340,7 @@ angular.module('jskom.services', ['jskom.settings']).
               conn.session = session;
               conn.clearAllCaches();
               $rootScope.$broadcast('jskom:connection:changed', conn);
+              conn.broadcast('jskom:session:created', session);
               return response;
             });
         },
@@ -354,6 +355,7 @@ angular.module('jskom.services', ['jskom.settings']).
                 conn.session = null;
                 conn.clearAllCaches();
                 $rootScope.$broadcast('jskom:connection:changed', conn);
+                conn.broadcast('jskom:session:deleted');
               }
               return response;
             });
@@ -384,6 +386,7 @@ angular.module('jskom.services', ['jskom.settings']).
               conn.clearAllCaches();
               conn.userIsActive();
               $rootScope.$broadcast('jskom:connection:changed', conn);
+              conn.broadcast('jskom:session:login');
               return response;
             });
         },
@@ -394,6 +397,7 @@ angular.module('jskom.services', ['jskom.settings']).
               conn.session.person = null;
               conn.clearAllCaches();
               $rootScope.$broadcast('jskom:connection:changed', conn);
+              conn.broadcast('jskom:session:logout');
               return response;
             });
         },

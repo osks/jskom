@@ -51,6 +51,26 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
       };
       
       _.extend(HttpkomConnection.prototype, {
+        broadcast: function (name, args) {
+          // The args paramter symbolizes arg1, arg2, ..., argN
+          
+          // Wrap the arguments for our own filtering, but broadcast all
+          var broadcastArgs = { connection: this, args: _.toArray(arguments).slice(1) };
+          $rootScope.$broadcast(name, broadcastArgs);
+        },
+        
+        on: function (name, listenerFn) {
+          var self = this;
+          $rootScope.$on(name, function ($event, broadcastArgs) {
+            // Only call args to our connection
+            if (self === broadcastArgs.connection) {
+              $log.log("HttpkomConnection - on(" + $event.name + ")");
+              var listenerArgs = [ $event ].concat(broadcastArgs.args);
+              listenerFn.apply(self, listenerArgs);
+            }
+          });
+        },
+        
         userIsActive: function() {
           var self = this;
           if (this._userActiveLastSent == null
