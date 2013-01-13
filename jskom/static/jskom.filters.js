@@ -88,5 +88,3 @@ angular.module('jskom.filters', ['jskom.templates']).
       };
     }
   ]);
-
-
