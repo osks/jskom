@@ -42,6 +42,31 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         this.membershipsCache = jskomCacheFactory(this.id + '-memberships', { capacity: 100 });
         this.marksCache = jskomCacheFactory(this.id + '-marks', { capacity: 100 });
         
+        // TODO (refactoring idea): We send in this (as connection)
+        // and this.memberships (as membershipList) separately to
+        // MembershipListHandler because I think we want to refactor
+        // HttpkomConnection to separate the connection/http handling
+        // parts from the session/person/membership parts.
+        // 
+        // The services typically only use the this.http method,
+        // this.getPersNo() and the caches. The exception is the
+        // sessionsService, which also accesses this.httpkomId and
+        // this.session in the connect/disconnect/login/logout
+        // methods.
+        // 
+        // There is a need for a unified object that ties everything
+        // together, like what HttpkomConnnection does, since the
+        // connection (httpkomId, outstanding requests and perhaps
+        // also the lyskom session_no) and session (person, caches,
+        // membership - the logged in parts) are tightly coupled - the
+        // session belongs to the connection. But I think we could
+        // separate them more.
+        // 
+        // Perhaps we could make a httpkomConnectionService or
+        // something like that, which operates on an object
+        // ("interface"), like how sessionsService works now (it
+        // updates this.httpkomId, this.session and so on).
+        
         this._createSessionPromise = null;
         this._pendingRequests = [];
         
