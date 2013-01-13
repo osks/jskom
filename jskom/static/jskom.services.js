@@ -377,11 +377,10 @@ angular.module('jskom.services', ['jskom.settings']).
         
         login: function(conn, person) {
           var self = this;
-          var request = { method: 'post', url: '/sessions/current/login',
-                          data: { person: person } };
+          var request = { method: 'post', url: '/sessions/current/login', data: person };
           return conn.http(request, true, false).then(
             function(response) {
-              conn.session = response.data;
+              conn.session.person = response.data;
               conn.clearAllCaches();
               conn.userIsActive();
               $rootScope.$broadcast('jskom:connection:changed', conn);
