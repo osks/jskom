@@ -362,10 +362,6 @@ angular.module('jskom.services', ['jskom.settings']).
         
         // Methods on current session:
         
-        whoAmI: function(conn) {
-          return conn.http({ method: 'get', url: '/sessions/current/who-am-i'}, true, false);
-        },
-        
         userIsActive: function(conn) {
           return conn.http({ method: 'post', url: '/sessions/current/active'}, true, true).then(
             function(response) {
