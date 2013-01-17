@@ -442,10 +442,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       // TODO: This is more "global", so it shouldn't just be a button
       // and keybinding on the unread conference page.
       $scope.refreshUnread = function() {
-        if (!$scope.isLoading) {
+        if (!$scope.isLoading && $scope.membershipList != null) {
           $scope.connection.userIsActive();
           $scope.isLoading = true;
-          membershipListService.refreshUnread($scope.connection).then(
+          $scope.membershipList.refreshUnread().then(
             function () {
               $scope.isLoading = false;
             },

@@ -1075,104 +1075,6 @@ angular.module('jskom.services', ['jskom.settings']).
       };
     }
   ]).
-  factory('membershipListService', [
-    '$log', '$q',
-    function($log, $q) {
-      // The membershipsListService wraps a pair of MembershipList and
-      // MembershipListHandle instances. It doesn't return promises,
-      // because we want to use $watch with what it returns.
-      // 
-      //
-      
-      // The problem is that we in the service do
-      // membershipList.getReadMemberships() and return that, but
-      // membershipList may change the returned object (it does when
-      // updating), and then the controller has an old object
-      // reference and won't notice any changes.
-      //
-      // 2nd Update: Doh! We can watch
-      // membershipListService.getReadMembership() if we just don't
-      // return promises, but rather the actual object. But what would
-      // the goal of the service be then?
-      // 
-      // * Return conn.membershipList, or perhaps wrap the list
-      // * entirly and only offer
-      // * getUnread/getRead/getAll... (Non-promise).
-      // 
-      // * Wrap MembershipListHandler.refreshUnread() (Note: that is a
-      // * promise-method though! We want it to be that so we know how
-      // * long we should disable the button, for example.)
-      // 
-      // What else? TODO
-      // 
-      // 
-      // Another alternative is that we offer
-      // membershipListService.getMembershipList() that returns a
-      // promise for the membership list from the connection. In the
-      // controller we then $watch the connection to see when we
-      // should get a new membership list.
-      // 
-      // We can't offer getUnreadMembership/getReadmemberships/etc on
-      // promise, because the MembershipList doesn't guarantee to
-      // return the same object each time, so we need to $watch those
-      // methods (and that doesn't work with promises, since they
-      // would return different promises each time).
-      
-      
-      // What we choose depends on how much we want to show or hide the
-      // MembershipList object.
-      
-      
-      return {
-        getMembershipList: function (conn) {
-          return conn.membershipListHandler.getMembershipList();
-        },
-        
-        refreshUnread: function (conn) {
-          return conn.membershipListHandler.refreshUnread();
-        },
-        
-        getMembership: function (conn, confNo) {
-          // Implementation idea:
-          // 
-          // 1. Check conn.membershipList.getMembership(confNo)
-          // 
-          //    a) we got a conference; return a successful
-          //    promise. Done.
-          //    
-          //    b) we got null/undefined; continue to 2.
-          // 
-          // 2. Just because we got null/undefined from the membership
-          //    list doesn't mean that there is no such membership on
-          //    the server. The initial fetch might not have responded
-          //    yet, or there is a new conference that was added after
-          //    the last fetch. We don't want to depend on only full
-          //    fetches. This should probably mostly be implemented in
-          //    MembershipListHandler, but anyway:
-          // 
-          //    1. Try to fetch the membership from the server. Create
-          //       a new promise object that we resolve later.
-          // 
-          //    2. In the success method to the promise, we update the
-          //       membership list with the newly fetched membership
-          //       (or membershipUnread, they should work the same
-          //       way) and resolve the created promise with what the
-          //       membershipList returns.
-          //    
-          //    3. Return the created promise object. We should not
-          //       return the promise object from the
-          //       membershipsService directly, but rather a new
-          //       promise that fetches from the updated membership
-          //       list on success. For example, if there is a
-          //       membershipUnread for that membership, the
-          //       membership list will populate that, which the
-          //       original membership won't have (and MembershipList
-          //       has no guarantee that you get the same object back
-          //       between an update/get, only between each get).
-        }
-      };
-    }    
-  ]).
   factory('membershipListFactory', [
     '$log',
     function($log) {
@@ -1290,6 +1192,16 @@ angular.module('jskom.services', ['jskom.settings']).
         }
       };
     }
+  ]).
+  factory('membershipListService', [
+    '$log', '$q',
+    function($log, $q) {
+      return {
+        getMembershipList: function (conn) {
+          return conn.membershipListHandler.getMembershipList();
+        }
+      };
+    }    
   ]).
   factory('membershipListHandlerFactory', [
     '$log', '$q', '$timeout', '$rootScope', 'membershipsService',
