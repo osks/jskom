@@ -209,8 +209,9 @@ pre, pre * {
     float: right;
 }
 
-aside {
+nav.sidebar {
     border-right: 1px solid #eee;
+    padding-right: 10px;
     
     h6 {
         text-transform: uppercase;
@@ -222,7 +223,6 @@ aside {
     .nav-bar.vertical {
         background: #fff;
         border: none;
-        margin-right: 15px;
         
         > li {
             border-top: none;
@@ -237,7 +237,7 @@ aside {
             line-height: 35px;
             
             &:hover {
-                background-color: $secondaryColor;
+                background-color: #f5f5f5;
             }
             
             > a {

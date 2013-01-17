@@ -1,4 +1,4 @@
-<aside ng-controller="SidebarCtrl" ng-hide="connection == null">
+<nav class="sidebar" ng-controller="SidebarCtrl" ng-hide="connection == null" ng-cloak>
   <div ng-show="unreadMemberships.length > 0">
     <h6>Unread</h6>
     
@@ -47,4 +47,4 @@
   
   <jskom:loading ng-show="unreadMemberships == null || readMemberships == null">
   </jskom:loading>
-</aside>
+</nav>
