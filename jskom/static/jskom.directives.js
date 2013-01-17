@@ -388,11 +388,11 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
               scope.isLoading = true;
               conferencesService.lookupConferences(
                 scope.conn, scope.lookup, scope.wantPers, scope.wantConfs).then(
-                  function(response) {
+                  function(conferences) {
                     $log.log("<jskom:conf-input> - lookupConferences(" + scope.lookup +
                              ") - success");
                     scope.isLoading = false;
-                    scope.matches = response.data.conferences;
+                    scope.matches = conferences;
                     if (scope.matches.length > 0) {
                       scope.conf = scope.matches[0];
                       scope.model = scope.conf.conf_no;

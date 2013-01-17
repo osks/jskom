@@ -2,6 +2,9 @@
 
 'use strict';
 
+// All httpkom services should resolve with response.data, or
+// response.data.<list-property> if the list is wrapped.
+
 angular.module('jskom.services', ['jskom.settings']).
   factory('htmlFormattingService', [
     '$log',
@@ -341,7 +344,7 @@ angular.module('jskom.services', ['jskom.settings']).
               conn.clearAllCaches();
               $rootScope.$broadcast('jskom:connection:changed', conn);
               conn.broadcast('jskom:session:created', session);
-              return response;
+              return session;
             });
         },
         
@@ -357,7 +360,7 @@ angular.module('jskom.services', ['jskom.settings']).
                 $rootScope.$broadcast('jskom:connection:changed', conn);
                 conn.broadcast('jskom:session:deleted');
               }
-              return response;
+              return response.data;
             });
         },
         
@@ -383,7 +386,7 @@ angular.module('jskom.services', ['jskom.settings']).
               conn.userIsActive();
               $rootScope.$broadcast('jskom:connection:changed', conn);
               conn.broadcast('jskom:session:changed');
-              return response;
+              return response.data;
             });
         },
         
@@ -394,7 +397,7 @@ angular.module('jskom.services', ['jskom.settings']).
               conn.clearAllCaches();
               $rootScope.$broadcast('jskom:connection:changed', conn);
               conn.broadcast('jskom:session:changed');
-              return response;
+              return response.data;
             });
         },
         
@@ -446,7 +449,7 @@ angular.module('jskom.services', ['jskom.settings']).
               function(response) {
                 $log.log("textsService - getText(" + textNo + ") - success");
                 response.data = enhanceText(conn, response.data);
-                deferred.resolve(response);
+                deferred.resolve(response.data);
               },
               function(response) {
                 $log.log("textsService - getText(" + textNo + ") - error");
@@ -474,7 +477,7 @@ angular.module('jskom.services', ['jskom.settings']).
               // text numbers (which would be nice to have anyway, for
               // example in Reader prefetch). Then we only have to do
               // at most 2 request even without anything in the cache.
-              return response;
+              return response.data;
             });
         },
         
@@ -487,17 +490,17 @@ angular.module('jskom.services', ['jskom.settings']).
                 // comment_in_list.
                 conn.textsCache.remove(commentedText.text_no.toString());
               });
-              return response;
+              return response.data;
             });
         },
         
-        // Is this a good way? Not sure if we want this or not.
+        // Is this a good way? Not sure if we want this. We should use
+        // events instead.
         updateTextInCache: function(conn, textNo, textUpdateFunction) {
           // The cache stores promises
           var cachedResp = conn.textsCache.get(textNo.toString());
           if (cachedResp != null) {
-            cachedResp.then(function(response) {
-              var cachedText = response.data;
+            cachedResp.then(function(cachedText) {
               if (cachedText != null) {
                 textUpdateFunction(cachedText);
               }
@@ -517,7 +520,11 @@ angular.module('jskom.services', ['jskom.settings']).
                                "name": name,
                                "want-pers": wantPers,
                                "want-confs": wantConfs
-                             } }, true, false);
+                             } }, true, false).
+            then(
+              function (response) {
+                return response.data.conferences;
+              });
         },
         
         getConference: function(conn, confNo, micro) {
@@ -525,7 +532,11 @@ angular.module('jskom.services', ['jskom.settings']).
             micro = true;
           }
           return conn.http({ method: 'get', url: '/conferences/' + confNo,
-                             params: { "micro": micro } }, true, true);
+                             params: { "micro": micro } }, true, true).
+            then(
+              function (response) {
+                return response.data;
+              });
         },
       };
     }
@@ -540,7 +551,10 @@ angular.module('jskom.services', ['jskom.settings']).
         
         createPerson: function(conn, person) {
           var data = { name: person.name, passwd: person.passwd };
-          return conn.http({ method: 'post', url: '/persons/', data: data }, true, false);
+          return conn.http({ method: 'post', url: '/persons/', data: data }, true, false).then(
+            function (response) {
+              return response.data;
+            });
         }
       };
     }
@@ -548,35 +562,17 @@ angular.module('jskom.services', ['jskom.settings']).
   factory('membershipsService', [
     '$log', '$q',
     function($log, $q) {
-      var createResolvedPromiseFor = function(resolveArg) {
-        var deferred = $q.defer();
-        var promise = deferred.promise;
-        deferred.resolve(resolveArg);
-        return promise;
-      };
-      
-      var cacheKeyForMembership = function(persNo, confNo) {
-        return persNo + ":" + confNo;
-      };
-      
-      var clearCacheForPersonAndConf = function(conn, persNo, confNo) {
-        conn.membershipsCache.remove(cacheKeyForMembership(persNo, confNo));
-      };
-      
       return {
         setNumberOfUnreadTexts: function(conn, confNo, noOfUnread) {
-          // TODO: We want to make sure the MembershipList is updated
-          // when we do this.  We probably want to add some kind of
-          // broadcast event that tells the MembershipListHandler to
-          // update the membershipunreads for confNo.
-          
           var data = { no_of_unread: parseInt(noOfUnread) };
           return conn.http({ method: 'post',
                              url: '/persons/current/memberships/' + confNo + '/unread',
                              data: data }, true, true).
             then(function(response) {
-              clearCacheForPersonAndConf(conn, conn.getPersNo(), confNo);
-              return response;
+              // TODO: We want to make sure the MembershipList is updated
+              // when we do this.  We probably want to add some kind of
+              // broadcast event that tells the MembershipListHandler to
+              // update the membershipunreads for confNo.
             });
         },
         
@@ -589,8 +585,7 @@ angular.module('jskom.services', ['jskom.settings']).
           return conn.http({ method: 'put', url: '/persons/' + persNo + '/memberships/' + confNo,
                              data: data }, true, true).
             then(function(response) {
-              clearCacheForPersonAndConf(conn, conn.getPersNo(), confNo);
-              return response;
+              // TODO: event so we can update membershiplist
             });
         },
         
@@ -600,51 +595,30 @@ angular.module('jskom.services', ['jskom.settings']).
         
         deleteMembershipForPerson: function(conn, persNo, confNo) {
           return conn.http({ method: 'delete',
-                             url: '/persons/' + persNo + '/memberships/' + confNo }, true, true).
+                             url: '/persons/' + persNo + '/memberships/' + confNo }, true, true);
             then(function(response) {
-              clearCacheForPersonAndConf(conn, conn.getPersNo(), confNo);
-              return response;
+              // TODO: event so we can update membershiplist
             });
         },
         
-        getMembership: function(conn, confNo, options) {
-          return this.getMembershipForPerson(conn, conn.getPersNo(), confNo, options);
+        getMembership: function(conn, confNo) {
+          return this.getMembershipForPerson(conn, conn.getPersNo(), confNo);
         },
         
-        getMembershipForPerson: function(conn, persNo, confNo, options) {
-          options = options || { cache: true };
-          
-          var cacheKey = cacheKeyForMembership(persNo, confNo);
-          var cachedResp = conn.membershipsCache.get(cacheKey);
-          
-          if (options.cache && cachedResp) {
-            return cachedResp.then(function(response) {
-              $log.log('membershipsService - getMembershipForPerson(' +
-                       persNo + ', ' + confNo + ') - cached');
-              return response;
-            });
-          } else {
-            var deferred = $q.defer();
-            var promise = deferred.promise;
-            
-            conn.http({ method: 'get', url: '/persons/' + persNo + '/memberships/' + confNo },
-                      true, true).
-              then(
-                function(response) {
-                  $log.log('membershipsService - getMembershipForPerson(' +
-                           persNo + ', ' + confNo + ') - success');
-                  deferred.resolve(response.data);
-                },
-                function(response) {
-                  $log.log('membershipsService - getMembershipForPerson(' +
-                           persNo + ', ' + confNo + ') - error');
-                  conn.membershipsCache.remove(cacheKey);
-                  deferred.reject(response);
-                });
-            
-            conn.membershipsCache.put(cacheKey, promise);
-            return promise;
-          }
+        getMembershipForPerson: function(conn, persNo, confNo) {
+          return conn.http({ method: 'get', url: '/persons/' + persNo + '/memberships/' + confNo },
+                           true, true).
+            then(
+              function (response) {
+                $log.log('membershipsService - getMembershipForPerson(' +
+                         persNo + ', ' + confNo + ') - success');
+                return response.data;
+              },
+              function (response) {
+                $log.log('membershipsService - getMembershipForPerson(' +
+                         persNo + ', ' + confNo + ') - error');
+                return $q.reject(response);
+              });
         },
         
         getMemberships: function(conn, options) {
@@ -654,7 +628,6 @@ angular.module('jskom.services', ['jskom.settings']).
         getMembershipsForPerson: function(conn, persNo, options) {
           options = _.isUndefined(options) ? {} : options;
           _.defaults(options, { unread: false });
-          // TODO: caching. don't forget to respect unread = true/false.
           
           var logPrefix = 'membershipsService - getMembershipsForPerson(' + persNo +
             ', ' + angular.toJson(options) + ') - ';
@@ -663,8 +636,7 @@ angular.module('jskom.services', ['jskom.settings']).
             then(
               function(response) {
                 $log.log(logPrefix + 'success');
-                response.data = response.data.list;
-                return response;
+                return response.data.list;
               },
               function(response) {
                 $log.log(logPrefix + 'error');
@@ -686,7 +658,7 @@ angular.module('jskom.services', ['jskom.settings']).
             then(
               function(response) {
                 $log.log(logPrefix + 'success');
-                return response;
+                return response.data;
               },
               function(response) {
                 $log.log(logPrefix + 'error');
@@ -705,8 +677,7 @@ angular.module('jskom.services', ['jskom.settings']).
             then(
               function(response) {
                 $log.log(logPrefix + 'success');
-                response.data = response.data.list;
-                return response;
+                return response.data.list;
               },
               function(response) {
                 $log.log(logPrefix + 'error');
@@ -726,8 +697,8 @@ angular.module('jskom.services', ['jskom.settings']).
       function updateMarksCache(conn, updateFunction) {
         var cachedResp = conn.marksCache.get(cacheKey);
         if (cachedResp != null) {
-          cachedResp.then(function(response) {
-            updateFunction(response.data);
+          cachedResp.then(function(marks) {
+            updateFunction(marks);
           });
         }
       }
@@ -746,8 +717,7 @@ angular.module('jskom.services', ['jskom.settings']).
             conn.http({ method: 'get', url: '/texts/marks/'}, true, true).then(
               function(response) {
                 $log.log("marksService - getMarks() - success");
-                response.data = response.data.marks;
-                deferred.resolve(response);
+                deferred.resolve(response.data.marks);
               },
               function(response) {
                 $log.log("marksService - getMarks() - error");
@@ -763,7 +733,7 @@ angular.module('jskom.services', ['jskom.settings']).
         createMark: function(conn, textNo, type) {
           var request = { method: 'put', url: '/texts/' + textNo + '/mark', data: { type: type } };
           return conn.http(request, true, true).then(
-            function(response) {
+            function() {
               // Update cached marks
               updateMarksCache(conn, function(marks) {
                 var existing = _.find(marks, function(m) {
@@ -782,14 +752,13 @@ angular.module('jskom.services', ['jskom.settings']).
                   text.no_of_marks += 1;
                 }
               });
-              return response;
             });
         },
         
         deleteMark: function(conn, textNo) {
           var request = { method: 'delete', url: '/texts/' + textNo + '/mark' };
           return conn.http(request, true, true).then(
-            function(response) {
+            function() {
               // Update cached marks
               updateMarksCache(conn, function(marks) {
                 var existing = _.find(marks, function(m) {
@@ -810,7 +779,6 @@ angular.module('jskom.services', ['jskom.settings']).
                   text.no_of_marks -= 1;
                 }
               });
-              return response;
             });
         }
       };
@@ -825,7 +793,7 @@ angular.module('jskom.services', ['jskom.settings']).
           return conn.http(request, true, true).then(
             function(response) {
               conn.broadcast('jskom:readMarking:created', text);
-              return response;
+              return response.data;
             });
         },
         
@@ -834,7 +802,7 @@ angular.module('jskom.services', ['jskom.settings']).
           return conn.http(request, true, true).then(
             function(response) {
               conn.broadcast('jskom:readMarking:deleted', text);
-              return response;
+              return response.data;
             });
         },
       };
@@ -845,7 +813,7 @@ angular.module('jskom.services', ['jskom.settings']).
     function($log, textsService, readMarkingsService, messagesService) {
       var markAsRead = function(conn, text) {
         readMarkingsService.createGlobalReadMarking(conn, text).then(
-          function(response) {
+          function() {
             $log.log("readerFactory - markAsRead(" + text.text_no + ") - success");
             text._is_unread = false;
           },
@@ -874,18 +842,15 @@ angular.module('jskom.services', ['jskom.settings']).
           this.conn.userIsActive();
           
           if (this.hasPending()) {
-            return textsService.getText(this.conn, this._pending.shift()).then(
-              function(response) {
-                return response.data;
-              });
+            return textsService.getText(this.conn, this._pending.shift());
             
           } else if (this.hasUnread()) {
             var self = this;
             return textsService.getText(this.conn, this._unreadQueue.dequeue()).then(
-              function(response) {
-                response.data._is_unread = true;
-                markAsRead(self.conn, response.data);
-                return response.data;
+              function(text) {
+                text._is_unread = true;
+                markAsRead(self.conn, text);
+                return text;
               });
           } else {
             return null;
@@ -1009,9 +974,9 @@ angular.module('jskom.services', ['jskom.settings']).
             
             this._currentTextNo = nextTextNo;
             textsService.getText(this.conn, nextTextNo).then(
-              function(response) {
-                var comments = _.map(response.data.comment_in_list, function(text) {
-                  return text.text_no;
+              function(text) {
+                var comments = _.map(text.comment_in_list, function(comment) {
+                  return comment.text_no;
                 });
                 if (comments) {
                   // We filter instead of doing intersection because
@@ -1308,7 +1273,6 @@ angular.module('jskom.services', ['jskom.settings']).
                 self._fetchAllMemberships();
                 self.enableAutoRefresh();
                 $log.log(self._logPrefix + "initialize() - success");
-                //return null;
               },
               function () {
                 // if the initialize fails, remove the stored promise.
@@ -1327,10 +1291,9 @@ angular.module('jskom.services', ['jskom.settings']).
           var logp = this._logPrefix + "getMembershipUnreads() - ";
           var self = this;
           return membershipsService.getMembershipUnreads(this._conn).then(
-            function (response) {
+            function (membershipUnreads) {
               $log.log(logp + "success");
-              self._membershipList.updateMembershipUnreads(response.data);
-              //return null;
+              self._membershipList.updateMembershipUnreads(membershipUnreads);
             },
             function (response) {
               $log.log(logp + "error");
@@ -1343,15 +1306,14 @@ angular.module('jskom.services', ['jskom.settings']).
           // TODO: Make sure we only have one of these requests active
           // at one time.
           
-          var options = { unread: true, cache: false };
+          var options = { unread: true };
           var logp = this._logPrefix + "getMemberships(" + angular.toJson(options) + ") - ";
           var self = this;
           return membershipsService.getMemberships(this._conn, options).
             then(
-              function (response) {
+              function (unreadMemberships) {
                 $log.log(logp + "success");
-                self._membershipList.updateUnreadMemberships(response.data);
-                //return null;
+                self._membershipList.updateUnreadMemberships(unreadMemberships);
               },
               function (response) {
                 $log.log(logp + "error");
@@ -1367,10 +1329,9 @@ angular.module('jskom.services', ['jskom.settings']).
           var logp = this._logPrefix + "getMemberships({ unread: false }) - ";
           var self = this;
           return membershipsService.getMemberships(self._conn, { unread: false }).then(
-            function (response) {
+            function (memberships) {
               $log.log(logp + "success");
-              self._membershipList.updateAllMemberships(response.data);
-              //return null;
+              self._membershipList.updateAllMemberships(memberships);
             },
             function (response) {
               $log.log(logp + "error");

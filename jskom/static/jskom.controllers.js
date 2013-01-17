@@ -240,7 +240,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           $scope.isReseting = true;
           sessionsService.deleteSession(
             $scope.connection, $scope.connection.session.session_no).then(
-              function(response) {
+              function() {
                 $log.log("LoginCtrl - reset() - success");
                 $scope.person = sessionsService.newPerson();
                 $scope.isReseting = false;
@@ -258,7 +258,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.login = function() {
         $scope.isLoggingIn = true;
         sessionsService.login($scope.connection, $scope.person).then(
-          function(response) {
+          function() {
             $log.log("LoginCtrl - login() - success");
             messagesService.clearAll();
             $scope.isLoggingIn = false;
@@ -313,11 +313,11 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
                 
         $scope.isCreating = true;
         return personsService.createPerson($scope.connection, $scope.person).then(
-          function(response) {
+          function(person) {
             $log.log("NewPersonCtrl - createPerson() - success");
             $scope.isCreating = false;
             messagesService.showMessage('success', 'Successfully created person.');
-            $scope.$emit('jskom:person:created', response.data.pers_no);
+            $scope.$emit('jskom:person:created', person.pers_no);
             $scope.person = personsService.newPerson();
           },
           function(response) {
@@ -556,12 +556,12 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         $scope.activeTab = 'simple';
         
         textsService.getText($scope.connection, commentToTextNo).then(
-          function(response) {
+          function(text) {
             $log.log("NewTextCtrl - getText(" + commentToTextNo + ") - success");
             
             var newText = newEmptyText();
-            makeCommentTo(newText, response.data);
-            $scope.commentedText = response.data;
+            makeCommentTo(newText, text);
+            $scope.commentedText = text;
             $scope.text = newText;
             pageTitleService.set("New comment to " + $scope.commentedText.text_no);
           },
@@ -579,16 +579,16 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.createText = function() {
         $scope.isCreating = true;
         textsService.createText($scope.connection, $scope.text).then(
-          function(response) {
+          function(data) {
             $log.log("NewTextCtrl - createText() - success");
             messagesService.showMessage('success', 'Successfully created text.',
-                                        'Text number ' + response.data.text_no + ' was created.',
+                                        'Text number ' + data.text_no + ' was created.',
                                         true);
             $scope.isCreating = false;
             if ($scope.returnUrl) {
               $scope.goToReturnUrl();
             } else {
-              $location.url('/texts/' + response.data.text_no);
+              $location.url('/texts/' + data.text_no);
             }
           },
           function(response) {
@@ -606,10 +606,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       var showText = function(textNo) {
         $scope.textIsLoading = true;
         textsService.getText($scope.connection, textNo).then(
-          function(response) {
+          function(text) {
             $log.log("ShowTextCtrl - getText(" + textNo + ") - success");
             $scope.textIsLoading = false;
-            $scope.text = response.data;
+            $scope.text = text;
             angular.element($window).scrollTop(1);
           },
           function(response) {
@@ -647,8 +647,8 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       }
       
       marksService.getMarks($scope.connection).then(
-        function(response) {
-          $scope.marks = response.data;
+        function(marks) {
+          $scope.marks = marks
         },
         function(response) {
           messagesService.showMessage('error', 'Failed to get marked texts.', response.data);
@@ -691,7 +691,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         var text = $scope.text;
         $scope.readmarkIsLoading = true;
         readMarkingsService.createGlobalReadMarking($scope.connection, text).then(
-          function(response) {
+          function() {
             $log.log("TextControlsCtrl - markAsRead(" + text.text_no + ") - success");
             $scope.readmarkIsLoading = false;
             text._is_unread = false;
@@ -708,7 +708,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         var text = $scope.text;
         $scope.readmarkIsLoading = false;
         readMarkingsService.deleteGlobalReadMarking($scope.connection, text).then(
-          function(response) {
+          function() {
             $log.log("TextControlsCtrl - markAsUnread(" + text.text_no + ") - success");
             $scope.readmarkIsLoading = false;
             text._is_unread = true;
@@ -755,7 +755,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       var unmarkText = function(textNo) {
         $scope.isUnmarking = true;
         marksService.deleteMark($scope.connection, textNo).then(
-          function(response) {
+          function() {
             $log.log("UnmarkTextCtrl - markText(" + textNo + ") - success");
             $scope.isUnmarking = false;
           },
@@ -786,7 +786,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       var markText = function(textNo, markType) {
         $scope.isMarking = true;
         marksService.createMark($scope.connection, textNo, markType).then(
-          function(response) {
+          function() {
             $log.log("MarkTextCtrl - markText(" + textNo + ", " + markType + ") - success");
             $scope.isMarking = false;
             $scope.hideMarkTextForm();
@@ -821,12 +821,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       var getMarks = function() {
         $scope.isLoading = true;
         marksService.getMarks($scope.connection).then(
-          function(response) {
+          function(marks) {
             $log.log("ListMarksCtrl - getMarks() - success");
             $scope.isLoading = false;
-            $scope.marks = _.sortBy(response.data, function(mark) {
-                return mark.type;
-              });
+            $scope.marks = _.sortBy(marks, function(mark) { return mark.type; });
             
             $scope.currentPage = 0;
             $scope.numberOfPages = Math.ceil($scope.marks.length / $scope.pageSize);
@@ -863,8 +861,8 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.texts = null;
       
       textsService.getLastCreatedTextsInConference($scope.connection, $scope.confNo).then(
-        function(response) {
-          $scope.texts = response.data;
+        function (texts) {
+          $scope.texts = texts;
           $scope.texts.reverse();
         });
       
@@ -894,11 +892,11 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         $scope.isLoading = true;
         conferencesService.lookupConferences(
           $scope.connection, $scope.lookupName, false, true).then(
-            function(response) {
+            function(conferences) {
               $log.log("ListConfsCtrl - listConfs() - success")
               $scope.isLoading = false;
               
-              $scope.confs = _.sortBy(response.data.conferences, function(conf) {
+              $scope.confs = _.sortBy(conferences, function(conf) {
                 return conf.conf_name;
               });
               $scope.currentPage = 0;
@@ -988,10 +986,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       var getPresentation = function(textNo) {
         $scope.isLoadingPresentation = true;
         textsService.getText($scope.connection, textNo).then(
-          function(response) {
+          function(text) {
             $log.log("ShowConfCtrl - getPresentation(" + textNo + ") - success");
             $scope.isLoadingPresentation = false;
-            $scope.text = response.data;
+            $scope.text = text;
           },
           function(response) {
             $log.log("ShowConfCtrl - getPresentation(" + textNo + ") - error");
@@ -1005,7 +1003,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         var confNo = $scope.conf.conf_no;
         $scope.isJoining = true;
         membershipsService.addMembership($scope.connection, confNo).then(
-          function(response) {
+          function() {
             $log.log("ShowConfCtrl - addMembership(" + confNo + ") - success");
             $scope.isJoining = false;
             getMembership(confNo); // Refresh membership
@@ -1022,7 +1020,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         var confNo = $scope.conf.conf_no;
         $scope.isLeaving = true;
         membershipsService.deleteMembership($scope.connection, confNo).then(
-          function(response) {
+          function() {
             $log.log("ShowConfCtrl - deleteMembership(" + confNo + ") - success");
             $scope.isLeaving = false;
             getMembership(confNo); // Refresh membership
@@ -1036,11 +1034,11 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       };
       
       conferencesService.getConference($scope.connection, $routeParams.confNo, false).then(
-        function(response) {
+        function(conference) {
           $log.log("ShowConfCtrl - getConference(" + $routeParams.confNo + ") - success");
-          $scope.conf = response.data;
+          $scope.conf = conference;
           getMembership($scope.conf.conf_no).then(
-            function(response) {
+            function() {
               if ($scope.conf.presentation !== 0) {
                 getPresentation($scope.conf.presentation);
               }
@@ -1112,10 +1110,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       
       var showText = function(textNo) {
         if (textNo) {
-          setText(textsService.getText($scope.connection, textNo).then(
-            function(response) {
-              return response.data;
-            }));
+          setText(textsService.getText($scope.connection, textNo));
         }
       };
       

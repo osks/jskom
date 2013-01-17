@@ -41,7 +41,6 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         this.session = session;
         
         this.textsCache = jskomCacheFactory(this.id + '-texts', { capacity: 100 });
-        this.membershipsCache = jskomCacheFactory(this.id + '-memberships', { capacity: 100 });
         this.marksCache = jskomCacheFactory(this.id + '-marks', { capacity: 100 });
         
         // TODO (refactoring idea): We send in this (as connection)
@@ -120,12 +119,12 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
               $log.log("HttpkomConnection - userIsActive(" + this.getPersNo() +
                        ") - sending new user-active");
               this._userActivePromise = sessionsService.userIsActive(this).then(
-                function(response) {
+                function() {
                   self._userActivePromise = null;
                   // Don't update last sent until we get a successful response
                   self._userActiveLastSent = Date.now();
                 },
-                function(response) {
+                function() {
                   self._userActivePromise = null;
                 });
             } else {
@@ -273,10 +272,10 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
           
           if (this._createSessionPromise == null) {
             this._createSessionPromise = sessionsService.createSession(this).then(
-              function(response) {
+              function(session) {
                 $log.log("HttpkomConnection - createSession - success");
                 self._createSessionPromise = null;
-                return response;
+                return session;
               },
               function(response) {
                 $log.log("HttpkomConnection - createSession - failure");
@@ -375,13 +374,11 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         clearAllCaches: function() {
           $log.log("connection(id: " + this.id + ") - clearing all caches");
           this.textsCache.removeAll();
-          this.membershipsCache.removeAll();
           this.marksCache.removeAll();
         },
         
         destroyAllCaches: function() {
           this.textsCache.destroy();
-          this.membershipsCache.destroy();
           this.marksCache.destroy();
         },
         
