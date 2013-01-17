@@ -879,10 +879,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
     }
   ]).
   controller('ListConfTextsCtrl', [
-    '$scope', '$log', '$routeParams',
-    'pageTitleService', 'conferencesService', 'textsService',
-    function($scope, $log, $routeParams,
-             pageTitleService, conferencesService, textsService) {
+    '$scope', '$log', '$routeParams', '$location',
+    'pageTitleService', 'conferencesService', 'textsService', 'keybindingService',
+    function($scope, $log, $routeParams, $location,
+             pageTitleService, conferencesService, textsService, keybindingService) {
       $scope.confNo = $routeParams.confNo;
       $scope.texts = null;
       
@@ -891,6 +891,15 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           $scope.texts = response.data;
           $scope.texts.reverse();
         });
+      
+      keybindingService.bindPageSpecific('e', 'Set unread...', function(e) {
+        $scope.$apply(function() {
+          if ($scope.confNo != null) {
+            $location.url("/conferences/" + $scope.confNo + "/set-unread");
+          }
+        });
+        return false;
+      });
     }
   ]).
   controller('ListConfsCtrl', [
