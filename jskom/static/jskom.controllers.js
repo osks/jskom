@@ -1200,8 +1200,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.membership = null;
       $scope.reader = null;
       $scope.$watch(getMembership, function (newMembership) {
-        $log.log("ReaderCtrl - watch(membership) - newMembership: " +
-                 angular.toJson(newMembership));
         $scope.membership = newMembership;
         if (newMembership != null) {
           // TODO: Because we only initialize the reader once, we
