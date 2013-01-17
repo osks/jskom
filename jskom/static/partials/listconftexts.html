@@ -1,6 +1,7 @@
 <h2>List texts in conference: {{ confNo }}</h2>
 
-<table class="twelve">
+<jskom:loading ng-show="isLoading"></jskom:loading>
+<table class="twelve" ng-hide="texts == null">
   <thead>
     <tr>
       <th>Text number</th>

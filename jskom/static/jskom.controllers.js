@@ -858,12 +858,20 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
     function($scope, $log, $routeParams, $location,
              pageTitleService, conferencesService, textsService, keybindingService) {
       $scope.confNo = $routeParams.confNo;
-      $scope.texts = null;
+      pageTitleService.set("Last texts in conference: " + $scope.confNo);
       
+      $scope.texts = null;
+      $scope.isLoading = true;
       textsService.getLastCreatedTextsInConference($scope.connection, $scope.confNo).then(
         function (texts) {
+          $log.log("ListConfTextsCtrl - getLastCreatedTextsInConference() - success");
+          $scope.isLoading = false;
           $scope.texts = texts;
           $scope.texts.reverse();
+        },
+        function (response) {
+          $log.log("ListConfTextsCtrl - getLastCreatedTextsInConference() - error");
+          $scope.isLoading = false;
         });
       
       keybindingService.bindPageSpecific('e', 'Set unread...', function(e) {
