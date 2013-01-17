@@ -58,30 +58,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         //$log.log(newUnreadMemberships);
         $scope.unreadMemberships = newUnreadMemberships;
       });
-      
-      
-      /*
-      $scope.load = function(allowCache) {
-        $scope.membershipUnreads = [];
-        $scope.isLoading = true;
-        return membershipsService.getMembershipUnreads(
-          $scope.connection, { cache: allowCache }).then(
-            function(response) {
-              $log.log("UnreadConfsCtrl - getMembershipUnreads() - success");
-              $scope.membershipUnreads = response.data;
-              $scope.isLoading = false;
-            },
-            function(response) {
-              $log.log("UnreadConfsCtrl - getMembershipUnreads() - error");
-              $scope.isLoading = false;
-              if (response.status != 401) {
-                messagesService.showMessage('error', 'Failed to get unread conferences.',
-                                            response.data);
-              }
-              return $q.reject(response);
-            });
-      };
-      */
     }
   ]).
   controller('ConnectionsCtrl', [
