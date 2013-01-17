@@ -386,7 +386,7 @@ angular.module('jskom.services', ['jskom.settings']).
               conn.clearAllCaches();
               conn.userIsActive();
               $rootScope.$broadcast('jskom:connection:changed', conn);
-              conn.broadcast('jskom:session:login');
+              conn.broadcast('jskom:session:changed');
               return response;
             });
         },
@@ -397,7 +397,7 @@ angular.module('jskom.services', ['jskom.settings']).
               conn.session.person = null;
               conn.clearAllCaches();
               $rootScope.$broadcast('jskom:connection:changed', conn);
-              conn.broadcast('jskom:session:logout');
+              conn.broadcast('jskom:session:changed');
               return response;
             });
         },
@@ -1183,6 +1183,54 @@ angular.module('jskom.services', ['jskom.settings']).
           }));
           this._updateUnreadMemberships();
           this._updateAllMemberships();
+        },
+        
+        markTextAsRead: function (text) {
+          // Since memberships are update from membershipUnreads, we
+          // only update membershipUnreads and then run
+          // _update(). Possible not as fast, but much easier than
+          // updating both memberships and membershipUnreads.
+          var shouldUpdate = false;
+          var self = this;
+          _.each(text.recipient_list, function(recipient) {
+            var mu = self._membershipUnreadsMap[recipient.recpt.conf_no];
+            if (mu != null) {
+              var idx = mu.unread_texts.indexOf(text.text_no);
+              if (idx !== -1) {
+                mu.unread_texts.splice(idx, 1);
+                mu.no_of_unread -= 1;
+                shouldUpdate = true;
+              }
+            }
+          });
+          
+          if (shouldUpdate) {
+            self._updateAllMemberships();
+          }
+        },
+        
+        markTextAsUnread: function (text) {
+          // Since memberships are update from membershipUnreads, we
+          // only update membershipUnreads and then run
+          // _update(). Possible not as fast, but much easier than
+          // updating both memberships and membershipUnreads.
+          var shouldUpdate = false;
+          var self = this;
+          _.each(text.recipient_list, function(recipient) {
+            var mu = self._membershipUnreadsMap[recipient.recpt.conf_no];
+            if (mu != null) {
+              var idx = mu.unread_texts.indexOf(text.text_no);
+              if (idx === -1) {
+                mu.unread_texts.push(text.text_no);
+                mu.no_of_unread += 1;
+                shouldUpdate = true; // We change something, so we need to run update
+              }
+            }
+          });
+          
+          if (shouldUpdate) {
+            self._updateAllMemberships();
+          }
         }
       });
       
@@ -1216,16 +1264,19 @@ angular.module('jskom.services', ['jskom.settings']).
         this._membershipList = membershipList;
         this._logPrefix = "MembershipListHandler - ";
         
+        this._initializePromise = null;
+        
         this._refreshIntervalSeconds = 2*60;
         this._autoRefreshPromise = null;
         
         var self = this;
-        conn.on('jskom:session:login', function ($event) {
-          $log.log(self._logPrefix + 'on(jskom:session:login)');
+        conn.on('jskom:session:created', function ($event) {
+          $log.log(self._logPrefix + 'on(jskom:session:created)');
+          self.reset();
         });
         
-        conn.on('jskom:session:logout', function ($event) {
-          $log.log(self._logPrefix + 'on(jskom:session:logout)');
+        conn.on('jskom:session:changed', function ($event) {
+          $log.log(self._logPrefix + 'on(jskom:session:changed)');
           self.reset();
         });
         
@@ -1236,69 +1287,13 @@ angular.module('jskom.services', ['jskom.settings']).
         
         conn.on('jskom:readMarking:created', function ($event, text) {
           $log.log(self._logPrefix + 'on(jskom:readMarking:created)');
-          // Since memberships are update from membershipUnreads, we
-          // only update membershipUnreads and then run
-          // _update(). Possible not as fast, but much easier.
-          var shouldUpdate = false;
-          _.each(text.recipient_list, function(recipient) {
-            // TODO: was moved from MembershipList, so we access
-            //  "private" stuff here. Refactor.
-            var mu = self._membershipList._membershipUnreadsMap[recipient.recpt.conf_no];
-            if (mu != null) {
-              var idx = mu.unread_texts.indexOf(text.text_no);
-              if (idx !== -1) {
-                mu.unread_texts.splice(idx, 1);
-                mu.no_of_unread -= 1;
-                shouldUpdate = true; // We change something, so we need to run update
-              }
-            }
-          });
-          
-          if (shouldUpdate) {
-            self._membershipList._updateAllMemberships();
-          }
+          self._membershipList.markTextAsRead(text);
         });
         
         conn.on('jskom:readMarking:deleted', function ($event, text) {
           $log.log(self._logPrefix + 'on(jskom:readMarking:deleted)');
-          // Since memberships are update from membershipUnreads, we
-          // only update membershipUnreads and then run
-          // _update(). Possible not as fast, but much easier.
-          var shouldUpdate = false;
-          _.each(text.recipient_list, function(recipient) {
-            // TODO: was moved from MembershipList, so we access
-            //  "private" stuff here. Refactor.
-            var mu = self._membershipList._membershipUnreadsMap[recipient.recpt.conf_no];
-            if (mu != null) {
-              var idx = mu.unread_texts.indexOf(text.text_no);
-              if (idx === -1) {
-                mu.unread_texts.push(text.text_no);
-                mu.no_of_unread += 1;
-                shouldUpdate = true; // We change something, so we need to run update
-              }
-            }
-          });
-          
-          if (shouldUpdate) {
-            self._membershipList._updateAllMemberships();
-          }
+          self._membershipList.markTextAsUnread(text);
         });
-        
-        //if (conn.isLoggedIn()) {
-          // Do we want to initialize here? I don't think so. Would be
-          // better to do when first try to use it, which means that
-          // we either need to combine MembershipList and
-          // MembershipListHandle, or have a third party
-          // (membershipListService?) that wraps the MembershipList
-          // instance. Or we could have MembershipListHandler to wrap
-          // it.
-          // 
-          // Right now we start initializing all connections just when
-          // we start, which seems slow.
-          //this._initialize();
-        //}
-        
-        this._initializePromise = null;
       };
       
       _.extend(MembershipListHandler.prototype, {
