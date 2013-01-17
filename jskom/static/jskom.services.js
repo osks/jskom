@@ -365,11 +365,7 @@ angular.module('jskom.services', ['jskom.settings']).
         // Methods on current session:
         
         userIsActive: function(conn) {
-          return conn.http({ method: 'post', url: '/sessions/current/active'}, true, true).then(
-            function(response) {
-              $log.log("sessionsService - userIsActive() - success");
-              return response;
-            });
+          return conn.http({ method: 'post', url: '/sessions/current/active'}, true, true);
         },
         
         newPerson: function(persNo) {
