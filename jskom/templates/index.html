@@ -52,22 +52,24 @@
         </div>
       </div>
       
-      <div class="row" ng-switch-when="true">
-        
-        <div class="nine columns push-three" ng-controller="SessionCtrl">
-          <ng-include src="'messages.html'|jskomTemplate"></ng-include>
-          <ng-view></ng-view>
+      <div ng-switch-when="true">
+        <div class="row">
+          <div class="nine columns push-three">
+            <ng-include src="'messages.html'|jskomTemplate"></ng-include>
+            <ng-view></ng-view>
+            
+            <ng-include src="'keybindinghelp.html'|jskomTemplate"></ng-include>
+          </div>
+          
+          <div class="three columns pull-nine hide-for-small">
+            <ng-include src="'sidebar.html'|jskomTemplate"></ng-include>
+          </div>
         </div>
-
-        <div class="three columns pull-nine hide-for-small">
-          <ng-include src="'sidebar.html'|jskomTemplate"></ng-include>
-        </div>
-        
-        <!--<div class="three columns offset-by-one">
-          <ng-include src="'help.html'|jskomTemplate"></ng-include>
-        </div>-->
       </div>
+      
     </ng-switch>
+
+      
     
     <div class="row">
       <div class="twelve columns">

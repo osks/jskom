@@ -1,53 +1,24 @@
-<br/>
-<div class="hide-for-touch" ng-controller="HelpCtrl">
-  <div class="hide-for-small">
-    <div class="">
-      <div class="row">
-        <div class="twelve columns">
-          <button class="twelve small secondary button"
-                  ng-show="isVisible" ng-click="isVisible = false">
-            Keyboard shortcuts
-            <i class="icon-minus jskomRight"></i>
-          </button>
-          <button class="twelve small secondary button"
-                  ng-hide="isVisible" ng-click="isVisible = true">
-            Keyboard shortcuts
-            <i class="icon-plus jskomRight"></i>
-          </button>
-        </div>
-      </div>
-      
-      <div ng-show="isVisible">
-        <div ng-show="pageSpecificKeys">
-          <h6>Page specific</h6>
-          <table class="twelve">
-            <tr ng-repeat="keyBinding in pageSpecificKeys">
-              <td>
-                <span ng-repeat="key in keyBinding.keys">
-                  <span ng-hide="$index == 0"> or </span>
-                  <span class="label">{{ key }}</span>
-                </span>
-              </td>
-              <td>{{ keyBinding.description }}</td>
-            </tr>
-          </table>
-        </div>
-        
-        <div>
-          <h6>General</h6>
-          <table class="twelve">
-            <tr ng-repeat="keyBinding in generalKeys">
-              <td>
-                <span ng-repeat="key in keyBinding.keys">
-                  <span ng-hide="$index == 0"> or </span>
-                  <span class="label">{{ key }}</span>
-                </span>
-              </td>
-              <td>{{ keyBinding.description }}</td>
-            </tr>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
+<h2>Help</h2>
+
+<h3>General keyboard shortcuts</h4>
+<div>
+  <table class="twelve">
+    <thead>
+      <tr>
+        <th>Key</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="keyBinding in generalKeys">
+        <td>
+          <span ng-repeat="key in keyBinding.keys">
+            <span ng-hide="$index == 0"> or </span>
+            <span class="label">{{ key }}</span>
+          </span>
+        </td>
+        <td>{{ keyBinding.description }}</td>
+      </tr>
+    </tbody>
+  </table>
 </div>

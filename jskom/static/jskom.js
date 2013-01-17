@@ -117,6 +117,10 @@ angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
           templateUrl: templatePathProvider.path('showtext.html'),
           controller: 'ShowTextCtrl'
         }).
+        when('/help', {
+          templateUrl: templatePathProvider.path('help.html'),
+          controller: 'HelpCtrl'
+        }).
         otherwise({
           redirectTo: '/'
         });

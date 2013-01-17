@@ -1,0 +1,44 @@
+<div class="hide-for-touch" ng-controller="KeybindingHelpCtrl">
+  <div ng-show="pageSpecificKeys">
+    <hr />
+    
+    <div class="row">
+      <div class="twelve columns">
+        <p>
+          <a class="" ng-show="isVisible" ng-click="isVisible = false">
+            <i class="icon-minus"></i>
+            Hide page specific keyboard shortcuts
+          </a>
+          
+          <a class="" ng-hide="isVisible" ng-click="isVisible = true">
+            <i class="icon-plus"></i>
+            Show page specific keyboard shortcuts
+          </a>
+        </p>
+      </div>
+    </div>
+    
+    <div ng-show="isVisible">
+      <table class="twelve">
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="keyBinding in pageSpecificKeys">
+            <td>
+              <span ng-repeat="key in keyBinding.keys">
+                <span ng-hide="$index == 0"> or </span>
+                <span class="label">{{ key }}</span>
+              </span>
+            </td>
+            <td>{{ keyBinding.description }}</td>
+          </tr>
+        </tbody>
+      </table>
+      
+    </div>
+  </div>
+</div>

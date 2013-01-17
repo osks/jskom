@@ -2,7 +2,38 @@
 
 'use strict';
 
-angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.settings']).
+angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.settings',
+                                     'jskom.keybindings']).
+  controller('HelpCtrl', [
+    '$scope', '$log', 'keybindingService',
+    function($scope, $log, keybindingService) {
+      $scope.$watch(keybindingService.getGeneralBindings, function(newGeneralBindings) {
+        $scope.generalKeys = newGeneralBindings;
+      });
+    }
+  ]).
+  controller('KeybindingHelpCtrl', [
+    '$scope', '$log', 'keybindingService', 'modernizr',
+    function($scope, $log, keybindingService, modernizr) {
+      $scope.isVisible = false;
+      $scope.hasTouch = modernizr.touch;
+      
+      keybindingService.bindGeneral('?', 'Show page specific keybindings (toggle)', function(e) {
+        $scope.$apply(function() {
+          $scope.isVisible = !$scope.isVisible;
+        });
+        return false;
+      });
+      
+      $scope.$watch(keybindingService.getGeneralBindings, function(newGeneralBindings) {
+        $scope.generalKeys = newGeneralBindings;
+      });
+      
+      $scope.$watch(keybindingService.getPageSpecificBindings, function(newPageSpecificBindings) {
+        $scope.pageSpecificKeys = newPageSpecificBindings;
+      });
+    }
+  ]).
   controller('SidebarCtrl', [
     '$scope', '$log', '$timeout',
     'messagesService', 'keybindingService', 'membershipListService',
@@ -57,6 +88,24 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         //$log.log("MembershipsCtrl - watch(membershipList.getUnreadMemberships())");
         //$log.log(newUnreadMemberships);
         $scope.unreadMemberships = newUnreadMemberships;
+      });
+      
+      $scope.isRefreshing = false;
+      $scope.refreshUnread = function() {
+        if ($scope.membershipList != null && !$scope.isRefreshing) {
+          $scope.isRefreshing = true;
+          $scope.connection.userIsActive();
+          membershipListService.refreshUnread($scope.connection).then(
+            function () { $scope.isRefreshing = false; },
+            function () { $scope.isRefreshing = false; });
+        }
+      };
+      
+      keybindingService.bindGeneral('R', 'Refresh unread texts', function(e) {
+        $scope.$apply(function() {
+          $scope.refreshUnread();
+        });
+        return false;
       });
     }
   ]).
@@ -161,36 +210,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         $scope.$apply(function() {
           $scope.selectNextConnection();
         });
-        return false;
-      });
-    }
-  ]).
-  controller('SessionCtrl', [
-    '$scope', '$log', '$location', '$window',
-    'messagesService', 'keybindingService',
-    function($scope, $log, $location, $window,
-             messagesService, keybindingService) {
-      keybindingService.bindGeneral('i', 'New text...', function(e) {
-        $scope.$apply(function() {
-          $location.url('/texts/new');
-        });
-        return false;
-      });
-      
-      keybindingService.bindGeneral('g', 'Go to conference...', function(e) {
-        $scope.$apply(function() {
-          $location.url('/conferences/go-to');
-        });
-        return false;
-      });
-      
-      keybindingService.bindGeneral('p', 'Browser history back', function(e) {
-        $window.history.back();
-        return false;
-      });
-      
-      keybindingService.bindGeneral('n', 'Browser history forward', function(e) {
-        $window.history.forward();
         return false;
       });
     }
@@ -338,28 +357,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       });
     }
   ]).
-  controller('HelpCtrl', [
-    '$scope', '$log', 'keybindingService', 'modernizr',
-    function($scope, $log, keybindingService, modernizr) {
-      $scope.isVisible = false;
-      $scope.hasTouch = modernizr.touch;
-      
-      keybindingService.bindGeneral('?', 'Show this help (toggle)', function(e) {
-        $scope.$apply(function() {
-          $scope.isVisible = !$scope.isVisible;
-        });
-        return false;
-      });
-      
-      $scope.$watch(keybindingService.getGeneralBindings, function(newGeneralBindings) {
-        $scope.generalKeys = newGeneralBindings;
-      });
-      
-      $scope.$watch(keybindingService.getPageSpecificBindings, function(newPageSpecificBindings) {
-        $scope.pageSpecificKeys = newPageSpecificBindings;
-      });
-    }
-  ]).
   controller('UnreadConfsCtrl', [
     '$scope', '$location', '$log',
     'conferencesService', 'pageTitleService', 'messagesService', 'keybindingService',
@@ -415,8 +412,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       };
       
-      // TODO: This is more "global", so it shouldn't just be a button
-      // and keybinding on the unread conference page.
+      // TODO: This is more "global", so it shouldn't be a button on
+      // the unread conference page. The sidebarctrl has the
+      // keybinding, and this refreshUnread is more or less duplicated
+      // here.
       $scope.refreshUnread = function() {
         if (!$scope.isLoading && $scope.membershipList != null) {
           $scope.connection.userIsActive();
@@ -430,13 +429,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             });
         }
       };
-      keybindingService.bindGeneral('R', 'Refresh', function(e) {
-        $scope.$apply(function() {
-          $scope.refreshUnread();
-        });
-        return false;
-      });
-
       
       keybindingService.bindPageSpecific('space', 'Read first conference', function(e) {
         if ($scope.unreadMemberships.length > 0) {
@@ -444,13 +436,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             $scope.readFirstConference();
           });
         }
-        return false;
-      });
-      
-      keybindingService.bindPageSpecific('e', 'Set unread...', function(e) {
-        $scope.$apply(function() {
-          $location.url('/conferences/set-unread');
-        });
         return false;
       });
     }

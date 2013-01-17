@@ -62,6 +62,7 @@ js_jskom = Bundle('jskom.js',
                   'jskom.connections.js',
                   'jskom.directives.js',
                   'jskom.filters.js',
+                  'jskom.keybindings.js',
                   'jskom.services.js',
                   'jskom.templates.js',
                   
