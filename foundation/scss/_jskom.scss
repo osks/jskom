@@ -210,4 +210,48 @@ pre, pre * {
 }
 
 aside {
+    border-right: 1px solid #eee;
+    
+    h6 {
+        text-transform: uppercase;
+        font-size: 12px;
+        font-weight: 600;
+        color: #999;
+    }
+    
+    .nav-bar.vertical {
+        background: #fff;
+        border: none;
+        margin-right: 15px;
+        
+        > li {
+            border-top: none;
+            border-right: none !important; /*1px solid #eee !important;*/
+            border-bottom: none !important; /*1px solid #eee !important;*/
+            border-left: none; /*3px solid #ccc;*/
+            
+            &:first-child {
+                border-top: none !important; /*1px solid #eee !important;*/
+            }
+            
+            line-height: 35px;
+            
+            &:hover {
+                background-color: $secondaryColor;
+            }
+            
+            > a {
+                color: $mainColor;
+                
+                &:first-child {
+                    padding: 0 5px;
+                    margin: 0;
+                }
+                
+                &.jskomNoWrap {
+                    text-overflow: ellipsis;
+                }
+            }
+        }
+    }
 }

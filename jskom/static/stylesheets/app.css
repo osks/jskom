@@ -5264,3 +5264,54 @@ pre, pre * {
 .jskomRight {
   float: right;
 }
+
+/* line 212, ../../../foundation/scss/_jskom.scss */
+aside {
+  border-right: 1px solid #eee;
+}
+/* line 215, ../../../foundation/scss/_jskom.scss */
+aside h6 {
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 600;
+  color: #999;
+}
+/* line 222, ../../../foundation/scss/_jskom.scss */
+aside .nav-bar.vertical {
+  background: #fff;
+  border: none;
+  margin-right: 15px;
+}
+/* line 227, ../../../foundation/scss/_jskom.scss */
+aside .nav-bar.vertical > li {
+  border-top: none;
+  border-right: none !important;
+  /*1px solid #eee !important;*/
+  border-bottom: none !important;
+  /*1px solid #eee !important;*/
+  border-left: none;
+  /*3px solid #ccc;*/
+  line-height: 35px;
+}
+/* line 233, ../../../foundation/scss/_jskom.scss */
+aside .nav-bar.vertical > li:first-child {
+  border-top: none !important;
+  /*1px solid #eee !important;*/
+}
+/* line 239, ../../../foundation/scss/_jskom.scss */
+aside .nav-bar.vertical > li:hover {
+  background-color: #e9e9e9;
+}
+/* line 243, ../../../foundation/scss/_jskom.scss */
+aside .nav-bar.vertical > li > a {
+  color: #2ba6cb;
+}
+/* line 246, ../../../foundation/scss/_jskom.scss */
+aside .nav-bar.vertical > li > a:first-child {
+  padding: 0 5px;
+  margin: 0;
+}
+/* line 251, ../../../foundation/scss/_jskom.scss */
+aside .nav-bar.vertical > li > a.jskomNoWrap {
+  text-overflow: ellipsis;
+}
