@@ -53,14 +53,19 @@
       </div>
       
       <div class="row" ng-switch-when="true">
-        <div class="eight columns" ng-controller="SessionCtrl">
+        
+        <div class="nine columns push-three" ng-controller="SessionCtrl">
           <ng-include src="'messages.html'|jskomTemplate"></ng-include>
           <ng-view></ng-view>
         </div>
-        
-        <div class="three columns offset-by-one">
-          <ng-include src="'help.html'|jskomTemplate"></ng-include>
+
+        <div class="three columns pull-nine hide-for-small">
+          <ng-include src="'sidebar.html'|jskomTemplate"></ng-include>
         </div>
+        
+        <!--<div class="three columns offset-by-one">
+          <ng-include src="'help.html'|jskomTemplate"></ng-include>
+        </div>-->
       </div>
     </ng-switch>
     

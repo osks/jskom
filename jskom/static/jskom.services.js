@@ -463,6 +463,25 @@ angular.module('jskom.services', ['jskom.settings']).
           }
         },
         
+        getLastCreatedTextsInConference: function(conn, confNo) {
+          return conn.http({ method: 'get', url: '/conferences/' + confNo + '/texts/' },
+                           true, true).
+            then(function(response) {
+              $log.log("textsService - getLastCreatedTextsInConference(" + confNo + ") - success");
+              response.data = response.data.texts;
+              // TODO: If we get full texts here, we could cache them.
+              // 
+              // An alternative would be to only get the text numbers
+              // first, and then be able to fetch some texts from
+              // cache and some from the server. For that we need an
+              // API call for fetching several texts from a list of
+              // text numbers (which would be nice to have anyway, for
+              // example in Reader prefetch). Then we only have to do
+              // at most 2 request even without anything in the cache.
+              return response;
+            });
+        },
+        
         createText: function(conn, text) {
           return conn.http({ method: 'post', url: '/texts/', data: text }, true, true).then(
             function(response) {
@@ -531,8 +550,8 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('membershipsService', [
-    '$log', '$q', 'sessionsService',
-    function($log, $q, sessionsService) {
+    '$log', '$q',
+    function($log, $q) {
       var createResolvedPromiseFor = function(resolveArg) {
         var deferred = $q.defer();
         var promise = deferred.promise;
@@ -540,48 +559,20 @@ angular.module('jskom.services', ['jskom.settings']).
         return promise;
       };
       
-      var cacheKeyForUnread = function(persNo) {
-        return persNo + ":unread";
-      };
-      
-      var cacheKeyForConf = function(persNo, confNo) {
+      var cacheKeyForMembership = function(persNo, confNo) {
         return persNo + ":" + confNo;
       };
       
-      var clearCacheForUnread = function(conn) {
-        var unreadKey = cacheKeyForUnread(conn.getPersNo());
-        conn.membershipsCache.remove(unreadKey);
-      };
-      
       var clearCacheForPersonAndConf = function(conn, persNo, confNo) {
-        var confKey = cacheKeyForConf(persNo, confNo);
-        conn.membershipsCache.remove(confKey);
-        
-        // also remove unread cache
-        clearCacheForUnread(conn);
-      };
-      
-      var saveMembershipsInCache = function(conn, persNo, memberships) {
-        _.each(memberships, function(membership) {
-          var cacheKey = cacheKeyForConf(persNo, membership.conference.conf_no);
-          var promise = createResolvedPromiseFor(membership);
-          conn.membershipsCache.put(cacheKey, promise);
-        });
+        conn.membershipsCache.remove(cacheKeyForMembership(persNo, confNo));
+        conn.membershipsCache.remove(cacheKeyForMembershipUnreads(persNo, confNo));
       };
       
       return {
-        clearCacheForUnread: function(conn) {
-          clearCacheForUnread(conn);
-        },
-        
-        clearCacheForConf: function(conn, confNo) {
-          var confKey = cacheKeyForConf(conn.getPersNo(), confNo);
-          conn.membershipsCache.remove(confKey);
-        },
-        
         setNumberOfUnreadTexts: function(conn, confNo, noOfUnread) {
           var data = { no_of_unread: parseInt(noOfUnread) };
-          return conn.http({ method: 'post', url: '/persons/current/memberships/' + confNo,
+          return conn.http({ method: 'post',
+                             url: '/persons/current/memberships/' + confNo + '/unread',
                              data: data }, true, true).
             then(function(response) {
               clearCacheForPersonAndConf(conn, conn.getPersNo(), confNo);
@@ -594,10 +585,9 @@ angular.module('jskom.services', ['jskom.settings']).
         },
         
         addMembershipForPerson: function(conn, persNo, confNo) {
-          var priority = 100;
-          // todo: this httpkom call should take priority in the body, not as query param.
+          var data = { priority: 100 };
           return conn.http({ method: 'put', url: '/persons/' + persNo + '/memberships/' + confNo,
-                             params: { "priority": parseInt(priority) } }, true, true).
+                             data: data }, true, true).
             then(function(response) {
               clearCacheForPersonAndConf(conn, conn.getPersNo(), confNo);
               return response;
@@ -624,25 +614,30 @@ angular.module('jskom.services', ['jskom.settings']).
         getMembershipForPerson: function(conn, persNo, confNo, options) {
           options = options || { cache: true };
           
-          var cacheKey = cacheKeyForConf(persNo, confNo);
+          var cacheKey = cacheKeyForMembership(persNo, confNo);
           var cachedResp = conn.membershipsCache.get(cacheKey);
           
           if (options.cache && cachedResp) {
-            $log.log('membershipsService - getMembership(' + confNo + ') - cached');
-            return cachedResp;
+            return cachedResp.then(function(response) {
+              $log.log('membershipsService - getMembershipForPerson(' +
+                       persNo + ', ' + confNo + ') - cached');
+              return response;
+            });
           } else {
             var deferred = $q.defer();
             var promise = deferred.promise;
             
-            conn.http({ method: 'get', url: '/persons/' + persNo + '/memberships/' + confNo,
-                        params: { "want-unread": true } }, true, true).
+            conn.http({ method: 'get', url: '/persons/' + persNo + '/memberships/' + confNo },
+                      true, true).
               then(
                 function(response) {
-                  $log.log('membershipsService - getMembership(' + confNo + ') - success');
+                  $log.log('membershipsService - getMembershipForPerson(' +
+                           persNo + ', ' + confNo + ') - success');
                   deferred.resolve(response.data);
                 },
                 function(response) {
-                  $log.log('membershipsService - getMembership(' + confNo + ') - error');
+                  $log.log('membershipsService - getMembershipForPerson(' +
+                           persNo + ', ' + confNo + ') - error');
                   conn.membershipsCache.remove(cacheKey);
                   deferred.reject(response);
                 });
@@ -652,89 +647,71 @@ angular.module('jskom.services', ['jskom.settings']).
           }
         },
         
-        getUnreadMemberships: function(conn, options) {
-          return this.getUnreadMembershipsForPerson(conn, conn.getPersNo(), options);
+        getMemberships: function(conn, options) {
+          return this.getMembershipsForPerson(conn, conn.getPersNo(), options);
         },
         
-        getUnreadMembershipsForPerson: function(conn, persNo, options) {
-          options = options || { cache: true };
+        getMembershipsForPerson: function(conn, persNo, options) {
+          options = _.isUndefined(options) ? {} : options;
+          _.defaults(options, { unread: false });
+          // TODO: caching. don't forget to respect unread = true/false.
           
-          var deferred = $q.defer();
-          var promise = deferred.promise;
-          
-          // TODO: Should this really call getUnreadConfNos? I don't
-          // think so. I think it's a legacy thing from an uncompleted
-          // rewrite/refactoring.
-          var self = this;
-          this.getUnreadConfNosForPerson(conn, persNo, options).then(
-            function(unreadConfNos) {
-              var promises = _.map(unreadConfNos, function(confNo) {
-                // In this case we want to allow cache, regardless of
-                // what the option was. This is because
-                // getUnreadConfNosForPerson will put the (fresh)
-                // result in the cache, and we expect to use it - not
-                // for this to re-fetch it again. Also, see the TODO
-                // in respective method about refactoring.
-                options.cache = true;
-                return self.getMembershipForPerson(conn, persNo, confNo, options);
+          var logPrefix = 'membershipsService - getMembershipsForPerson(' + persNo +
+            ', ' + angular.toJson(options) + ') - ';
+          return conn.http({ method: 'get', url: '/persons/' + persNo + '/memberships/',
+                             params: { "unread": options.unread } }, true, true).
+            then(
+              function(response) {
+                $log.log(logPrefix + 'success');
+                response.data = response.data.list;
+                return response;
+              },
+              function(response) {
+                $log.log(logPrefix + 'error');
+                return $q.reject(response);
               });
-              $q.all(promises).then(
-                function(memberships) {
-                  deferred.resolve(_.filter(memberships, function(membership) {
-                    // Filter out those with no unread. This can happen
-                    // because of caching.
-                    return membership.no_of_unread > 0;
-                  }));
-                },
-                function(rejection) {
-                  deferred.reject(rejection);
-                });
-            },
-            function(response) {
-              deferred.reject(response);
-            });
-          
-          return promise;
         },
         
-        getUnreadConfNos: function(conn, options) {
-          return this.getUnreadConfNosForPerson(conn, conn.getPersNo(), options);
+        getMembershipUnread: function(conn, confNo) {
+          return this.getMembershipUnreadForPerson(conn, conn.getPersNo(), confNo);
         },
         
-        getUnreadConfNosForPerson: function(conn, persNo, options) {
-          options = options || { cache: true };
+        getMembershipUnreadForPerson: function(conn, persNo, confNo) {
+          var logPrefix = 'membershipsService - getMembershipUnreadForPerson(' +
+            persNo + ', ' + confNo + ') - ';
           
-          var cacheKey = cacheKeyForUnread(persNo);
-          var cachedResp = conn.membershipsCache.get(cacheKey);
-          
-          if (options.cache && cachedResp) {
-            $log.log('membershipsService - getUnreadMemberships() - cached');
-            return cachedResp;
-          } else {
-            var deferred = $q.defer();
-            var promise = deferred.promise;
-            
-            conn.http({ method: 'get', url: '/persons/' + persNo + '/memberships/',
-                        params: { "unread": true, "want-unread": true } }, true, true).
-              then(
-                function(response) {
-                  $log.log('membershipsService - getUnreadMemberships() - success');
-                  saveMembershipsInCache(conn, persNo, response.data.memberships);
-                  var unreadConfNos = _.map(response.data.memberships,
-                                            function(membership) {
-                                              return membership.conference.conf_no;
-                                            });
-                  deferred.resolve(unreadConfNos);
-                },
-                function(response) {
-                  $log.log('membershipsService - getUnreadMemberships() - error');
-                  conn.membershipsCache.remove(cacheKey);
-                  deferred.reject(response);
-                });
-            
-            conn.membershipsCache.put(cacheKey, promise);
-            return promise;
-          }
+          return conn.http({ method: 'get',
+                             url: '/persons/' + persNo + '/memberships/' + confNo + '/unread' },
+                           true, true).
+            then(
+              function(response) {
+                $log.log(logPrefix + 'success');
+                return response;
+              },
+              function(response) {
+                $log.log(logPrefix + 'error');
+                return $q.reject(response);
+              });
+        },
+        
+        getMembershipUnreads: function(conn) {
+          return this.getMembershipUnreadsForPerson(conn, conn.getPersNo());
+        },
+        
+        getMembershipUnreadsForPerson: function(conn, persNo) {
+          var logPrefix = 'membershipsService - getMembershipUnreadsForPerson(' + persNo + ') - ';
+          return conn.http({ method: 'get', url: '/persons/' + persNo + '/memberships/unread/' },
+                           true, true).
+            then(
+              function(response) {
+                $log.log(logPrefix + 'success');
+                response.data = response.data.list;
+                return response;
+              },
+              function(response) {
+                $log.log(logPrefix + 'error');
+                return $q.reject(response);
+              });
         },
       };
     }
@@ -840,24 +817,14 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('readMarkingsService', [
-    '$log', 'membershipsService',
-    function($log, membershipsService) {
-      var clearCacheForRecipients = function(conn, text) {
-        if (text) {
-          // Clear membership cache because marking texts as read/unread
-          // will make the data invalid.
-          _.each(text.recipient_list, function(recipient) {
-            membershipsService.clearCacheForConf(conn, recipient.recpt.conf_no);
-          });
-        }
-      };
-      
+    '$log', '$rootScope', 'membershipsService',
+    function($log, $rootScope, membershipsService) {
       return {
         createGlobalReadMarking: function(conn, text) {
           var request = { method: 'put', url: '/texts/' + text.text_no + '/read-marking' };
           return conn.http(request, true, true).then(
             function(response) {
-              clearCacheForRecipients(conn, text);
+              conn.broadcast('jskom:readMarking:created', text);
               return response;
             });
         },
@@ -866,7 +833,7 @@ angular.module('jskom.services', ['jskom.settings']).
           var request = { method: 'delete', url: '/texts/' + text.text_no + '/read-marking' };
           return conn.http(request, true, true).then(
             function(response) {
-              clearCacheForRecipients(conn, text);
+              conn.broadcast('jskom:readMarking:deleted', text);
               return response;
             });
         },
@@ -964,7 +931,6 @@ angular.module('jskom.services', ['jskom.settings']).
         enqueue: function(unreadTextNos) {
           this._unreadTextNos = _.union(this._unreadTextNos, unreadTextNos);
           this._unreadTextNos.sort();
-          
           if (this._currentTextNo == null && this._unreadTextNos.length > 0) {
             this.moveNext();
           }
@@ -1101,6 +1067,465 @@ angular.module('jskom.services', ['jskom.settings']).
             unreadQueue.enqueue(textNos);
           }
           return unreadQueue;
+        }
+      };
+    }
+  ]).
+  factory('membershipListService', [
+    '$log', '$q',
+    function($log, $q) {
+      // The membershipsListService wraps a pair of MembershipList and
+      // MembershipListHandle instances. It doesn't return promises,
+      // because we want to use $watch with what it returns.
+      // 
+      //
+      
+      // The problem is that we in the service do
+      // membershipList.getReadMemberships() and return that, but
+      // membershipList may change the returned object (it does when
+      // updating), and then the controller has an old object
+      // reference and won't notice any changes.
+      //
+      // 2nd Update: Doh! We can watch
+      // membershipListService.getReadMembership() if we just don't
+      // return promises, but rather the actual object. But what would
+      // the goal of the service be then?
+      // 
+      // * Return conn.membershipList, or perhaps wrap the list
+      // * entirly and only offer
+      // * getUnread/getRead/getAll... (Non-promise).
+      // 
+      // * Wrap MembershipListHandler.refreshUnread() (Note: that is a
+      // * promise-method though! We want it to be that so we know how
+      // * long we should disable the button, for example.)
+      // 
+      // What else? TODO
+      // 
+      // 
+      // Another alternative is that we offer
+      // membershipListService.getMembershipList() that returns a
+      // promise for the membership list from the connection. In the
+      // controller we then $watch the connection to see when we
+      // should get a new membership list.
+      // 
+      // We can't offer getUnreadMembership/getReadmemberships/etc on
+      // promise, because the MembershipList doesn't guarantee to
+      // return the same object each time, so we need to $watch those
+      // methods (and that doesn't work with promises, since they
+      // would return different promises each time).
+      
+      
+      // What we choose depends on how much we want to show or hide the
+      // MembershipList object.
+      
+      
+      return {
+        getMembershipList: function (conn) {
+          return conn.membershipListHandler.getMembershipList();
+        },
+        
+        refreshUnread: function (conn) {
+          return conn.membershipListHandler.refreshUnread();
+        },
+        
+        getMembership: function (conn, confNo) {
+          // Implementation idea:
+          // 
+          // 1. Check conn.membershipList.getMembership(confNo)
+          // 
+          //    a) we got a conference; return a successful
+          //    promise. Done.
+          //    
+          //    b) we got null/undefined; continue to 2.
+          // 
+          // 2. Just because we got null/undefined from the membership
+          //    list doesn't mean that there is no such membership on
+          //    the server. The initial fetch might not have responded
+          //    yet, or there is a new conference that was added after
+          //    the last fetch. We don't want to depend on only full
+          //    fetches. This should probably mostly be implemented in
+          //    MembershipListHandler, but anyway:
+          // 
+          //    1. Try to fetch the membership from the server. Create
+          //       a new promise object that we resolve later.
+          // 
+          //    2. In the success method to the promise, we update the
+          //       membership list with the newly fetched membership
+          //       (or membershipUnread, they should work the same
+          //       way) and resolve the created promise with what the
+          //       membershipList returns.
+          //    
+          //    3. Return the created promise object. We should not
+          //       return the promise object from the
+          //       membershipsService directly, but rather a new
+          //       promise that fetches from the updated membership
+          //       list on success. For example, if there is a
+          //       membershipUnread for that membership, the
+          //       membership list will populate that, which the
+          //       original membership won't have (and MembershipList
+          //       has no guarantee that you get the same object back
+          //       between an update/get, only between each get).
+        }
+      };
+    }    
+  ]).
+  factory('membershipListFactory', [
+    '$log', '$q',
+    function($log, $q) {
+      // The MembershipList stores the memberships. It provides
+      // methods for accessing the full list of membership and the
+      // list of unread memberships separately.
+      function MembershipList() {
+        this._memberships = null;
+        this._unreadMemberships = null;
+        this._readMemberships = null;
+        this._membershipUnreadsMap = null;
+      };
+      
+      _.extend(MembershipList.prototype, {
+        _updateMembership: function (membership) {
+          var confNo = membership.conference.conf_no;
+          if (_.has(this._membershipUnreadsMap, confNo)) {
+            var mu = this._membershipUnreadsMap[confNo];
+            membership.no_of_unread = mu.no_of_unread;
+            membership.unread_texts = mu.unread_texts;
+          } else {
+            membership.no_of_unread = 0;
+            membership.unread_texts = [];
+          }
+        },
+        
+        _updateAllMemberships: function () {
+          if (this._memberships !== null && this._membershipUnreadsMap !== null) {
+            var self = this;
+            _.each(this._memberships, function (membership) {
+              self._updateMembership(membership);
+            });
+            
+            this._readMemberships = _.filter(this._memberships, function (membership) {
+              return membership.no_of_unread == 0;
+            });
+            
+            this._unreadMemberships = _.filter(this._memberships, function (membership) {
+              return membership.no_of_unread > 0;
+            });
+          }
+        },
+        
+        _updateUnreadMemberships: function () {
+          // This is a partial update of only
+          // this._unreadMemberships. We only use this because we want
+          // to be able to fetch unread memberships first for a better experience.
+          if (this._unreadMemberships !== null && this._membershipUnreadsMap !== null) {
+            var self = this;
+            _.each(this._unreadMemberships, function (membership) {
+              self._updateMembership(membership);
+            });
+          }
+        },
+        
+        clear: function () {
+          this._memberships = null;
+          this._unreadMemberships = null;
+          this._readMemberships = null;
+          this._membershipUnreadsMap = null;
+        },
+        
+        // Must return the same object if nothing has changed.
+        getAllMemberships: function () {
+          return this._memberships;
+        },
+        
+        // Must return the same object if nothing has changed.
+        getReadMemberships: function () {
+          return this._readMemberships;
+        },
+        
+        // Must return the same object if nothing has changed.
+        getUnreadMemberships: function () {
+          return this._unreadMemberships;
+        },
+        
+        // Must return the same object if nothing has changed.
+        getMembership: function (confNo) {
+          return _.find(this._memberships, function (membership) {
+            return membership.conference.conf_no === confNo;
+          });
+        },
+        
+        
+        updateAllMemberships: function (memberships) {
+          this._memberships = memberships;
+          this._updateAllMemberships();
+        },
+        
+        updateUnreadMemberships: function (unreadMemberships) {
+          this._unreadMemberships = unreadMemberships;
+          this._updateUnreadMemberships();
+        },
+        
+        updateMembership: function (membership) {
+          this._updateMembership(membership);
+        },
+        
+        
+        updateMembershipUnreads: function (membershipUnreads) {
+          this._membershipUnreadsMap = _.object(_.map(membershipUnreads, function (mu) {
+            return [mu.conf_no, mu];
+          }));
+          this._updateUnreadMemberships();
+          this._updateAllMemberships();
+        }
+      });
+      
+      return {
+        create: function () {
+          return new MembershipList();
+        }
+      };
+    }
+  ]).
+  factory('membershipListHandlerFactory', [
+    '$log', '$q', '$timeout', '$rootScope', 'membershipsService',
+    function($log, $q, $timeout, $rootScope, membershipsService) {
+      // The MembershipListHandler regularly polls the server for any
+      // new unread texts/memberships and upates the membership
+      // list. The handling parts include updating the list of
+      // memberships with what texts are unread and how many unread
+      // there are.
+      function MembershipListHandler(conn, membershipList) {
+        this._conn = conn;
+        this._membershipList = membershipList;
+        this._logPrefix = "MembershipListHandler - ";
+        
+        this._refreshIntervalSeconds = 2*60;
+        this._autoRefreshPromise = null;
+        
+        var self = this;
+        conn.on('jskom:session:login', function ($event) {
+          $log.log(self._logPrefix + 'on(jskom:session:login)');
+        });
+        
+        conn.on('jskom:session:logout', function ($event) {
+          $log.log(self._logPrefix + 'on(jskom:session:logout)');
+          self.reset();
+        });
+        
+        conn.on('jskom:session:deleted', function ($event) {
+          $log.log(self._logPrefix + 'on(jskom:session:deleted)');
+          self.reset();
+        });
+        
+        conn.on('jskom:readMarking:created', function ($event, text) {
+          $log.log(self._logPrefix + 'on(jskom:readMarking:created)');
+          // Since memberships are update from membershipUnreads, we
+          // only update membershipUnreads and then run
+          // _update(). Possible not as fast, but much easier.
+          var shouldUpdate = false;
+          _.each(text.recipient_list, function(recipient) {
+            // TODO: was moved from MembershipList, so we access
+            //  "private" stuff here. Refactor.
+            var mu = self._membershipList._membershipUnreadsMap[recipient.recpt.conf_no];
+            if (mu != null) {
+              var idx = mu.unread_texts.indexOf(text.text_no);
+              if (idx !== -1) {
+                mu.unread_texts.splice(idx, 1);
+                mu.no_of_unread -= 1;
+                shouldUpdate = true; // We change something, so we need to run update
+              }
+            }
+          });
+          
+          if (shouldUpdate) {
+            self._membershipList._updateAllMemberships();
+          }
+        });
+        
+        conn.on('jskom:readMarking:deleted', function ($event, text) {
+          $log.log(self._logPrefix + 'on(jskom:readMarking:deleted)');
+          // Since memberships are update from membershipUnreads, we
+          // only update membershipUnreads and then run
+          // _update(). Possible not as fast, but much easier.
+          var shouldUpdate = false;
+          _.each(text.recipient_list, function(recipient) {
+            // TODO: was moved from MembershipList, so we access
+            //  "private" stuff here. Refactor.
+            var mu = self._membershipList._membershipUnreadsMap[recipient.recpt.conf_no];
+            if (mu != null) {
+              var idx = mu.unread_texts.indexOf(text.text_no);
+              if (idx === -1) {
+                mu.unread_texts.push(text.text_no);
+                mu.no_of_unread += 1;
+                shouldUpdate = true; // We change something, so we need to run update
+              }
+            }
+          });
+          
+          if (shouldUpdate) {
+            self._membershipList._updateAllMemberships();
+          }
+        });
+        
+        //if (conn.isLoggedIn()) {
+          // Do we want to initialize here? I don't think so. Would be
+          // better to do when first try to use it, which means that
+          // we either need to combine MembershipList and
+          // MembershipListHandle, or have a third party
+          // (membershipListService?) that wraps the MembershipList
+          // instance. Or we could have MembershipListHandler to wrap
+          // it.
+          // 
+          // Right now we start initializing all connections just when
+          // we start, which seems slow.
+          //this._initialize();
+        //}
+        
+        this._initializePromise = null;
+      };
+      
+      _.extend(MembershipListHandler.prototype, {
+        _initialize: function () {
+          if (this._initializePromise == null) {
+            var p1 = this._fetchUnreadMemberships();
+            var p2 = this._fetchMembershipUnreads();
+            var self = this;
+            // The returned promise will be resolved when the unread
+            // have been fetched, not when all memberships have been
+            // fetched.
+            this._initializePromise = $q.all([ p1, p2 ]).then(
+              function () {
+                // When we have fetched both the unread memberships and
+                // the membershipUnreads, then we fetch the full membership list.
+                self._fetchAllMemberships();
+                self.enableAutoRefresh();
+                $log.log(self._logPrefix + "initialize() - success");
+                //return null;
+              },
+              function () {
+                // if the initialize fails, remove the stored promise.
+                $log.log(self._logPrefix + "initialize() - error");
+                self._initializePromise = null;
+                return $q.reject();
+              });
+          }
+          return this._initializePromise;
+        },
+        
+        _fetchMembershipUnreads: function () {
+          // TODO: Make sure we only have one of these requests active
+          // at one time.
+          
+          var logp = this._logPrefix + "getMembershipUnreads() - ";
+          var self = this;
+          return membershipsService.getMembershipUnreads(this._conn).then(
+            function (response) {
+              $log.log(logp + "success");
+              self._membershipList.updateMembershipUnreads(response.data);
+              //return null;
+            },
+            function (response) {
+              $log.log(logp + "error");
+              // TODO: can we do anything? should we show a message?
+              return $q.reject();
+            });
+        },
+        
+        _fetchUnreadMemberships: function () {
+          // TODO: Make sure we only have one of these requests active
+          // at one time.
+          
+          var options = { unread: true, cache: false };
+          var logp = this._logPrefix + "getMemberships(" + angular.toJson(options) + ") - ";
+          var self = this;
+          return membershipsService.getMemberships(this._conn, options).
+            then(
+              function (response) {
+                $log.log(logp + "success");
+                self._membershipList.updateUnreadMemberships(response.data);
+                //return null;
+              },
+              function (response) {
+                $log.log(logp + "error");
+                // TODO: can we do anything? should we show a message?
+                return $q.reject();
+              });
+        },
+        
+        _fetchAllMemberships: function () {
+          // TODO: Make sure we only have one of these requests active
+          // at one time.
+          
+          var logp = this._logPrefix + "getMemberships({ unread: false }) - ";
+          var self = this;
+          return membershipsService.getMemberships(self._conn, { unread: false }).then(
+            function (response) {
+              $log.log(logp + "success");
+              self._membershipList.updateAllMemberships(response.data);
+              //return null;
+            },
+            function (response) {
+              $log.log(logp + "error");
+              // TODO: can we do anything? should we show a message?
+              return $q.reject();
+            });
+        },
+        
+        reset: function () {
+          this.disableAutoRefresh();
+          this._membershipList.clear();
+          this._initializePromise = null;
+        },
+        
+        getMembershipList: function () {
+          var self = this;
+          return this._initialize().then(function () {
+            return self._membershipList;
+          });
+        },
+
+        _enableAutoRefresh: function () {
+          $log.log(this._logPrefix + "enabling auto-refresh");
+          var self = this;
+          var scheduleReload = function() {
+            self._autoRefreshPromise = $timeout(function() {
+              self.refreshUnread().then(
+                function() {
+                  scheduleReload();
+                },
+                function() {
+                  self.disableAutoRefresh();
+                });
+            }, self._refreshIntervalSeconds * 1000);
+          }
+          scheduleReload();
+        },
+        
+        enableAutoRefresh: function () {
+          var self = this;
+          return this._initialize().then(function () {
+            self._enableAutoRefresh();
+          });
+        },
+        
+        disableAutoRefresh: function () {
+          if (this._autoRefreshPromise != null) {
+            $log.log(this._logPrefix + "disabling auto-refresh");
+            $timeout.cancel(this._autoRefreshPromise);
+            this._autoRefreshPromise = null;
+          }
+        },
+        
+        refreshUnread: function () {
+          var self = this;
+          return this._initialize().then(function () {
+            return self._fetchMembershipUnreads();
+          });
+        }
+      });
+      
+      return {
+        create: function (conn, membershipList) {
+          return new MembershipListHandler(conn, membershipList);
         }
       };
     }

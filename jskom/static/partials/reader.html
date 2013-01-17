@@ -4,7 +4,9 @@
   <div ng-show="reader">
     <h2 class="jskomNoWrap">
       {{ reader.unreadSize() }} unread in
-      <a href="/conferences/{{conf.conf_no}}">{{ conf|confName }}</a>
+      <a href="/conferences/{{membership.conference.conf_no}}">
+        {{ membership.conference|confName }}
+      </a>
     </h2>
     
     <jskom:loading ng-show="textIsLoading"></jskom:loading>

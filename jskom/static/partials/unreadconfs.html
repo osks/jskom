@@ -13,7 +13,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr ng-repeat="membership in unreadMemberships">
+      <tr ng-repeat="membership in unreadMemberships | orderBy:['-priority', 'conference.conf_name']">
         <td>
           <a href="/conferences/{{ membership.conference.conf_no }}/unread">
             {{ membership.conference.conf_name }}
@@ -32,7 +32,7 @@
     <div class="three mobile-one columns">
       <button type="button" class="secondary button"
               ng-disabled="isLoading"
-              ng-click="refresh()">
+              ng-click="refreshUnread()">
         <i class="icon-repeat"></i>
       </button>
     </div>

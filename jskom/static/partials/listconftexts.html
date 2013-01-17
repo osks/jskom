@@ -1,0 +1,19 @@
+<h2>List texts in conference: {{ confNo }}</h2>
+
+<table class="twelve">
+  <thead>
+    <tr>
+      <th>Text number</th>
+      <th>Date</th>
+      <th>Author</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr ng-show="texts.length == 0"><td>No texts</td></tr>
+    <tr ng-repeat="text in texts">
+      <td><a href="/texts/{{text.text_no}}">{{ text.text_no }}</a></td>
+      <td>{{ text.creation_time }}</td>
+      <td><a href="/conferences/{{text.author.pers_no}}">{{ text.author|personName }}</a></td>
+    </tr>
+  </tbody>
+</table>

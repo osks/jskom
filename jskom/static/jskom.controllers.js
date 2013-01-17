@@ -3,6 +3,87 @@
 'use strict';
 
 angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.settings']).
+  controller('SidebarCtrl', [
+    '$scope', '$log', '$timeout',
+    'messagesService', 'keybindingService', 'membershipListService',
+    function($scope, $log, $timeout,
+             messagesService, keybindingService, membershipListService) {
+      $scope.membershipList = null;
+      $scope.readMemberships = null;
+      $scope.unreadMemberships = null;
+      
+      $scope.$watch('connection', function (newConnection) {
+        if (newConnection != null) {
+          membershipListService.getMembershipList($scope.connection).then(
+            function (membershipList) {
+              $log.log("MembershipsCtrl - getMembershipList() - success");
+              $scope.membershipList = membershipList;
+            },
+            function () {
+              $log.log("MembershipsCtrl - getMembershipList() - error");
+              $scope.membershipList = null;
+            });
+        } else {
+          $scope.membershipList = null;
+        }
+      });
+      
+      $scope.pageSize = 100;
+      $scope.currentPage = 0;
+      $scope.numberOfPages = 1;
+      
+      $scope.$watch('membershipList.getReadMemberships()', function (newReadMemberships) {
+        //$log.log("MembershipsCtrl - watch(membershipList.getReadMemberships())");
+        //$log.log(newReadMemberships);
+        $scope.readMemberships = newReadMemberships;
+        
+        $scope.currentPage = 0;
+        if (newReadMemberships != null) {
+          $scope.numberOfPages = Math.ceil($scope.readMemberships.length / $scope.pageSize);
+        } else {
+          $scope.numberOfPages = 0;
+        }
+      });
+      
+      $scope.previousPage = function() {
+        $scope.currentPage = ($scope.currentPage < 1 ? 0 : $scope.currentPage - 1);
+      };
+      $scope.nextPage = function() {
+        $scope.currentPage = ($scope.currentPage >= $scope.numberOfPages -1 ?
+                              $scope.currentPage : $scope.currentPage + 1);
+      };
+      
+      $scope.$watch('membershipList.getUnreadMemberships()', function (newUnreadMemberships) {
+        //$log.log("MembershipsCtrl - watch(membershipList.getUnreadMemberships())");
+        //$log.log(newUnreadMemberships);
+        $scope.unreadMemberships = newUnreadMemberships;
+      });
+      
+      
+      /*
+      $scope.load = function(allowCache) {
+        $scope.membershipUnreads = [];
+        $scope.isLoading = true;
+        return membershipsService.getMembershipUnreads(
+          $scope.connection, { cache: allowCache }).then(
+            function(response) {
+              $log.log("UnreadConfsCtrl - getMembershipUnreads() - success");
+              $scope.membershipUnreads = response.data;
+              $scope.isLoading = false;
+            },
+            function(response) {
+              $log.log("UnreadConfsCtrl - getMembershipUnreads() - error");
+              $scope.isLoading = false;
+              if (response.status != 401) {
+                messagesService.showMessage('error', 'Failed to get unread conferences.',
+                                            response.data);
+              }
+              return $q.reject(response);
+            });
+      };
+      */
+    }
+  ]).
   controller('ConnectionsCtrl', [
     '$scope', '$rootScope', '$log', '$location',
     'connectionFactory', 'connectionsService', 'httpkom', 'messagesService', 'sessionsService',
@@ -304,101 +385,50 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
     }
   ]).
   controller('UnreadConfsCtrl', [
-    '$scope', '$location', '$log', '$timeout', '$q',
+    '$scope', '$location', '$log',
     'conferencesService', 'pageTitleService', 'messagesService', 'keybindingService',
-    'membershipsService',
-    function($scope, $location, $log, $timeout, $q,
+    'membershipListService',
+    function($scope, $location, $log,
              conferencesService, pageTitleService, messagesService, keybindingService,
-             membershipsService) {
+             membershipListService) {
       pageTitleService.set("Unread conferences");
       
-      var sortMembershipsByPriority = function(memberships) {
-        var sortedMemberships = _.sortBy(memberships, function(ms) {
-          return ms.priority;
-        });
-        sortedMemberships.reverse();
-        return sortedMemberships;
-      };
-      
-      $scope.refresh = function() {
-        $scope.connection.userIsActive();
-        if (!$scope.isLoading) {
-          $scope.load(false);
-        }
-      };
-      
-      $scope.load = function(allowCache) {
-        $scope.unreadMemberships = [];
-        $scope.isLoading = true;
-        return membershipsService.getUnreadMemberships(
-          $scope.connection, { cache: allowCache }).then(
-            function(memberships) {
-              $log.log("UnreadConfsCtrl - getUnreadMemberships() - success");
-              $scope.unreadMemberships = sortMembershipsByPriority(memberships);
+      $scope.isLoading = false;
+      $scope.$watch('connection', function (newConnection) {
+        if (newConnection != null) {
+          $scope.isLoading = true;
+          membershipListService.getMembershipList($scope.connection).then(
+            function (membershipList) {
+              $log.log("UnreadConfsCtrl - getMembershipList() - success");
               $scope.isLoading = false;
+              $scope.membershipList = membershipList;
             },
-            function(response) {
-              $log.log("UnreadConfsCtrl - getUnreadMemberships() - error");
+            function () {
+              $log.log("UnreadConfsCtrl - getMembershipList() - error");
               $scope.isLoading = false;
-              if (response.status != 401) {
-                messagesService.showMessage('error', 'Failed to get unread conferences.',
-                                            response.data);
-              }
-              return $q.reject(response);
+              $scope.membershipList = null;
             });
-      };
-      $scope.enableAutoRefresh = function() {
-        $log.log("UnreadConfsCtrl - enabling auto-refresh");
-        $scope.autoRefreshing = true;
-        var scheduleReload = function() {
-          $scope.autoRefreshPromise = $timeout(function() {
-            $scope.load(false).then(
-              function() {
-                scheduleReload();
-              },
-              function() {
-                $scope.disableAutoRefresh();
-              });
-          }, 2*60*1000);
+        } else {
+          $scope.membershipList = null;
         }
-        scheduleReload();
-      };
-      $scope.disableAutoRefresh = function() {
-        if ($scope.autoRefreshPromise != null) {
-          $log.log("UnreadConfsCtrl - disabling auto-refresh");
-          $scope.autoRefreshing = false;
-          $timeout.cancel($scope.autoRefreshPromise);
-          $scope.autoRefresher = null;
-        }
-      };
-      $scope.$on('$destroy', function() {
-        $scope.disableAutoRefresh();
       });
       
-      // We watch the connection because this controller doesn't
-      // necessarily get recreated when the connection changes (it is
-      // only recreated if the URL changes).
-      $scope.$watch('connection', function(newConnection) {
-        $scope.disableAutoRefresh();
-        if (newConnection) {
-          $scope.load(true);
-          $scope.enableAutoRefresh();
-        }
+      $scope.$watch('membershipList.getUnreadMemberships()', function (newUnreadMemberships) {
+        //$log.log("UnreadConfsCtrl - watch(membershipList.getUnreadMemberships())");
+        $scope.unreadMemberships = newUnreadMemberships;
       });
       
       $scope.$watch('unreadMemberships', function(newUnreadMemberships) {
-        if (newUnreadMemberships != null) {
-          if (newUnreadMemberships.length == 0) {
-            pageTitleService.set("No unread conferences");
-          } else {
-            var unreadCount = _.reduce(newUnreadMemberships, function(count, membership) {
-              return count + membership.no_of_unread;
-            }, 0);
-            
-            unreadCount = unreadCount == 0 ? "No" : unreadCount;
-            pageTitleService.set(unreadCount + " unread in " + newUnreadMemberships.length +
-                                 " conference(s)");
-          }
+        if (newUnreadMemberships != null && newUnreadMemberships.length > 0) {
+          var unreadCount = _.reduce(newUnreadMemberships, function(count, membership) {
+            return count + membership.no_of_unread;
+          }, 0);
+          
+          unreadCount = unreadCount == 0 ? "No" : unreadCount;
+          pageTitleService.set(unreadCount + " unread in " + newUnreadMemberships.length +
+                               " conference(s)");
+        } else {
+          pageTitleService.set("No unread conferences");
         }
       });
       
@@ -409,8 +439,31 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       };
       
+      // TODO: This is more "global", so it shouldn't just be a button
+      // and keybinding on the unread conference page.
+      $scope.refreshUnread = function() {
+        if (!$scope.isLoading) {
+          $scope.connection.userIsActive();
+          $scope.isLoading = true;
+          membershipListService.refreshUnread($scope.connection).then(
+            function () {
+              $scope.isLoading = false;
+            },
+            function () {
+              $scope.isLoading = false;
+            });
+        }
+      };
+      keybindingService.bindGeneral('R', 'Refresh', function(e) {
+        $scope.$apply(function() {
+          $scope.refreshUnread();
+        });
+        return false;
+      });
+
+      
       keybindingService.bindPageSpecific('space', 'Read first conference', function(e) {
-        if (_.size($scope.unreadMemberships) > 0) {
+        if ($scope.unreadMemberships.length > 0) {
           $scope.$apply(function() {
             $scope.readFirstConference();
           });
@@ -418,15 +471,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         return false;
       });
       
-      keybindingService.bindPageSpecific('R', 'Refresh', function(e) {
-        $scope.$apply(function() {
-          $scope.refresh();
-        });
-        return false;
-      });
-      
       keybindingService.bindPageSpecific('e', 'Set unread...', function(e) {
-        $log.log("local");
         $scope.$apply(function() {
           $location.url('/conferences/set-unread');
         });
@@ -833,6 +878,21 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       };
     }
   ]).
+  controller('ListConfTextsCtrl', [
+    '$scope', '$log', '$routeParams',
+    'pageTitleService', 'conferencesService', 'textsService',
+    function($scope, $log, $routeParams,
+             pageTitleService, conferencesService, textsService) {
+      $scope.confNo = $routeParams.confNo;
+      $scope.texts = null;
+      
+      textsService.getLastCreatedTextsInConference($scope.connection, $scope.confNo).then(
+        function(response) {
+          $scope.texts = response.data;
+          $scope.texts.reverse();
+        });
+    }
+  ]).
   controller('ListConfsCtrl', [
     '$scope', '$log', 'pageTitleService', 'conferencesService',
     function($scope, $log, pageTitleService, conferencesService) {
@@ -1095,6 +1155,9 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         showText(textNo);
       });
       
+      // FIXME: The reader and its unread size isn't connected to the
+      // new MembershipList object and the memberships with unread
+      // texts, so they can get out of sync.
       $scope.$watch('reader.unreadSize()', function(newUnreadCount) {
         if ($scope.conf && newUnreadCount != null) {
           newUnreadCount = newUnreadCount == 0 ? "No" : newUnreadCount;
@@ -1114,46 +1177,69 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       };
       
+      $scope.isLoadingMembership = false;
+      var getMembership = function(confNo) {
+        $scope.isLoadingMembership = true;
+        $scope.membership = null;
+        membershipsService.getMembership($scope.connection, confNo).then(
+            function(membership) {
+              $log.log("ReaderCtrl - getMembership(" + confNo + ") - success");
+              $scope.isLoadingMembership = false;
+              $scope.membership = membership;
+            },
+            function(response) {
+              $log.log("ReaderCtrl - getMembership(" + confNo + ") - error");
+              $scope.isLoadingMembership = false;
+              if (response.data.error_code === 13) {
+                // NotMember
+              } else {
+                messagesService.showMessage('error',
+                                            'Failed to get conference membership.',
+                                            response.data);
+              }
+            });
+      };
+      
       var getReader = function(confNo, allowCache) {
         $scope.readerIsLoading = true;
-        membershipsService.getMembership($scope.connection, confNo, { cache: allowCache }).then(
-          function(membership) {
-            $log.log("ReaderCtrl - getReader(" + confNo + ") - success");
-            $scope.conf = membership.conference;
-            
-            var unreadQueue = readerFactory.createUnreadQueue(
-              $scope.connection, membership.unread_texts);
-            var reader = readerFactory.createReader($scope.connection, unreadQueue);
-            
-            if ($routeParams.text) {
-              reader.unshiftPending($routeParams.text);
-            }
-            if (!reader.isEmpty()) {
-              setText(reader.shift());
-            }
-            
-            // If getting the reader succeeded, we know we are a
-            // member of the conference and can change the working
-            // conference to it.
-            sessionsService.changeConference($scope.connection, confNo);
-            
-            $scope.reader = reader;
-            $scope.readerIsLoading = false;
-          },
-          function(response) {
-            $log.log("ReaderCtrl - getReader(" + confNo + ") - error");
-            $scope.readerIsLoading = false;
-            if (response.data.error_code === 13) {
-              messagesService.showMessage('error', 'You are not a member of the conference: ' +
-                                          confNo, '', true);
-              $location.url('/');
-            } else {
-              messagesService.showMessage('error', 'Failed to get reader.', response.data);
-            }
-          });
+        membershipsService.getMembershipUnread(
+          $scope.connection, confNo, { cache: allowCache }).then(
+            function(response) {
+              $log.log("ReaderCtrl - getReader(" + confNo + ") - success");
+              var unreadQueue = readerFactory.createUnreadQueue(
+                $scope.connection, response.data.unread_texts);
+              var reader = readerFactory.createReader($scope.connection, unreadQueue);
+              
+              if ($routeParams.text) {
+                reader.unshiftPending($routeParams.text);
+              }
+              if (!reader.isEmpty()) {
+                setText(reader.shift());
+              }
+              
+              // If getting the reader succeeded, we know we are a
+              // member of the conference and can change the working
+              // conference to it.
+              sessionsService.changeConference($scope.connection, confNo);
+              
+              $scope.reader = reader;
+              $scope.readerIsLoading = false;
+            },
+            function(response) {
+              $log.log("ReaderCtrl - getReader(" + confNo + ") - error");
+              $scope.readerIsLoading = false;
+              if (response.data.error_code === 13) {
+                messagesService.showMessage('error', 'You are not a member of the conference: ' +
+                                            confNo, '', true);
+                $location.url('/');
+              } else {
+                messagesService.showMessage('error', 'Failed to get reader.', response.data);
+              }
+            });
       };
       
       getReader($routeParams.confNo, true);
+      getMembership($routeParams.confNo);
       
       $scope.refresh = function() {
         getReader($routeParams.confNo, false);
@@ -1185,14 +1271,14 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       };
       
-      keybindingService.bindPageSpecific('R', 'Refresh', function(e) {
+      /*keybindingService.bindPageSpecific('R', 'Refresh', function(e) {
         $scope.$apply(function() {
           if (!$scope.readerisLoading) {
             $scope.refresh();
           }
         });
         return false;
-      });
+      });*/
       
       keybindingService.bindPageSpecific([','/*, 'å k'*/], 'Show commented', function() {
         //$log.log("å k");

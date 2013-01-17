@@ -29,8 +29,10 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
   factory('connectionFactory', [
     '$rootScope', '$log', '$q', '$http',
     'httpkom', 'sessionsService', 'jskomCacheFactory', 'httpkomConnectionHeader',
+    'membershipListFactory', 'membershipListHandlerFactory',
     function($rootScope, $log, $q, $http,
-             httpkom, sessionsService, jskomCacheFactory, httpkomConnectionHeader) {
+             httpkom, sessionsService, jskomCacheFactory, httpkomConnectionHeader,
+             membershipListFactory, membershipListHandlerFactory) {
       var HttpkomConnection = function(httpkomServer, id, serverId, httpkomId, session) {
         this._httpkomServer = httpkomServer;
         this.id = id; // our internal id
@@ -70,26 +72,40 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         this._createSessionPromise = null;
         this._pendingRequests = [];
         
+        // TODO (refactoring idea): Create a separate class for
+        // handling user-active.
         this._userActiveIntervalMs = 40*1000; // milliseconds
         this._userActiveLastSent = null;
         this._userActivePromise = null;
+        
+        this.membershipListHandler = membershipListHandlerFactory.create(
+          this, membershipListFactory.create());
       };
       
       _.extend(HttpkomConnection.prototype, {
-        broadcast: function (name, args) {
+        _getBroadcastName: function (eventName) {
+          return eventName + ":" + this.id.toString();
+        },
+        
+        broadcast: function (eventName, args) {
           // The args paramter symbolizes arg1, arg2, ..., argN
           
-          // Wrap the arguments for our own filtering, but broadcast all
+          // Wrap the arguments for our own filtering
           var broadcastArgs = { connection: this, args: _.toArray(arguments).slice(1) };
-          $rootScope.$broadcast(name, broadcastArgs);
+          return $rootScope.$broadcast(this._getBroadcastName(eventName), broadcastArgs);
         },
         
         on: function (name, listenerFn) {
           var self = this;
-          $rootScope.$on(name, function ($event, broadcastArgs) {
-            // Only call args to our connection
+          return $rootScope.$on(this._getBroadcastName(name), function ($event, broadcastArgs) {
+            // Only call args to our connection. Since we use our ID
+            // in the broadcast name, we should only get events for
+            // our own connection, but we check anyway.
             if (self === broadcastArgs.connection) {
               $log.log("HttpkomConnection - on(" + $event.name + ")");
+              // overwrite the name in the event to hide our internal
+              // broadcast name
+              $event.name = name;
               var listenerArgs = [ $event ].concat(broadcastArgs.args);
               listenerFn.apply(self, listenerArgs);
             }
@@ -236,6 +252,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
           if (this.httpkomId || this.session) {
             this.httpkomId = null;
             this.session = null;
+            this.membershipListHandler.reset();
             $rootScope.$broadcast('jskom:connection:changed', this);
           }
         },
@@ -243,6 +260,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         _resetPerson: function() {
           if (this.isLoggedIn()) {
             this.session.person = null;
+            this.membershipListHandler.reset();
             $rootScope.$broadcast('jskom:connection:changed', this);
           }
         },
@@ -262,7 +280,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
               },
               function(response) {
                 $log.log("HttpkomConnection - createSession - failure");
-              self._createSessionPromise = null;
+                self._createSessionPromise = null;
                 return $q.reject(response);
               });
           }
@@ -505,8 +523,10 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
             });
             return connections;
           } catch (e) {
+            $log.log("Failed to load connections: " + e)
             messagesService.showMessage(
               'error', e.name + ': Failed to access local storage.', e.message);
+            throw e;
           }
         },
         
@@ -521,6 +541,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
             storage.removeItem("connections"); // temp hack
             storage.setItem("connections", angular.toJson(objs));
           } catch (e) {
+            $log.log("Failed to load connections: " + e)
             messagesService.showMessage(
               'error', e.name + ': Failed to access local storage.', e.message);
           }

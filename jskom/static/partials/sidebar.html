@@ -1,0 +1,50 @@
+<aside ng-controller="SidebarCtrl">
+  <ul class="side-nav">
+    <li ng-repeat="membership in unreadMemberships | orderBy:['-priority', 'conference.conf_name']">
+      <div class="row">
+        <div class="ten columns">
+          <a class="jskomNoWrap" href="/conferences/{{membership.conference.conf_no}}/unread/">
+            {{membership.conference | confName}}
+          </a>
+        </div>
+        <div class="two columns">
+          <span class="jskomRight">
+            <span class="round label">
+              {{ membership.no_of_unread }}
+            </span>
+          </span>
+        </div>
+      </div>
+    </li>
+    
+    <li>
+      <jskom:loading ng-show="unreadMemberships == null || readMemberships == null">
+      </jskom:loading>
+    </li>
+    
+    <li ng-show="unreadMemberships.length > 0 && readMemberships.length > 0"><hr/></li>
+    
+    <li ng-repeat="membership in readMemberships | orderBy:['-priority', 'conference.conf_name'] | startFrom:currentPage*pageSize | limitTo:pageSize">
+      <div class="row">
+        <div class="twelve columns">
+          <a class="jskomNoWrap" href="/conferences/{{membership.conference.conf_no}}/texts/">
+            {{membership.conference | confName}}
+          </a>
+        </div>
+      </div>
+    </li>
+    
+    <li>
+      <ul class="pagination" ng-show="numberOfPages > 1">
+        <li ng-class="{'unavailable': currentPage < 1 }">
+          <a ng-click="previousPage()"><i class="icon-caret-left"></i></a>
+        </li>
+        <li>{{currentPage+1}} / {{numberOfPages}}</li>
+        <li ng-class="{'unavailable': currentPage >= numberOfPages - 1}">
+          <a ng-click="nextPage()"><i class="icon-caret-right"></i></a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+  
+</aside>
