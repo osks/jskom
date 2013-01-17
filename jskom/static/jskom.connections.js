@@ -395,7 +395,11 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         },
         
         getPersNo: function() {
-          return this.session.person.pers_no;
+          if (this.isLoggedIn()) {
+            return this.session.person.pers_no;
+          } else {
+            return null;
+          }
         },
         
         toObject: function() {
