@@ -1170,8 +1170,8 @@ angular.module('jskom.services', ['jskom.settings']).
     }    
   ]).
   factory('membershipListFactory', [
-    '$log', '$q',
-    function($log, $q) {
+    '$log',
+    function($log) {
       // The MembershipList stores the memberships. It provides
       // methods for accessing the full list of membership and the
       // list of unread memberships separately.
@@ -1248,6 +1248,8 @@ angular.module('jskom.services', ['jskom.settings']).
         
         // Must return the same object if nothing has changed.
         getMembership: function (confNo) {
+          // I think this will return an undefined, rather than null,
+          // not sure how we feel about that.
           return _.find(this._memberships, function (membership) {
             return membership.conference.conf_no === confNo;
           });
