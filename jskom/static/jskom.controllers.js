@@ -59,7 +59,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       });
       
-      $scope.pageSize = 50;
+      $scope.pageSize = 20;
       $scope.currentPage = 0;
       $scope.numberOfPages = 1;
       
