@@ -565,11 +565,15 @@ angular.module('jskom.services', ['jskom.settings']).
       
       var clearCacheForPersonAndConf = function(conn, persNo, confNo) {
         conn.membershipsCache.remove(cacheKeyForMembership(persNo, confNo));
-        conn.membershipsCache.remove(cacheKeyForMembershipUnreads(persNo, confNo));
       };
       
       return {
         setNumberOfUnreadTexts: function(conn, confNo, noOfUnread) {
+          // TODO: We want to make sure the MembershipList is updated
+          // when we do this.  We probably want to add some kind of
+          // broadcast event that tells the MembershipListHandler to
+          // update the membershipunreads for confNo.
+          
           var data = { no_of_unread: parseInt(noOfUnread) };
           return conn.http({ method: 'post',
                              url: '/persons/current/memberships/' + confNo + '/unread',
