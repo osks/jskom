@@ -1249,13 +1249,13 @@ angular.module('jskom.services', ['jskom.settings']).
         _fetchAllMemberships: function () {
           // TODO: Make sure we only have one of these requests active
           // at one time.
-          this._fetchMemberships(0, 200, 1000);
+          this._fetchMemberships(0, 100, 1000);
         },
         
         _fetchMemberships: function (first, noOfMemberships, maxNoOfMemberships) {
           var logp = this._logPrefix + "getMemberships({ unread: false }) - ";
           var self = this;
-          var options = { unread: false, first: first, no_of_memberships: noOfMemberships }
+          var options = { unread: false, first: first, noOfMemberships: noOfMemberships }
           return membershipsService.getMemberships(self._conn, options).then(
             function (membershipList) {
               $log.log(logp + "success");
