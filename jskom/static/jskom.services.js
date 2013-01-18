@@ -430,12 +430,12 @@ angular.module('jskom.services', ['jskom.settings']).
               });
         },
         
-        getConference: function(conn, confNo, micro) {
-          if (arguments.length < 2) {
-            micro = true;
-          }
+        getConference: function(conn, confNo, options) {
+          options = _.isUndefined(options) ? {} : options;
+          _.defaults(options, { micro: false });
+          
           return conn.http({ method: 'get', url: '/conferences/' + confNo,
-                             params: { "micro": micro } }, true, true).
+                             params: { "micro": options.micro } }, true, true).
             then(
               function (response) {
                 return response.data;

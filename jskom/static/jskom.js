@@ -97,10 +97,6 @@ angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
           controller: 'ReaderCtrl',
           reloadOnSearch: false
         }).
-        when('/conferences/:confNo/texts/', {
-          templateUrl: templatePathProvider.path('listconftexts.html'),
-          controller: 'ListConfTextsCtrl'
-        }).
         when('/conferences/:confNo', {
           templateUrl: templatePathProvider.path('showconf.html'),
           controller: 'ShowConfCtrl'

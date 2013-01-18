@@ -837,40 +837,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       };
     }
   ]).
-  controller('ListConfTextsCtrl', [
-    '$scope', '$log', '$routeParams', '$location',
-    'pageTitleService', 'conferencesService', 'textsService', 'keybindingService',
-    function($scope, $log, $routeParams, $location,
-             pageTitleService, conferencesService, textsService, keybindingService) {
-      $scope.confNo = $routeParams.confNo;
-      pageTitleService.set("Last texts in conference: " + $scope.confNo);
-      
-      $scope.texts = null;
-      $scope.isLoading = true;
-      textsService.getLastCreatedTextsInConference($scope.connection, $scope.confNo).then(
-        function (texts) {
-          $log.log("ListConfTextsCtrl - getLastCreatedTextsInConference() - success");
-          $scope.isLoading = false;
-          $scope.texts = texts;
-          $scope.texts.reverse();
-        },
-        function (response) {
-          $log.log("ListConfTextsCtrl - getLastCreatedTextsInConference() - error");
-          $scope.isLoading = false;
-        });
-      
-      // Commented out set unread binding until we can restore the
-      // general bindings when removing a page specific binding.
-      /*keybindingService.bindPageSpecific('e', 'Set unread...', function(e) {
-        $scope.$apply(function() {
-          if ($scope.confNo != null) {
-            $location.url("/conferences/" + $scope.confNo + "/set-unread");
-          }
-        });
-        return false;
-      });*/
-    }
-  ]).
   controller('ListConfsCtrl', [
     '$scope', '$log', 'pageTitleService', 'conferencesService',
     function($scope, $log, pageTitleService, conferencesService) {
@@ -934,15 +900,16 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
              pageTitleService, conferencesService, keybindingService, messagesService,
              membershipsService, textsService) {
       $scope.conf = null;
+      $scope.isLoadingTexts = false;
       $scope.isLoadingMembership = false;
       $scope.isLoadingPresentation = false;
       $scope.text = null;
       $scope.isJoining = false;
       $scope.isLeaving = false;
       $scope.membership = null;
+      $scope.texts = null;
       
-
-      $scope.activeTab = 'presentation';
+      $scope.activeTab = 'texts';
       $scope.selectTab = function(tab) {
         $scope.activeTab = tab;
       };
@@ -994,6 +961,21 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           });
       };
       
+      var getLastTexts = function (confNo) {
+        $scope.isLoadingTexts = false;
+        textsService.getLastCreatedTextsInConference($scope.connection, confNo).then(
+          function (texts) {
+            $log.log("ShowConfCtrl - getLastCreatedTextsInConference() - success");
+            $scope.isLoadingTexts = false;
+            $scope.texts = texts;
+            $scope.texts.reverse();
+          },
+          function (response) {
+            $log.log("ShowConfCtrl - getLastCreatedTextsInConference() - error");
+            $scope.isLoadingTexts = false;
+          });
+      };
+      
       $scope.joinConf = function() {
         var confNo = $scope.conf.conf_no;
         $scope.isJoining = true;
@@ -1028,10 +1010,11 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           });
       };
       
-      conferencesService.getConference($scope.connection, $routeParams.confNo, false).then(
+      conferencesService.getConference($scope.connection, $routeParams.confNo).then(
         function(conference) {
           $log.log("ShowConfCtrl - getConference(" + $routeParams.confNo + ") - success");
           $scope.conf = conference;
+          getLastTexts($scope.conf.conf_no);
           getMembership($scope.conf.conf_no).then(
             function() {
               if ($scope.conf.presentation !== 0) {

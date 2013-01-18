@@ -7,6 +7,9 @@
   
   <div>
     <dl class="tabs">
+      <dd ng-class="isTabActive('texts')">
+        <a ng-click="selectTab('texts')">Last texts</a>
+      </dd>
       <dd ng-class="isTabActive('presentation')">
         <a ng-click="selectTab('presentation')">Presentation</a>
       </dd>
@@ -19,6 +22,31 @@
     </dl>
     
     <ul class="tabs-content">
+      
+      <li ng-class="isTabActive('texts')">
+        <jskom:loading ng-show="isLoadingTexts"></jskom:loading>
+        <table class="twelve" ng-hide="texts == null">
+          <thead>
+            <tr>
+              <th>Text number</th>
+              <th>Date</th>
+              <th>Author</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-show="texts.length == 0"><td>No texts</td></tr>
+            <tr ng-repeat="text in texts">
+              <td><a href="/texts/{{text.text_no}}">{{ text.text_no }}</a></td>
+              <td>{{ text.creation_time }}</td>
+              <td>
+                <a href="/conferences/{{text.author.pers_no}}">
+                  {{ text.author|personName }}
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </li>
       
       <li ng-class="isTabActive('presentation')">
         <ng-switch on="conf.presentation">
