@@ -36,6 +36,8 @@
     </h6>
     
     <ul class="nav-bar vertical">
+      <!-- last_time_read isn't perfect, because we can't
+      invalidate/update it correctly everywhere. -->
       <li ng-repeat="membership in readMemberships | orderBy:['-last_time_read'] | startFrom:currentPage*pageSize | limitTo:pageSize"
           class="membership">
         <a class="jskomNoWrap" href="/conferences/{{membership.conference.conf_no}}/texts/">

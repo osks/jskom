@@ -79,6 +79,14 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         
         this.membershipListHandler = membershipListHandlerFactory.create(
           this, membershipListFactory.create());
+        
+        // The conference number for the current working conference
+        // (change-conference). When changing conference, the lyskom
+        // server will update last-time-read for the membership for
+        // the conference you were in previously in. We use this
+        // number to be able to invalidate cached memberships
+        // correctly.
+        this.currentConferenceNo = 0;
       };
       
       _.extend(HttpkomConnection.prototype, {
