@@ -1,7 +1,6 @@
 <nav class="sidebar" ng-controller="SidebarCtrl" ng-hide="connection == null" ng-cloak>
+  <h6>Unread ({{unreadMemberships.length}})</h6>
   <div ng-show="unreadMemberships.length > 0">
-    <h6>Unread ({{unreadMemberships.length}})</h6>
-    
     <ul class="nav-bar vertical">
       <li ng-repeat="membership in unreadMemberships | orderBy:['-priority']"
           class="membership">
@@ -18,23 +17,21 @@
     </ul>
   </div>
   
-  <!--<li ng-show="unreadMemberships.length > 0 && readMemberships.length > 0"></li>-->
+  <h6>
+    Memberships ({{readMemberships.length}})
     
+    <ul class="pagination right" ng-show="numberOfPages > 1">
+      <li ng-class="{'unavailable': currentPage < 1 }">
+        <a ng-click="previousPage()"><i class="icon-caret-left"></i></a>
+      </li>
+      <li>{{currentPage+1}} / {{numberOfPages}}</li>
+      <li ng-class="{'unavailable': currentPage >= numberOfPages - 1}">
+        <a ng-click="nextPage()"><i class="icon-caret-right"></i></a>
+      </li>
+    </ul>
+  </h6>
+  
   <div ng-show="readMemberships.length > 0">
-    <h6>
-      Memberships ({{readMemberships.length}})
-      
-      <ul class="pagination right" ng-show="numberOfPages > 1">
-        <li ng-class="{'unavailable': currentPage < 1 }">
-          <a ng-click="previousPage()"><i class="icon-caret-left"></i></a>
-        </li>
-        <li>{{currentPage+1}} / {{numberOfPages}}</li>
-        <li ng-class="{'unavailable': currentPage >= numberOfPages - 1}">
-          <a ng-click="nextPage()"><i class="icon-caret-right"></i></a>
-        </li>
-      </ul>
-    </h6>
-    
     <ul class="nav-bar vertical">
       <!-- last_time_read isn't perfect, because we can't
       invalidate/update it correctly everywhere. -->
