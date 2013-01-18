@@ -859,14 +859,16 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           $scope.isLoading = false;
         });
       
-      keybindingService.bindPageSpecific('e', 'Set unread...', function(e) {
+      // Commented out set unread binding until we can restore the
+      // general bindings when removing a page specific binding.
+      /*keybindingService.bindPageSpecific('e', 'Set unread...', function(e) {
         $scope.$apply(function() {
           if ($scope.confNo != null) {
             $location.url("/conferences/" + $scope.confNo + "/set-unread");
           }
         });
         return false;
-      });
+      });*/
     }
   ]).
   controller('ListConfsCtrl', [
@@ -1044,7 +1046,9 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           pageTitleService.set("");
         });
       
-      keybindingService.bindPageSpecific('e', 'Set unread...', function(e) {
+      // Commented out set unread binding until we can restore the
+      // general bindings when removing a page specific binding.
+      /*keybindingService.bindPageSpecific('e', 'Set unread...', function(e) {
         $scope.$apply(function() {
           if ($scope.conf) {
             var confNo = $scope.conf.conf_no;
@@ -1052,7 +1056,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           }
         });
         return false;
-      });
+      });*/
     }
   ]).
   controller('ReaderCtrl', [
@@ -1281,13 +1285,15 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       });
       
-      keybindingService.bindPageSpecific('e', 'Set unread...', function(e) {
+      // Commented out set unread binding until we can restore the
+      // general bindings when removing a page specific binding.
+      /*keybindingService.bindPageSpecific('e', 'Set unread...', function(e) {
         $scope.$apply(function() {
           if ($scope.confNo != null) {
             $location.url("/conferences/" + $scope.confNo + "/set-unread");
           }
         });
         return false;
-      });
+      });*/
     }
   ]);
