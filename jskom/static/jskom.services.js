@@ -462,6 +462,7 @@ angular.module('jskom.services', ['jskom.settings']).
                              data: data }, true, true).
             then(function(response) {
               conn.broadcast('jskom:membership:changed', confNo);
+              conn.broadcast('jskom:membershipUnread:changed', confNo);
             });
         },
         
@@ -1155,11 +1156,11 @@ angular.module('jskom.services', ['jskom.settings']).
         });
         
         conn.on('jskom:membership:changed', function ($event, confNo) {
-          // A membership was changed, we need to fetch and update the
-          // MembershipList. We want to fetch and update both the
-          // membership and the membershipunread for that conference.
-          self._fetchMembershipUnread(confNo);
           self._fetchMembership(confNo);
+        });
+
+        conn.on('jskom:membershipUnread:changed', function ($event, confNo) {
+          self._fetchMembershipUnread(confNo);
         });
       };
       
