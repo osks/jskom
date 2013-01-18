@@ -804,6 +804,19 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.pageSize = 10;
       $scope.currentPage = 0;
       $scope.numberOfPages = 1;
+      $scope.pageNumbers = [0];
+      
+      $scope.currentPageClass = function (pageNumber) {
+        if (pageNumber == $scope.currentPage) {
+          return "current";
+        } else {
+          return "";
+        }
+      };
+      
+      $scope.showPage = function (pageNumber) {
+        $scope.currentPage = pageNumber;
+      };
       
       var getMarks = function() {
         $scope.isLoading = true;
@@ -815,6 +828,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             
             $scope.currentPage = 0;
             $scope.numberOfPages = Math.ceil($scope.marks.length / $scope.pageSize);
+            $scope.pageNumbers = _.range($scope.numberOfPages);
           },
           function(response) {
             $log.log("ListMarksCtrl - getMarks() - error");
