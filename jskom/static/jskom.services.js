@@ -527,17 +527,24 @@ angular.module('jskom.services', ['jskom.settings']).
         },
         
         getMembershipsForPerson: function(conn, persNo, options) {
-          options = _.isUndefined(options) ? {} : options;
-          _.defaults(options, { unread: false });
+          options = _.isUndefined(options) ? { unread: false } : options;
+          
+          var params = { "unread": options.unread };
+          if (!_.isUndefined(options.first)) {
+            params["first"] = options.first;
+          }
+          if (!_.isUndefined(options.noOfMemberships)) {
+            params["no-of-memberships"] = options.noOfMemberships;
+          }
           
           var logPrefix = 'membershipsService - getMembershipsForPerson(' + persNo +
             ', ' + angular.toJson(options) + ') - ';
           return conn.http({ method: 'get', url: '/persons/' + persNo + '/memberships/',
-                             params: { "unread": options.unread } }, true, true).
+                             params: params }, true, true).
             then(
               function(response) {
                 $log.log(logPrefix + 'success');
-                return response.data.list;
+                return response.data;
               },
               function(response) {
                 $log.log(logPrefix + 'error');
@@ -944,14 +951,14 @@ angular.module('jskom.services', ['jskom.settings']).
       // methods for accessing the full list of membership and the
       // list of unread memberships separately.
       function MembershipList() {
-        this._memberships = null;
+        this._membershipsMap = {};
+        this._membershipUnreadsMap = null;
         this._unreadMemberships = null;
         this._readMemberships = null;
-        this._membershipUnreadsMap = null;
       };
       
       _.extend(MembershipList.prototype, {
-        _updateMembership: function (membership) {
+        _patchMembership: function (membership) {
           var confNo = membership.conference.conf_no;
           if (_.has(this._membershipUnreadsMap, confNo)) {
             var mu = this._membershipUnreadsMap[confNo];
@@ -963,46 +970,30 @@ angular.module('jskom.services', ['jskom.settings']).
           }
         },
         
-        _updateAllMemberships: function () {
-          if (this._memberships !== null && this._membershipUnreadsMap !== null) {
+        _rebuildMembershipLists: function () {
+          if (this._membershipUnreadsMap !== null) {
             var self = this;
-            _.each(this._memberships, function (membership) {
-              self._updateMembership(membership);
+            _.each(this._membershipsMap, function (m) {
+              self._patchMembership(m);
             });
             
-            this._readMemberships = _.filter(this._memberships, function (membership) {
-              return membership.no_of_unread == 0;
+            this._readMemberships = _.filter(this._membershipsMap, function (m) {
+              return m.no_of_unread == 0;
             });
             
-            this._unreadMemberships = _.filter(this._memberships, function (membership) {
-              return membership.no_of_unread > 0;
-            });
-          }
-        },
-        
-        _updateUnreadMemberships: function () {
-          // This is a partial update of only
-          // this._unreadMemberships. We only use this because we want
-          // to be able to fetch unread memberships first for a better experience.
-          if (this._unreadMemberships !== null && this._membershipUnreadsMap !== null) {
-            var self = this;
-            _.each(this._unreadMemberships, function (membership) {
-              self._updateMembership(membership);
+            this._unreadMemberships = _.filter(this._membershipsMap, function (m) {
+              return m.no_of_unread > 0;
             });
           }
         },
         
         clear: function () {
-          this._memberships = null;
+          this._membershipsMap = {};
+          this._membershipUnreadsMap = null;
           this._unreadMemberships = null;
           this._readMemberships = null;
-          this._membershipUnreadsMap = null;
         },
         
-        // Must return the same object if nothing has changed.
-        getAllMemberships: function () {
-          return this._memberships;
-        },
         
         // Must return the same object if nothing has changed.
         getReadMemberships: function () {
@@ -1016,40 +1007,41 @@ angular.module('jskom.services', ['jskom.settings']).
         
         // Must return the same object if nothing has changed.
         getMembership: function (confNo) {
-          // I think this will return an undefined, rather than null,
-          // not sure how we feel about that.
-          return _.find(this._memberships, function (membership) {
-            return membership.conference.conf_no === confNo;
+          if (_.has(this._membershipsMap, confNo)) {
+            return this._membershipsMap[confNo];
+          } else {
+            return null;
+          }
+        },
+        
+        
+        addMemberships: function (memberships) {
+          var self = this;
+          _.each(memberships, function (m) {
+            self._membershipsMap[m.conference.conf_no] = m;
           });
-        },
-        
-        updateAllMemberships: function (memberships) {
-          this._memberships = memberships;
-          this._updateAllMemberships();
-        },
-        
-        updateUnreadMemberships: function (unreadMemberships) {
-          this._unreadMemberships = unreadMemberships;
-          this._updateUnreadMemberships();
+          this._rebuildMembershipLists();
         },
         
         updateMembership: function (membership) {
-          this._updateMembership(membership);
+          // Update an existing membership object
+          this._patchMembership(membership);
         },
         
-        updateMembershipUnreads: function (membershipUnreads) {
+        setMembershipUnreads: function (membershipUnreads) {
           this._membershipUnreadsMap = _.object(_.map(membershipUnreads, function (mu) {
             return [mu.conf_no, mu];
           }));
-          this._updateUnreadMemberships();
-          this._updateAllMemberships();
+          this._rebuildMembershipLists();
         },
         
-        updateMembershipUnread: function (membershipUnread) {
-          var confNo = membershipUnread.conf_no;
-          this._membershipUnreadsMap[confNo] = membershipUnread;
-          this._updateUnreadMemberships();
-          this._updateAllMemberships();
+        setMembershipUnread: function (membershipUnread) {
+          if (this._membershipUnreadsMap != null) {
+            this._membershipUnreadsMap[membershipUnread.conf_no] = membershipUnread;
+            this._rebuildMembershipLists();
+          } else {
+            // This should never happen
+          }
         },
         
         markTextAsRead: function (text) {
@@ -1072,7 +1064,7 @@ angular.module('jskom.services', ['jskom.settings']).
           });
           
           if (shouldUpdate) {
-            self._updateAllMemberships();
+            self._rebuildMembershipLists();
           }
         },
         
@@ -1096,7 +1088,7 @@ angular.module('jskom.services', ['jskom.settings']).
           });
           
           if (shouldUpdate) {
-            self._updateAllMemberships();
+            self._rebuildMembershipLists();
           }
         }
       });
@@ -1211,7 +1203,7 @@ angular.module('jskom.services', ['jskom.settings']).
           return membershipsService.getMembershipUnreads(this._conn).then(
             function (membershipUnreads) {
               $log.log(logp + "success");
-              self._membershipList.updateMembershipUnreads(membershipUnreads);
+              self._membershipList.setMembershipUnreads(membershipUnreads);
             },
             function (response) {
               $log.log(logp + "error");
@@ -1226,7 +1218,7 @@ angular.module('jskom.services', ['jskom.settings']).
           return membershipsService.getMembershipUnread(this._conn, confNo).then(
             function (membershipUnread) {
               $log.log(logp + "success");
-              self._membershipList.updateMembershipUnread(membershipUnread);
+              self._membershipList.setMembershipUnread(membershipUnread);
             },
             function (response) {
               $log.log(logp + "error");
@@ -1243,9 +1235,9 @@ angular.module('jskom.services', ['jskom.settings']).
           var logp = this._logPrefix + "getMemberships(" + angular.toJson(options) + ") - ";
           var self = this;
           return membershipsService.getMemberships(this._conn, options).then(
-            function (unreadMemberships) {
+            function (unreadMembershipList) {
               $log.log(logp + "success");
-              self._membershipList.updateUnreadMemberships(unreadMemberships);
+              self._membershipList.addMemberships(unreadMembershipList.memberships);
             },
             function (response) {
               $log.log(logp + "error");
@@ -1257,13 +1249,21 @@ angular.module('jskom.services', ['jskom.settings']).
         _fetchAllMemberships: function () {
           // TODO: Make sure we only have one of these requests active
           // at one time.
-          
+          this._fetchMemberships(0, 200, 1000);
+        },
+        
+        _fetchMemberships: function (first, noOfMemberships, maxNoOfMemberships) {
           var logp = this._logPrefix + "getMemberships({ unread: false }) - ";
           var self = this;
-          return membershipsService.getMemberships(self._conn, { unread: false }).then(
-            function (memberships) {
+          var options = { unread: false, first: first, no_of_memberships: noOfMemberships }
+          return membershipsService.getMemberships(self._conn, options).then(
+            function (membershipList) {
               $log.log(logp + "success");
-              self._membershipList.updateAllMemberships(memberships);
+              self._membershipList.addMemberships(membershipList.memberships);
+              var nextFirst = first + noOfMemberships;
+              if (membershipList.has_more && nextFirst < maxNoOfMemberships) {
+                self._fetchMemberships(nextFirst, noOfMemberships, maxNoOfMemberships);
+              }
             },
             function (response) {
               $log.log(logp + "error");
@@ -1278,7 +1278,7 @@ angular.module('jskom.services', ['jskom.settings']).
           return membershipsService.getMembership(this._conn, confNo).then(
             function (membership) {
               $log.log(logp + "success");
-              self._membershipList.updateMembership(membership);
+              self._membershipList.addMembership(membership);
             },
             function (response) {
               $log.log(logp + "error");

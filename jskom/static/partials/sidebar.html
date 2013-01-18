@@ -1,6 +1,6 @@
 <nav class="sidebar" ng-controller="SidebarCtrl" ng-hide="connection == null" ng-cloak>
   <div ng-show="unreadMemberships.length > 0">
-    <h6>Unread</h6>
+    <h6>Unread ({{unreadMemberships.length}})</h6>
     
     <ul class="nav-bar vertical">
       <li ng-repeat="membership in unreadMemberships | orderBy:['-priority', 'conference.conf_name']"
@@ -22,7 +22,7 @@
     
   <div ng-show="readMemberships.length > 0">
     <h6>
-      Memberships
+      Memberships ({{readMemberships.length}})
       
       <ul class="pagination right" ng-show="numberOfPages > 1">
         <li ng-class="{'unavailable': currentPage < 1 }">
