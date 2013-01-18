@@ -3,7 +3,7 @@
     <h6>Unread ({{unreadMemberships.length}})</h6>
     
     <ul class="nav-bar vertical">
-      <li ng-repeat="membership in unreadMemberships | orderBy:['-priority', 'conference.conf_name']"
+      <li ng-repeat="membership in unreadMemberships | orderBy:['-priority']"
           class="membership">
         <a class="jskomNoWrap" href="/conferences/{{membership.conference.conf_no}}/unread/">
           <span class="jskomRight">

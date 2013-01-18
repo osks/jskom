@@ -407,8 +407,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       
       $scope.readFirstConference = function() {
         if ($scope.unreadMemberships.length > 0) {
-          $location.url("/conferences/" +
-                        _.first($scope.unreadMemberships).conference.conf_no + "/unread/");
+          var m = _.first(_.sortBy($scope.unreadMemberships, function (m) {
+            return -m.priority;
+          }));
+          $location.url("/conferences/" + m.conference.conf_no + "/unread/");
         }
       };
       
