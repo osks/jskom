@@ -1044,18 +1044,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           messagesService.showMessage('error', 'Failed to get conference.', response.data);
           pageTitleService.set("");
         });
-      
-      // Commented out set unread binding until we can restore the
-      // general bindings when removing a page specific binding.
-      /*keybindingService.bindPageSpecific('e', 'Set unread...', function(e) {
-        $scope.$apply(function() {
-          if ($scope.conf) {
-            var confNo = $scope.conf.conf_no;
-            $location.path("/conferences/" + confNo + "/set-unread");
-          }
-        });
-        return false;
-      });*/
     }
   ]).
   controller('ReaderCtrl', [
@@ -1283,16 +1271,5 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           return true;
         }
       });
-      
-      // Commented out set unread binding until we can restore the
-      // general bindings when removing a page specific binding.
-      /*keybindingService.bindPageSpecific('e', 'Set unread...', function(e) {
-        $scope.$apply(function() {
-          if ($scope.confNo != null) {
-            $location.url("/conferences/" + $scope.confNo + "/set-unread");
-          }
-        });
-        return false;
-      });*/
     }
   ]);

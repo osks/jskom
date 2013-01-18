@@ -114,8 +114,8 @@ angular.module('jskom.keybindings', []).
     }
   ]).
   run([
-    '$log', '$location', '$rootScope', '$window', 'keybindingService',
-    function($log, $location, $rootScope, $window, keybindingService) {
+    '$log', '$location', '$rootScope', '$routeParams', '$window', 'keybindingService',
+    function($log, $location, $rootScope, $routeParams, $window, keybindingService) {
       keybindingService.bindGeneral('i', 'New text...', function(e) {
         $rootScope.$apply(function() {
           $location.url('/texts/new');
@@ -146,7 +146,11 @@ angular.module('jskom.keybindings', []).
       
       keybindingService.bindGeneral('e', 'Set unread...', function(e) {
         $rootScope.$apply(function() {
-          $location.url("/conferences/set-unread");
+          if (!_.isUndefined($routeParams.confNo)) {
+            $location.url("/conferences/" + $routeParams.confNo + "/set-unread");
+          } else {
+            $location.url("/conferences/set-unread");
+          }
         });
         return false;
       });
