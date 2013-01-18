@@ -3,7 +3,9 @@
 'use strict';
 
 // All httpkom services should resolve with response.data, or
-// response.data.<list-property> if the list is wrapped.
+// response.data.<list-property> if the list is wrapped. They still
+// reject with the respones, but we should introduce a standardized
+// error message instead.
 
 angular.module('jskom.services', ['jskom.settings']).
   factory('htmlFormattingService', [
@@ -459,10 +461,7 @@ angular.module('jskom.services', ['jskom.settings']).
                              url: '/persons/current/memberships/' + confNo + '/unread',
                              data: data }, true, true).
             then(function(response) {
-              // TODO: We want to make sure the MembershipList is updated
-              // when we do this.  We probably want to add some kind of
-              // broadcast event that tells the MembershipListHandler to
-              // update the membershipunreads for confNo.
+              conn.broadcast('jskom:membership:changed', confNo);
             });
         },
         
@@ -1012,7 +1011,6 @@ angular.module('jskom.services', ['jskom.settings']).
           });
         },
         
-        
         updateAllMemberships: function (memberships) {
           this._memberships = memberships;
           this._updateAllMemberships();
@@ -1027,11 +1025,17 @@ angular.module('jskom.services', ['jskom.settings']).
           this._updateMembership(membership);
         },
         
-        
         updateMembershipUnreads: function (membershipUnreads) {
           this._membershipUnreadsMap = _.object(_.map(membershipUnreads, function (mu) {
             return [mu.conf_no, mu];
           }));
+          this._updateUnreadMemberships();
+          this._updateAllMemberships();
+        },
+        
+        updateMembershipUnread: function (membershipUnread) {
+          var confNo = membershipUnread.conf_no;
+          this._membershipUnreadsMap[confNo] = membershipUnread;
           this._updateUnreadMemberships();
           this._updateAllMemberships();
         },
@@ -1149,6 +1153,14 @@ angular.module('jskom.services', ['jskom.settings']).
           $log.log(self._logPrefix + 'on(jskom:readMarking:deleted)');
           self._membershipList.markTextAsUnread(text);
         });
+        
+        conn.on('jskom:membership:changed', function ($event, confNo) {
+          // A membership was changed, we need to fetch and update the
+          // MembershipList. We want to fetch and update both the
+          // membership and the membershipunread for that conference.
+          self._fetchMembershipUnread(confNo);
+          self._fetchMembership(confNo);
+        });
       };
       
       _.extend(MembershipListHandler.prototype, {
@@ -1196,6 +1208,21 @@ angular.module('jskom.services', ['jskom.settings']).
             });
         },
         
+        _fetchMembershipUnread: function (confNo) {
+          var logp = this._logPrefix + "getMembershipUnread(" + confNo + ") - ";
+          var self = this;
+          return membershipsService.getMembershipUnread(this._conn, confNo).then(
+            function (membershipUnread) {
+              $log.log(logp + "success");
+              self._membershipList.updateMembershipUnread(membershipUnread);
+            },
+            function (response) {
+              $log.log(logp + "error");
+              // TODO: can we do anything? should we show a message?
+              return $q.reject();
+            });
+        },
+        
         _fetchUnreadMemberships: function () {
           // TODO: Make sure we only have one of these requests active
           // at one time.
@@ -1203,17 +1230,16 @@ angular.module('jskom.services', ['jskom.settings']).
           var options = { unread: true };
           var logp = this._logPrefix + "getMemberships(" + angular.toJson(options) + ") - ";
           var self = this;
-          return membershipsService.getMemberships(this._conn, options).
-            then(
-              function (unreadMemberships) {
-                $log.log(logp + "success");
-                self._membershipList.updateUnreadMemberships(unreadMemberships);
-              },
-              function (response) {
-                $log.log(logp + "error");
-                // TODO: can we do anything? should we show a message?
-                return $q.reject();
-              });
+          return membershipsService.getMemberships(this._conn, options).then(
+            function (unreadMemberships) {
+              $log.log(logp + "success");
+              self._membershipList.updateUnreadMemberships(unreadMemberships);
+            },
+            function (response) {
+              $log.log(logp + "error");
+              // TODO: can we do anything? should we show a message?
+              return $q.reject();
+            });
         },
         
         _fetchAllMemberships: function () {
@@ -1226,6 +1252,21 @@ angular.module('jskom.services', ['jskom.settings']).
             function (memberships) {
               $log.log(logp + "success");
               self._membershipList.updateAllMemberships(memberships);
+            },
+            function (response) {
+              $log.log(logp + "error");
+              // TODO: can we do anything? should we show a message?
+              return $q.reject();
+            });
+        },
+        
+        _fetchMembership: function (confNo) {
+          var logp = this._logPrefix + "getMemberships(" + confNo + ") - ";
+          var self = this;
+          return membershipsService.getMembership(this._conn, confNo).then(
+            function (membership) {
+              $log.log(logp + "success");
+              self._membershipList.updateMembership(membership);
             },
             function (response) {
               $log.log(logp + "error");
