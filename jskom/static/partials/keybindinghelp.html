@@ -1,24 +1,12 @@
 <div class="hide-for-touch" ng-controller="KeybindingHelpCtrl">
   <div ng-show="pageSpecificKeys">
-    <hr />
     
-    <div class="row">
-      <div class="twelve columns">
-        <p>
-          <a class="" ng-show="isVisible" ng-click="isVisible = false">
-            <i class="icon-minus"></i>
-            Hide page specific keyboard shortcuts
-          </a>
-          
-          <a class="" ng-hide="isVisible" ng-click="isVisible = true">
-            <i class="icon-plus"></i>
-            Show page specific keyboard shortcuts
-          </a>
-        </p>
-      </div>
-    </div>
+    <button class="tiny secondary button right" ng-click="isVisible = !isVisible">
+      <i class="icon-question-sign"></i>
+    </button>
     
     <div ng-show="isVisible">
+      <h3 class="subheader">Page specific keyboard shortcuts</h3>
       <table class="twelve">
         <thead>
           <tr>
@@ -39,6 +27,7 @@
         </tbody>
       </table>
       
+      <hr />
     </div>
   </div>
 </div>

@@ -55,10 +55,10 @@
       <div ng-switch-when="true">
         <div class="row">
           <div class="nine columns push-three">
+            <ng-include src="'keybindinghelp.html'|jskomTemplate"></ng-include>
             <ng-include src="'messages.html'|jskomTemplate"></ng-include>
             <ng-view></ng-view>
             
-            <ng-include src="'keybindinghelp.html'|jskomTemplate"></ng-include>
           </div>
           
           <div class="three columns pull-nine hide-for-small">
