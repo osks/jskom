@@ -143,5 +143,12 @@ angular.module('jskom.keybindings', []).
         });
         return false;
       });
+      
+      keybindingService.bindGeneral('e', 'Set unread...', function(e) {
+        $rootScope.$apply(function() {
+          $location.url("/conferences/set-unread");
+        });
+        return false;
+      });
     }
   ]);
