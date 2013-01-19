@@ -1,6 +1,6 @@
 <h2>Create person</h2>
 
-<form ng-controller="NewPersonCtrl">
+<form ng-controller="NewPersonCtrl" ng-cloak>
   <label>LysKOM server</label>
   <select class="" ng-model="connection.serverId" ng-show="servers"
           ng-disabled="connection.isConnected()"

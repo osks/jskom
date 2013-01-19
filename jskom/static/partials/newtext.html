@@ -1,10 +1,10 @@
-<h1>
+<h1 ng-cloak>
   <span ng-hide="commentedText">New text</span>
   <span ng-show="commentedText">New comment to {{commentedText.text_no}}</span>
 </h1>
 
 <jskom:loading ng-hide="text"></jskom:loading>
-<form ng-show="text">
+<form ng-show="text" ng-cloak>
 
   <div ng-show="commentedText" ng-init="isCommentedTextVisible = false">
     <div class="row">

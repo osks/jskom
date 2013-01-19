@@ -2,7 +2,7 @@
 
 <jskom:loading ng-show="isLoading"></jskom:loading>
 
-<div ng-hide="isLoading">
+<div ng-hide="isLoading" ng-cloak>
   <p ng-hide="unreadMemberships">Nothing unread</p>
   
   <table class="twelve" ng-show="unreadMemberships">
