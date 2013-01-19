@@ -44,6 +44,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.unreadMemberships = null;
       
       $scope.$watch('connection', function (newConnection) {
+        $scope.membershipList = null;
+        $scope.readMemberships = null;
+        $scope.unreadMemberships = null;
+        
         if (newConnection != null) {
           membershipListService.getMembershipList($scope.connection).then(
             function (membershipList) {
@@ -54,8 +58,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
               $log.log("MembershipsCtrl - getMembershipList() - error");
               $scope.membershipList = null;
             });
-        } else {
-          $scope.membershipList = null;
         }
       });
       
