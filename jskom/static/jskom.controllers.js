@@ -1131,29 +1131,17 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       
       $scope.membershipList = null;
       $scope.isLoadingMembershipList = false;
-      var getMembershipList = function () {
-        membershipListService.getMembershipList($scope.connection).then(
-          function (membershipList) {
-            $log.log("ReaderCtrl - getMembershipList() - success");
-            $scope.isLoadingMembershipList = false;
-            $scope.membershipList = membershipList;
-          },
-          function () {
-            $log.log("ReaderCtrl - getMembershipList() - error");
-            $scope.isLoadingMembershipList = false;
-            $scope.membershipList = null;
-            // TODO: Better error handling.
-            
-            // What if we're not a member? Ideally we will only go to
-            // conferences that we have unread in and then there's no
-            // problem, but I think we should handle conferences that
-            // we're not a member how. Right now
-            // membershipList.getMembership(..) will return
-            // undefined/null and nothing more will happen.
-            
-            messagesService.showMessage('error', 'Failed to get membership list.');
-          });
-      };
+      membershipListService.getMembershipList($scope.connection).then(
+        function (membershipList) {
+          $log.log("ReaderCtrl - getMembershipList() - success");
+          $scope.isLoadingMembershipList = false;
+          $scope.membershipList = membershipList;
+        },
+        function () {
+          $log.log("ReaderCtrl - getMembershipList() - error");
+          $scope.isLoadingMembershipList = false;
+          messagesService.showMessage('error', 'Failed to get membership list.');
+        });
       
       var getMembership = function (scope) {
         if (scope.membershipList != null) {
@@ -1165,7 +1153,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       
       $scope.membership = null;
       $scope.reader = null;
+      var hasChangedConference = false;
       $scope.$watch(getMembership, function (newMembership) {
+        // We $watch the membership because the MembershipList can
+        // return a different object after it has been updated.
         $scope.membership = newMembership;
         if (newMembership != null) {
           // TODO: Because we only initialize the reader once, we
@@ -1186,22 +1177,28 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           // everything else that changes the unread texts (not sure
           // there are enough events for it right now, but we could
           // add).
-          var unreadQueue = readerFactory.createUnreadQueue(
-            $scope.connection, newMembership.unread_texts);
+          var unreadQueue = readerFactory.createUnreadQueue($scope.connection);
+          unreadQueue.enqueue(newMembership.unread_texts);
           var reader = readerFactory.createReader($scope.connection, unreadQueue);
           
           if ($routeParams.text) {
+            // If we have a text number in the route parameters, add
+            // it to the reader.
             reader.unshiftPending($routeParams.text);
           }
+          $scope.reader = reader;
+          
           if (!reader.isEmpty()) {
             setText(reader.shift());
           }
           
-          // If we got a membership, we know we are a member of the
-          // conference and can change the working conference to it.
-          sessionsService.changeConference($scope.connection, $scope.confNo);
-          
-          $scope.reader = reader;
+          // If we have a membership, then we know we are a member of
+          // the conference and can change the working conference to
+          // it (otherwise it would fail).
+          if (!hasChangedConference && $scope.connection.currentConferenceNo !== $scope.confNo) {
+            hasChangedConference = true;
+            sessionsService.changeConference($scope.connection, $scope.confNo);
+          }
         } else {
           $scope.reader = null;
         }
@@ -1216,8 +1213,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           pageTitleService.set("");
         }
       });
-      
-      getMembershipList();
       
       
       $scope.showCommented = function() {

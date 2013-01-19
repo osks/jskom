@@ -803,8 +803,8 @@ angular.module('jskom.services', ['jskom.settings']).
       };
       
       _.extend(UnreadQueue.prototype, {
-        enqueue: function(unreadTextNos) {
-          this._unreadTextNos = _.union(this._unreadTextNos, unreadTextNos);
+        enqueue: function(newUnreadTextNos) {
+          this._unreadTextNos = _.union(this._unreadTextNos, newUnreadTextNos);
           this._unreadTextNos.sort();
           if (this._currentTextNo == null && this._unreadTextNos.length > 0) {
             this.moveNext();
@@ -936,12 +936,8 @@ angular.module('jskom.services', ['jskom.settings']).
           return new Reader(conn, unreadQueue);
         },
         
-        createUnreadQueue: function(conn, textNos) {
-          var unreadQueue = new UnreadQueue(conn);
-          if (textNos) {
-            unreadQueue.enqueue(textNos);
-          }
-          return unreadQueue;
+        createUnreadQueue: function(conn) {
+          return new UnreadQueue(conn);
         }
       };
     }
