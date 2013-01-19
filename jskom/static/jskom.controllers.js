@@ -51,11 +51,11 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         if (newConnection != null) {
           membershipListService.getMembershipList($scope.connection).then(
             function (membershipList) {
-              $log.log("MembershipsCtrl - getMembershipList() - success");
+              $log.log("SidebarCtrl - getMembershipList() - success");
               $scope.membershipList = membershipList;
             },
             function () {
-              $log.log("MembershipsCtrl - getMembershipList() - error");
+              $log.log("SidebarCtrl - getMembershipList() - error");
               $scope.membershipList = null;
             });
         }
@@ -66,7 +66,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.numberOfPages = 1;
       
       $scope.$watch('membershipList.getReadMemberships()', function (newReadMemberships) {
-        //$log.log("MembershipsCtrl - watch(membershipList.getReadMemberships())");
+        //$log.log("SidebarCtrl - watch(membershipList.getReadMemberships())");
         //$log.log(newReadMemberships);
         $scope.readMemberships = newReadMemberships;
         
@@ -87,7 +87,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       };
       
       $scope.$watch('membershipList.getUnreadMemberships()', function (newUnreadMemberships) {
-        //$log.log("MembershipsCtrl - watch(membershipList.getUnreadMemberships())");
+        //$log.log("SidebarCtrl - watch(membershipList.getUnreadMemberships())");
         //$log.log(newUnreadMemberships);
         $scope.unreadMemberships = newUnreadMemberships;
       });
