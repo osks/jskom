@@ -1207,7 +1207,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       });
       
-      $scope.$watch('membership.no_of_unread', function (newUnreadCount) {
+      $scope.$watch('reader.unreadSize()', function (newUnreadCount) {
         if (newUnreadCount != null) {
           newUnreadCount = newUnreadCount == 0 ? "No" : newUnreadCount;
           var confName = $scope.membership.conference.conf_name;
@@ -1215,7 +1215,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         } else {
           pageTitleService.set("");
         }
-      }, true);
+      });
       
       getMembershipList();
       
