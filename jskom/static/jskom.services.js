@@ -385,6 +385,7 @@ angular.module('jskom.services', ['jskom.settings']).
         },
         
         createText: function(conn, text) {
+          var self = this;
           return conn.http({ method: 'post', url: '/texts/', data: text }, true, true).then(
             function(response) {
               _.each(text.comment_to_list, function(commentedText) {
@@ -393,6 +394,7 @@ angular.module('jskom.services', ['jskom.settings']).
                 // comment_in_list.
                 conn.textsCache.remove(commentedText.text_no.toString());
               });
+              conn.broadcast('jskom:text:created', response.data.text_no);
               return response.data;
             });
         },
@@ -1115,8 +1117,8 @@ angular.module('jskom.services', ['jskom.settings']).
     }    
   ]).
   factory('membershipListHandlerFactory', [
-    '$log', '$q', '$timeout', '$rootScope', 'membershipsService',
-    function($log, $q, $timeout, $rootScope, membershipsService) {
+    '$log', '$q', '$timeout', '$rootScope', 'membershipsService', 'textsService',
+    function($log, $q, $timeout, $rootScope, membershipsService, textsService) {
       // The MembershipListHandler regularly polls the server for any
       // new unread texts/memberships and upates the membership
       // list. The handling parts include updating the list of
@@ -1131,40 +1133,6 @@ angular.module('jskom.services', ['jskom.settings']).
         
         this._refreshIntervalSeconds = 2*60;
         this._autoRefreshPromise = null;
-        
-        var self = this;
-        conn.on('jskom:session:created', function ($event) {
-          $log.log(self._logPrefix + 'on(jskom:session:created)');
-          self.reset();
-        });
-        
-        conn.on('jskom:session:changed', function ($event) {
-          $log.log(self._logPrefix + 'on(jskom:session:changed)');
-          self.reset();
-        });
-        
-        conn.on('jskom:session:deleted', function ($event) {
-          $log.log(self._logPrefix + 'on(jskom:session:deleted)');
-          self.reset();
-        });
-        
-        conn.on('jskom:readMarking:created', function ($event, text) {
-          $log.log(self._logPrefix + 'on(jskom:readMarking:created)');
-          self._membershipList.markTextAsRead(text);
-        });
-        
-        conn.on('jskom:readMarking:deleted', function ($event, text) {
-          $log.log(self._logPrefix + 'on(jskom:readMarking:deleted)');
-          self._membershipList.markTextAsUnread(text);
-        });
-        
-        conn.on('jskom:membership:changed', function ($event, confNo) {
-          self._fetchMembership(confNo);
-        });
-
-        conn.on('jskom:membershipUnread:changed', function ($event, confNo) {
-          self._fetchMembershipUnread(confNo);
-        });
       };
       
       _.extend(MembershipListHandler.prototype, {
@@ -1180,6 +1148,7 @@ angular.module('jskom.services', ['jskom.settings']).
               function () {
                 // When we have fetched both the unread memberships and
                 // the membershipUnreads, then we fetch the full membership list.
+                self._registerEvents();
                 self._fetchAllMemberships();
                 self.enableAutoRefresh();
                 $log.log(self._logPrefix + "initialize() - success");
@@ -1192,6 +1161,52 @@ angular.module('jskom.services', ['jskom.settings']).
               });
           }
           return this._initializePromise;
+        },
+        
+        _registerEvents : function () {
+          var conn = this._conn;
+          var self = this;
+          conn.on('jskom:session:created', function ($event) {
+            $log.log(self._logPrefix + 'on(jskom:session:created)');
+            self.reset();
+          });
+          
+          conn.on('jskom:session:changed', function ($event) {
+            $log.log(self._logPrefix + 'on(jskom:session:changed)');
+            self.reset();
+          });
+          
+          conn.on('jskom:session:deleted', function ($event) {
+            $log.log(self._logPrefix + 'on(jskom:session:deleted)');
+            self.reset();
+          });
+          
+          conn.on('jskom:readMarking:created', function ($event, text) {
+            $log.log(self._logPrefix + 'on(jskom:readMarking:created)');
+            self._membershipList.markTextAsRead(text);
+          });
+          
+          conn.on('jskom:readMarking:deleted', function ($event, text) {
+            $log.log(self._logPrefix + 'on(jskom:readMarking:deleted)');
+            self._membershipList.markTextAsUnread(text);
+          });
+          
+          conn.on('jskom:membership:changed', function ($event, confNo) {
+            $log.log(self._logPrefix + 'on(jskom:membership:changed)');
+            self._fetchMembership(confNo);
+          });
+
+          conn.on('jskom:membershipUnread:changed', function ($event, confNo) {
+            $log.log(self._logPrefix + 'on(jskom:membershipUnread:changed)');
+            self._fetchMembershipUnread(confNo);
+          });
+          
+          conn.on('jskom:text:created', function ($event, textNo) {
+            $log.log(self._logPrefix + 'on(jskom:text:created)');
+            textsService.getText(self._conn, textNo).then(function (text) {
+              self._membershipList.markTextAsUnread(text);
+            });
+          });
         },
         
         _fetchMembershipUnreads: function () {
