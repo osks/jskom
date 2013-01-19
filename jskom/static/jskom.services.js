@@ -1278,7 +1278,7 @@ angular.module('jskom.services', ['jskom.settings']).
           return membershipsService.getMembership(this._conn, confNo).then(
             function (membership) {
               $log.log(logp + "success");
-              self._membershipList.addMembership(membership);
+              self._membershipList.addMemberships([membership]);
             },
             function (response) {
               $log.log(logp + "error");
