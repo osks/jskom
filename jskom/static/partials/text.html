@@ -37,19 +37,21 @@
     <dd><span class="label">Subject</span> {{ text.subject }}</dd>
   </dl>
   
-  <article ng-switch="text.jskomBodyType">
-    <div ng-switch-default>
-      [unknown content-type: &quot;{{ text.content_type }}&quot;]
-    </div>
-    <div ng-switch-when="image"><img ng-src="{{ text.jskomImageUrl }}" /></div>
-    <div ng-switch-when="text">
-      <ng-switch on="textMode">
-        <div ng-switch-default jskom-bind-body="text.body"></div>
-        <pre ng-switch-when="raw" jskom-bind-body="text.body"></pre>
-        <!--<div ng-switch-when="html" ng-bind-html="text.body"></div>-->
-      </ng-switch>
-    </div>
-  </article>
+  <div class="jskomTextBody">
+    <article ng-switch="text.jskomBodyType">
+      <div ng-switch-default>
+        [unknown content-type: &quot;{{ text.content_type }}&quot;]
+      </div>
+      <div ng-switch-when="image"><img ng-src="{{ text.jskomImageUrl }}" /></div>
+      <div ng-switch-when="text">
+        <ng-switch on="textMode">
+          <div ng-switch-default jskom-bind-body="text.body"></div>
+          <pre ng-switch-when="raw" jskom-bind-body="text.body"></pre>
+          <!--<div ng-switch-when="html" ng-bind-html="text.body"></div>-->
+        </ng-switch>
+      </div>
+    </article>
+  </div>
   
   <div ng-show="text.jskomFastReplies">
     <span class="secondary label">Remarks</span>

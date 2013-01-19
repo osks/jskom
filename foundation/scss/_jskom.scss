@@ -102,16 +102,25 @@ div.alert-box {
     }
 }
 
-article {
+#jskomContent {
+    max-width: 800px;
+}
+
+.jskomTextBody {
+    border-top: 1px solid darken($white, 20%);
+    border-bottom: 1px solid darken($white, 20%);
+    padding-top: ms(1);
     margin-bottom: ms(1);
 }
+
+article {
+    max-width: 45em;
+}
+
 
 /* Wrap text lines */
 article {
     overflow-wrap: break-word;
-    border-top: 1px solid darken($white, 20%);
-    border-bottom: 1px solid darken($white, 20%);
-    padding-top: ms(1);
 }
 pre, pre * {
     font-family: "Inconsolata", monospace;
