@@ -1260,7 +1260,7 @@ angular.module('jskom.services', ['jskom.settings']).
         _fetchAllMemberships: function () {
           // TODO: Make sure we only have one of these requests active
           // at one time.
-          this._fetchMemberships(0, 100, 1000);
+          this._fetchMemberships(0, 500, 1000);
         },
         
         _fetchMemberships: function (first, noOfMemberships, maxNoOfMemberships) {
