@@ -2,184 +2,169 @@
 
 <div ng-show="conf" ng-cloak>
   <h2>{{ conf|confType }}: {{ conf.name }}</h2>
+
+  <div class="row">
+    <div class="twelve columns">
+      <div class="button-bar">
+        <ul class="button-group">
+          <li>
+            <a href="/conferences/{{conf.conf_no}}/texts/" class="secondary button">
+              Latest texts...
+            </a>
+          </li>
+        </ul>
+        
+        <ul class="button-group">
+          <li>
+            <a href="/conferences/{{conf.conf_no}}/set-unread" class="secondary button">
+              Set unread...
+            </a>
+          </li>
+        </ul>
+        
+        <ul class="button-group">
+          <li>
+            <button class="secondary button"
+                    ng-disabled="!membership || isLeaving || isJoining" ng-click="leaveConf()">
+              Leave
+            </button>
+          </li>
+          <li>
+            <button class="secondary button"
+                    ng-disabled="membership || isLeaving || isJoining" ng-click="joinConf()">
+              Join
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
   
-  <p />
-  
-  <div>
-    <dl class="tabs">
-      <dd ng-class="isTabActive('texts')">
-        <a ng-click="selectTab('texts')">Last texts</a>
-      </dd>
-      <dd ng-class="isTabActive('presentation')">
-        <a ng-click="selectTab('presentation')">Presentation</a>
-      </dd>
-      <dd ng-class="isTabActive('details')">
-        <a ng-click="selectTab('details')">Details</a>
-      </dd>
-      <dd ng-class="isTabActive('membership')" ng-hide="isLoadingMembership">
-        <a ng-click="selectTab('membership')">Membership</a>
-      </dd>
-    </dl>
-    
-    <ul class="tabs-content">
+  <div class="row">
+    <div class="twelve columns">
+      <dl class="tabs">
+        <dd ng-class="isTabActive('presentation')">
+          <a ng-click="selectTab('presentation')">Presentation</a>
+        </dd>
+        <dd ng-class="isTabActive('details')">
+          <a ng-click="selectTab('details')">Details</a>
+        </dd>
+        <dd ng-class="isTabActive('membership')" ng-hide="isLoadingMembership">
+          <a ng-click="selectTab('membership')">Membership</a>
+        </dd>
+      </dl>
       
-      <li ng-class="isTabActive('texts')">
-        <jskom:loading ng-show="isLoadingTexts"></jskom:loading>
-        <table class="twelve" ng-hide="texts == null">
-          <thead>
+      <ul class="tabs-content">
+        
+        <li ng-class="isTabActive('presentation')">
+          <ng-switch on="conf.presentation">
+            <div ng-switch-default>
+              <jskom:loading ng-show="isLoadingPresentation"></jskom:loading>
+              <div ng-show="text">
+                <ng-include src="'text.html'|jskomTemplate"></ng-include>
+              </div>
+            </div>
+            <div ng-switch-when="0">
+              <em>{{ conf.name }} has no presentation.</em>
+            </div>
+          </ng-switch>
+        </li>
+        
+        <li ng-class="isTabActive('details')">
+          <table class="twelve">
             <tr>
-              <th>Text number</th>
-              <th>Date</th>
-              <th>Author</th>
+              <td>Conference number</td>
+              <td>{{conf.conf_no}}</td>
             </tr>
-          </thead>
-          <tbody>
-            <tr ng-show="texts.length == 0"><td>No texts</td></tr>
-            <tr ng-repeat="text in texts">
-              <td><a href="/texts/{{text.text_no}}">{{ text.text_no }}</a></td>
-              <td>{{ text.creation_time }}</td>
+            <tr>
+              <td>Creation time</td>
+              <td>{{conf.creation_time}}</td>
+            </tr>
+            <tr>
+              <td>Creator</td>
+              <td>{{conf.creator|personName}}</td>
+            </tr>
+            <tr>
+              <td>Supervisor</td>
+              <td>{{conf.supervisor|confName}}</td>
+            </tr>
+            <tr>
+              <td>Presentation</td>
               <td>
-                <a href="/conferences/{{text.author.pers_no}}">
-                  {{ text.author|personName }}
-                </a>
+                <span ng-switch="conf.presentation">
+                  <jskom:a text-no="{{ conf.presentation }}" ng-switch-default>
+                    {{ conf.presentation }}
+                  </jskom:a>
+                  <em ng-switch-when="0">No presentation</em>
+                </span>
               </td>
+            </tr> 
+            <tr>
+              <td>Number of members</td>
+              <td>{{conf.no_of_members}}</td>
             </tr>
-          </tbody>
-        </table>
-      </li>
-      
-      <li ng-class="isTabActive('presentation')">
-        <ng-switch on="conf.presentation">
-          <div ng-switch-default>
-            <jskom:loading ng-show="isLoadingPresentation"></jskom:loading>
-            <div ng-show="text">
-              <ng-include src="'text.html'|jskomTemplate"></ng-include>
-            </div>
-          </div>
-          <div ng-switch-when="0">
-            <em>{{ conf.name }} has no presentation.</em>
-          </div>
-        </ng-switch>
-      </li>
-      
-      <li ng-class="isTabActive('details')">
-        <table class="twelve">
-          <tr>
-            <td>Conference number</td>
-            <td>{{conf.conf_no}}</td>
-          </tr>
-          <tr>
-            <td>Creation time</td>
-            <td>{{conf.creation_time}}</td>
-          </tr>
-          <tr>
-            <td>Creator</td>
-            <td>{{conf.creator|personName}}</td>
-          </tr>
-          <tr>
-            <td>Supervisor</td>
-            <td>{{conf.supervisor|confName}}</td>
-          </tr>
-          <tr>
-            <td>Presentation</td>
-            <td>
-              <span ng-switch="conf.presentation">
-                <jskom:a text-no="{{ conf.presentation }}" ng-switch-default>
-                  {{ conf.presentation }}
-                </jskom:a>
-                <em ng-switch-when="0">No presentation</em>
-              </span>
-            </td>
-          </tr> 
-          <tr>
-            <td>Number of members</td>
-            <td>{{conf.no_of_members}}</td>
-          </tr>
-          <tr>
-            <td>Number of texts</td>
-            <td>{{conf.no_of_texts}}</td>
-          </tr>
-          <tr>
-            <td>Last written</td>
-            <td>{{conf.last_written}}</td>
-          </tr>
-          <tr>
-            <td>Closed</td>
-            <td>{{conf.type.rd_prot}}</td>
-          </tr>
-        </table>
-      </li>
-      
-      <li ng-class="isTabActive('membership')">
-        <jskom:loading ng-show="isLoadingMembership"></jskom:loading>
-        <div ng-hide="isLoadingMembership">
-          
-          <div class="row">
-            <div class="twelve columns">
-              <span>
-                <em ng-show="membership">You are a member of this conference.</em>
-                <em ng-hide="membership">You are not a member of this conference.</em>
-              </span>
-            </div>
-          </div>
-          
-          <table class="twelve" ng-show="membership">
-            <tbody>
-              <tr>
-                <td>Joined</td>
-                <td>{{membership.added_at}}</td>
-              </tr>
-              <tr>
-                <td>Last time read</td>
-                <td>{{membership.last_time_read}}</td>
-              </tr>
-              <tr>
-                <td>Priority</td>
-                <td>{{membership.priority}}</td>
-              </tr>
-              <tr>
-                <td>Passive member</td>
-                <td>{{membership.type.passive}}</td>
-              </tr>
-              <tr>
-                <td>Secret member</td>
-                <td>{{membership.type.secret}}</td>
-              </tr>
-              <tr ng-hide="membership.added_by.pers_no == session.person.pers_no">
-                <td>Added by</td>
-                <td>{{membership.added_by|personName}}</td>
-              </tr>
-            </tbody>
+            <tr>
+              <td>Number of texts</td>
+              <td>{{conf.no_of_texts}}</td>
+            </tr>
+            <tr>
+              <td>Last written</td>
+              <td>{{conf.last_written}}</td>
+            </tr>
+            <tr>
+              <td>Closed</td>
+              <td>{{conf.type.rd_prot}}</td>
+            </tr>
           </table>
-        </div>
-      </li>
-      
-    </ul>
+        </li>
+        
+        <li ng-class="isTabActive('membership')">
+          <jskom:loading ng-show="isLoadingMembership"></jskom:loading>
+          <div ng-hide="isLoadingMembership">
+            
+            <div class="row">
+              <div class="twelve columns">
+                <span>
+                  <em ng-show="membership">You are a member of this conference.</em>
+                  <em ng-hide="membership">You are not a member of this conference.</em>
+                </span>
+              </div>
+            </div>
+            
+            <table class="twelve" ng-show="membership">
+              <tbody>
+                <tr>
+                  <td>Joined</td>
+                  <td>{{membership.added_at}}</td>
+                </tr>
+                <tr>
+                  <td>Last time read</td>
+                  <td>{{membership.last_time_read}}</td>
+                </tr>
+                <tr>
+                  <td>Priority</td>
+                  <td>{{membership.priority}}</td>
+                </tr>
+                <tr>
+                  <td>Passive member</td>
+                  <td>{{membership.type.passive}}</td>
+                </tr>
+                <tr>
+                  <td>Secret member</td>
+                  <td>{{membership.type.secret}}</td>
+                </tr>
+                <tr ng-hide="membership.added_by.pers_no == session.person.pers_no">
+                  <td>Added by</td>
+                  <td>{{membership.added_by|personName}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </li>
+      </ul>
+    </div>
   </div>
 
   <div id="jskomControlBar">
-    <div class="row">
-      <div class="three mobile-one columns">
-        <a class="secondary button" href="/conferences/{{conf.conf_no}}/set-unread">
-          Set unread
-        </a>
-      </div>
-      
-      <div class="three mobile-one columns">
-        <button class="secondary button"
-                ng-disabled="!membership || isLeaving || isJoining" ng-click="leaveConf()">
-          Leave
-        </button>
-      </div>
-      
-      <div class="three mobile-one columns">
-        <button class="secondary button"
-                ng-disabled="membership || isLeaving || isJoining" ng-click="joinConf()">
-          Join
-        </button>
-      </div>
-      
-      <div class="three mobile-one columns"></div>
-    </div>
   </div>
 </div>

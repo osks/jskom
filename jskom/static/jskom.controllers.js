@@ -916,24 +916,59 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       };
     }
   ]).
-  controller('ShowConfCtrl', [
+  controller('ListConfTextsCtrl', [
     '$scope', '$routeParams', '$log', '$location',
-    'pageTitleService', 'conferencesService', 'keybindingService', 'messagesService',
-    'membershipsService', 'textsService',
+    'pageTitleService', 'conferencesService', 'messagesService', 'textsService',
     function($scope, $routeParams, $log, $location,
-             pageTitleService, conferencesService, keybindingService, messagesService,
-             membershipsService, textsService) {
+             pageTitleService, conferencesService, messagesService, textsService) {
       $scope.conf = null;
       $scope.isLoadingTexts = false;
+      $scope.texts = null;
+      
+      var getLastTexts = function (confNo) {
+        $scope.isLoadingTexts = false;
+        textsService.getLastCreatedTextsInConference($scope.connection, confNo).then(
+          function (texts) {
+            $log.log("ListConfTextsCtrl - getLastCreatedTextsInConference() - success");
+            $scope.isLoadingTexts = false;
+            $scope.texts = texts;
+            $scope.texts.reverse();
+          },
+          function (response) {
+            $log.log("ListConfTextsCtrl - getLastCreatedTextsInConference() - error");
+            $scope.isLoadingTexts = false;
+          });
+      };
+      
+      conferencesService.getConference($scope.connection, $routeParams.confNo).then(
+        function(conference) {
+          $log.log("ListConfTextsCtrl - getConference(" + $routeParams.confNo + ") - success");
+          $scope.conf = conference;
+          pageTitleService.set("Last texts in " + $scope.conf.name);
+          getLastTexts($scope.conf.conf_no);
+        },
+        function(response) {
+          $log.log("ListConfTextsCtrl - getConference(" + $routeParams.confNo + ") - error");
+          messagesService.showMessage('error', 'Failed to get conference.', response.data);
+          pageTitleService.set("");
+        });
+    }
+  ]).
+  controller('ShowConfCtrl', [
+    '$scope', '$routeParams', '$log', '$location',
+    'pageTitleService', 'conferencesService', 'messagesService', 'membershipsService',
+    'textsService',
+    function($scope, $routeParams, $log, $location,
+             pageTitleService, conferencesService, messagesService, membershipsService,
+             textsService) {
       $scope.isLoadingMembership = false;
       $scope.isLoadingPresentation = false;
-      $scope.text = null;
+      $scope.text = null; // presentation
       $scope.isJoining = false;
       $scope.isLeaving = false;
       $scope.membership = null;
-      $scope.texts = null;
       
-      $scope.activeTab = 'texts';
+      $scope.activeTab = 'presentation';
       $scope.selectTab = function(tab) {
         $scope.activeTab = tab;
       };
@@ -985,21 +1020,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           });
       };
       
-      var getLastTexts = function (confNo) {
-        $scope.isLoadingTexts = false;
-        textsService.getLastCreatedTextsInConference($scope.connection, confNo).then(
-          function (texts) {
-            $log.log("ShowConfCtrl - getLastCreatedTextsInConference() - success");
-            $scope.isLoadingTexts = false;
-            $scope.texts = texts;
-            $scope.texts.reverse();
-          },
-          function (response) {
-            $log.log("ShowConfCtrl - getLastCreatedTextsInConference() - error");
-            $scope.isLoadingTexts = false;
-          });
-      };
-      
       $scope.joinConf = function() {
         var confNo = $scope.conf.conf_no;
         $scope.isJoining = true;
@@ -1038,7 +1058,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         function(conference) {
           $log.log("ShowConfCtrl - getConference(" + $routeParams.confNo + ") - success");
           $scope.conf = conference;
-          getLastTexts($scope.conf.conf_no);
           getMembership($scope.conf.conf_no).then(
             function() {
               if ($scope.conf.presentation !== 0) {

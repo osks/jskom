@@ -1,0 +1,60 @@
+<jskom:loading ng-hide="conf"></jskom:loading>
+
+<div ng-show="conf" ng-cloak>
+  <h2>
+    Latest texts in <a href="/conferences/{{conf.conf_no}}">{{ conf.name }}</a>
+  </h2>
+  
+  <div class="row">
+    <div class="twelve columns">
+      <div class="button-bar">
+        <ul class="button-group">
+          <li>
+            <a href="/conferences/{{conf.conf_no}}/texts/new" class="secondary button">
+              <i class="icon-pencil"></i> New text...
+            </a>
+          </li>
+        </ul>
+        
+        <ul class="button-group">
+          <li>
+            <a href="/conferences/{{conf.conf_no}}" class="secondary button">
+              Conference details...
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="twelve columns">
+
+      <jskom:loading ng-show="isLoadingTexts"></jskom:loading>
+      <table class="twelve" ng-hide="texts == null">
+        <thead>
+          <tr>
+            <th>Text number</th>
+            <th>Date</th>
+            <th>Author</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-show="texts.length == 0"><td>No texts</td></tr>
+          <tr ng-repeat="text in texts">
+            <td><a href="/texts/{{text.text_no}}">{{ text.text_no }}</a></td>
+            <td>{{ text.creation_time }}</td>
+            <td>
+              <a href="/conferences/{{text.author.pers_no}}">
+                {{ text.author|personName }}
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <div id="jskomControlBar">
+  </div>
+</div>
