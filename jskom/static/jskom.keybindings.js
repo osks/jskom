@@ -116,13 +116,6 @@ angular.module('jskom.keybindings', []).
   run([
     '$log', '$location', '$rootScope', '$routeParams', '$window', 'keybindingService',
     function($log, $location, $rootScope, $routeParams, $window, keybindingService) {
-      keybindingService.bindGeneral('i', 'New text...', function(e) {
-        $rootScope.$apply(function() {
-          $location.url('/texts/new');
-        });
-        return false;
-      });
-      
       keybindingService.bindGeneral('g', 'Go to conference...', function(e) {
         $rootScope.$apply(function() {
           $location.url('/conferences/go-to');
@@ -140,6 +133,17 @@ angular.module('jskom.keybindings', []).
       keybindingService.bindGeneral('n', 'Browser history forward', function(e) {
         $rootScope.$apply(function() {
           $window.history.forward();
+        });
+        return false;
+      });
+      
+      keybindingService.bindGeneral('i', 'New text...', function(e) {
+        $rootScope.$apply(function() {
+          if (!_.isUndefined($routeParams.confNo)) {
+            $location.url('/conferences/' + $routeParams.confNo + '/texts/new');
+          } else {
+            $location.url('/texts/new');
+          }
         });
         return false;
       });

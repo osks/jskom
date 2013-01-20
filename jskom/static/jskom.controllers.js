@@ -476,11 +476,12 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
     }
   ]).
   controller('NewTextCtrl', [
-    '$scope', 'textsService', '$log', '$location',
+    '$scope', 'textsService', '$log', '$location', '$routeParams',
     'messagesService', 'pageTitleService', 'keybindingService',
-    function($scope, textsService, $log, $location,
+    function($scope, textsService, $log, $location, $routeParams,
              messagesService, pageTitleService, keybindingService) {
       pageTitleService.set("New text");
+      
       $scope.text = null;
       $scope.commentedText = null;
       $scope.activeTab = 'simple';
@@ -560,7 +561,12 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           });
       } else {
         var newText = newEmptyText();
-        newText.recipient_list.push($scope.newRecipient());
+        if ($routeParams.confNo != null) {
+          newText.recipient_list.push(
+            { "type": "to", "recpt": { "conf_no": $routeParams.confNo } });
+        } else {
+          newText.recipient_list.push($scope.newRecipient());
+        }
         $scope.text = newText;
         $scope.activeTab = 'advanced';
       }
