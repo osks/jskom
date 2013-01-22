@@ -5297,7 +5297,7 @@ nav.sidebar .tabs.vertical li.active a, nav.sidebar .tabs.vertical dl.active a {
 }
 /* line 242, ../../../foundation/scss/_jskom.scss */
 nav.sidebar .tabs.vertical li a, nav.sidebar .tabs.vertical dl a {
-  font-size: 13px px;
+  font-size: 13px;
   padding: 10px 10px;
 }
 /* line 246, ../../../foundation/scss/_jskom.scss */
