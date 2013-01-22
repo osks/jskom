@@ -6,7 +6,8 @@
       <li ng-repeat="membership in unreadMemberships | orderBy:['-priority']"
           ng-class="{ 'active': membership.conference.conf_no == currentConfNo }"
           class="unread membership">
-        <a class="unread-count" href="/conferences/{{membership.conference.conf_no}}/unread/">
+        <a class="unread-count"
+           href="/conferences/{{membership.conference.conf_no}}/texts/unread/">
           <span class="round label">
             {{ membership.no_of_unread }}
           </span>

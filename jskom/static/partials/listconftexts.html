@@ -1,6 +1,6 @@
 <jskom:loading ng-hide="conf"></jskom:loading>
 
-<div ng-show="conf" ng-cloak>
+<div ng-show="conf != null" ng-cloak>
   <h2>
     Latest texts in <a href="/conferences/{{conf.conf_no}}">{{ conf.name }}</a>
   </h2>
@@ -56,5 +56,16 @@
   </div>
   
   <div id="jskomControlBar">
+    <div class="row">
+      <div class="six mobile-two columns"></div>
+      
+      <div class="six mobile-two columns">
+        <a type="submit" class="button right" ng-disabled="conf == null"
+           href="/conferences/{{conf.conf_no}}/texts/unread/">
+          <i class="icon-arrow-right"></i>
+          Read
+        </a>
+      </div>
+    </div>
   </div>
 </div>

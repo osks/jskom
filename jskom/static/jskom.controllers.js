@@ -417,7 +417,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           var m = _.first(_.sortBy($scope.unreadMemberships, function (m) {
             return -m.priority;
           }));
-          $location.url("/conferences/" + m.conference.conf_no + "/unread/");
+          $location.url("/conferences/" + m.conference.conf_no + "/texts/unread/");
         }
       };
       
@@ -924,8 +924,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
   controller('ListConfTextsCtrl', [
     '$scope', '$routeParams', '$log', '$location',
     'pageTitleService', 'conferencesService', 'messagesService', 'textsService',
+    'keybindingService',
     function($scope, $routeParams, $log, $location,
-             pageTitleService, conferencesService, messagesService, textsService) {
+             pageTitleService, conferencesService, messagesService, textsService,
+             keybindingService) {
       $scope.conf = null;
       $scope.isLoadingTexts = false;
       $scope.texts = null;
@@ -957,6 +959,16 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           messagesService.showMessage('error', 'Failed to get conference.', response.data);
           pageTitleService.set("");
         });
+      
+      keybindingService.bindPageSpecific('space', 'Read conference', function(e) {
+        if ($scope.conf != null) {
+          $scope.$apply(function() {
+            $location.path('/conferences/' + parseInt($scope.conf.conf_no) + "/texts/unread/");
+          });
+        }
+        return false;
+      });
+
     }
   ]).
   controller('ShowConfCtrl', [

@@ -100,9 +100,9 @@ angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
           templateUrl: templatePathProvider.path('newtext.html'),
           controller: 'NewTextCtrl'
         }).
-        when('/conferences/:confNo/unread/', {
-          templateUrl: templatePathProvider.path('reader.html'),
-          controller: 'ReaderCtrl',
+        when('/conferences/:confNo/texts/unread/', {
+          templateUrl: templatePathProvider.path('unreadtexts.html'),
+          controller: 'UnreadTextsCtrl',
           reloadOnSearch: false
         }).
         when('/conferences/:confNo', {

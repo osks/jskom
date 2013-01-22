@@ -225,6 +225,7 @@ nav.sidebar {
         font-size: 12px;
         font-weight: 600;
         color: lighten($headerFontColor, 30%);
+        margin-left: 5px;
         
         ul.pagination {
             margin-bottom: 0px;
@@ -237,10 +238,13 @@ nav.sidebar {
         li, dl {
             &.active a {
                 font-weight: normal;
+                
+                &:active {
+                    font-weight: normal;
+                }
             }
             
             a {
-                font-size: ms(0) - 1px;
                 padding: 10px 10px;
                 
                 &.membership-name {
@@ -250,16 +254,22 @@ nav.sidebar {
         }
         
         li.unread.membership {
+            &.active a {
+                &.membership-name {
+                    border-right: 1px solid #5a5a5a;
+                }
+            }
+            
             a {
                 &.membership-name {
-                    border-right: none;
+                    /*border-right: none*/
                 }
                 &.unread-count {
                     float: right;
                     text-align: center;
                     padding-left: 5px;
                     padding-right: 5px;
-                    min-width: 50px;
+                    min-width: 60px;
                 }
             }
         }
