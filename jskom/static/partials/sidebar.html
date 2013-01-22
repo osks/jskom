@@ -2,16 +2,17 @@
   <h6>Unread <span ng-show="unreadMemberships != null">({{unreadMemberships.length}})</span></h6>
   
   <div ng-show="unreadMemberships.length > 0">
-    <ul class="nav-bar vertical">
+    <ul class="tabs vertical">
       <li ng-repeat="membership in unreadMemberships | orderBy:['-priority']"
-          class="membership">
-        <a class="jskomNoWrap" href="/conferences/{{membership.conference.conf_no}}/unread/">
-          <span class="jskomRight">
-            <span class="round label">
-              {{ membership.no_of_unread }}
-            </span>
+          ng-class="{ 'active': membership.conference.conf_no == currentConfNo }"
+          class="unread membership">
+        <a class="unread-count" href="/conferences/{{membership.conference.conf_no}}/unread/">
+          <span class="round label">
+            {{ membership.no_of_unread }}
           </span>
-          
+        </a>
+        <a class="membership-name jskomNoWrap"
+           href="/conferences/{{membership.conference.conf_no}}/texts/">
           {{membership.conference | confName}}
         </a>
       </li>
@@ -33,12 +34,14 @@
   </h6>
   
   <div ng-show="readMemberships.length > 0">
-    <ul class="nav-bar vertical">
+    <ul class="tabs vertical">
       <!-- last_time_read isn't perfect, because we can't
       invalidate/update it correctly everywhere. -->
       <li ng-repeat="membership in readMemberships | orderBy:['-last_time_read'] | startFrom:currentPage*pageSize | limitTo:pageSize"
+          ng-class="{ 'active': membership.conference.conf_no == currentConfNo }"
           class="membership">
-        <a class="jskomNoWrap" href="/conferences/{{membership.conference.conf_no}}/texts/">
+        <a class="jskomNoWrap membership-name"
+           href="/conferences/{{membership.conference.conf_no}}/texts/">
           {{membership.conference | confName}}
         </a>
       </li>

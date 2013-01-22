@@ -35,13 +35,18 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
     }
   ]).
   controller('SidebarCtrl', [
-    '$scope', '$log', '$timeout',
+    '$scope', '$log', '$routeParams',
     'messagesService', 'keybindingService', 'membershipListService',
-    function($scope, $log, $timeout,
+    function($scope, $log, $routeParams,
              messagesService, keybindingService, membershipListService) {
       $scope.membershipList = null;
       $scope.readMemberships = null;
       $scope.unreadMemberships = null;
+      $scope.currentConfNo = null;
+      
+      $scope.$watch(function() { return $routeParams.confNo; }, function(newConfNo) {
+        $scope.currentConfNo = newConfNo;
+      }, true);
       
       $scope.$watch('connection', function (newConnection) {
         $scope.membershipList = null;

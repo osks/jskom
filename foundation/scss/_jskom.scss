@@ -220,46 +220,46 @@ pre, pre * {
 }
 
 nav.sidebar {
-    border-right: 1px solid #eee;
-    padding-right: 10px;
-    
     h6 {
         text-transform: uppercase;
         font-size: 12px;
         font-weight: 600;
-        color: #999;
+        color: lighten($headerFontColor, 30%);
+        
+        ul.pagination {
+            margin-bottom: 0px;
+        }
     }
     
-    .nav-bar.vertical {
-        background: #fff;
-        border: none;
+    .tabs.vertical {
+        clear: both;
         
-        > li {
-            border-top: none;
-            border-right: none !important; /*1px solid #eee !important;*/
-            border-bottom: none !important; /*1px solid #eee !important;*/
-            border-left: none; /*3px solid #ccc;*/
-            
-            &:first-child {
-                border-top: none !important; /*1px solid #eee !important;*/
+        li, dl {
+            &.active a {
+                font-weight: normal;
             }
             
-            line-height: 35px;
-            
-            &:hover {
-                background-color: #f5f5f5;
-            }
-            
-            > a {
-                color: $mainColor;
+            a {
+                font-size: ms(0) - 1 px;
+                padding: 10px 10px;
                 
-                &:first-child {
-                    padding: 0 5px;
-                    margin: 0;
-                }
-                
-                &.jskomNoWrap {
+                &.membership-name {
                     text-overflow: ellipsis;
+                }
+            }
+        }
+        
+        li.unread.membership {
+            a {
+                &.membership-name {
+                    border-right: none;
+                }
+                &.unread-count {
+                    float: right;
+                    text-align: center;
+                    padding-left: 5px;
+                    padding-right: 5px;
+                    min-width: 50px;
                 }
             }
         }
