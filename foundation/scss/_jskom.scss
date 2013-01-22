@@ -235,7 +235,7 @@ nav.sidebar {
     .tabs.vertical {
         clear: both;
         
-        li, dl {
+        li {
             &.active a {
                 font-weight: normal;
                 
@@ -247,6 +247,10 @@ nav.sidebar {
             a {
                 padding: 10px 10px;
                 
+                &:focus {
+                    font-weight: normal;
+                }
+                
                 &.membership-name {
                     text-overflow: ellipsis;
                 }
@@ -256,7 +260,7 @@ nav.sidebar {
         li.unread.membership {
             &.active a {
                 &.membership-name {
-                    border-right: 1px solid #5a5a5a;
+                    border-right: 1px solid #666;
                 }
             }
             
