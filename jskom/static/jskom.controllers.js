@@ -926,7 +926,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.texts = null;
       
       var getLastTexts = function (confNo) {
-        $scope.isLoadingTexts = false;
+        $scope.isLoadingTexts = true;
         textsService.getLastCreatedTextsInConference($scope.connection, confNo).then(
           function (texts) {
             $log.log("ListConfTextsCtrl - getLastCreatedTextsInConference() - success");
