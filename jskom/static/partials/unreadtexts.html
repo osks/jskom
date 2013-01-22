@@ -1,0 +1,25 @@
+<jskom:loading ng-show="isLoadingMembershipList"></jskom:loading>
+
+<div ng-controller="ReaderCtrl" ng-cloak>
+  <div ng-controller="TextControlsCtrl">
+    <div ng-show="reader">
+      <h2 class="jskomNoWrap">
+        {{ reader.unreadSize() }} unread in
+        <a href="/conferences/{{membership.conference.conf_no}}">
+          {{ membership.conference|confName }}
+        </a>
+    </h2>
+      
+      <jskom:loading ng-show="textIsLoading"></jskom:loading>
+      <div ng-show="text">
+      <ng-include src="'text.html'|jskomTemplate"></ng-include>
+      </div>
+      <div id="jskomBelowText"></div>
+      
+    </div>
+    
+    <div id="jskomControlBar">
+      <ng-include src="'textcontrols.html'|jskomTemplate"></ng-include>
+    </div>
+  </div>
+</div>

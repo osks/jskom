@@ -1090,7 +1090,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         });
     }
   ]).
-  controller('ReaderCtrl', [
+  controller('UnreadTextsCtrl', [
     '$scope', '$rootScope', '$routeParams', '$log', '$window', '$location',
     'messagesService', 'textsService', 'pageTitleService', 'keybindingService', 'readerFactory',
     'sessionsService', 'membershipListService',
@@ -1154,7 +1154,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         // When clicking on text links in the reader, we just show the
         // text inside the reader, instead of going to the "show text"
         // page.
-        //$log.log("ReaderCtrl - on(jskom:a:text) - href - " + href);
+        //$log.log("UnreadTextsCtrl - on(jskom:a:text) - href - " + href);
         $event.stopPropagation();
         showText(textNo);
       });
@@ -1175,12 +1175,12 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.isLoadingMembershipList = false;
       membershipListService.getMembershipList($scope.connection).then(
         function (membershipList) {
-          $log.log("ReaderCtrl - getMembershipList() - success");
+          $log.log("UnreadTextsCtrl - getMembershipList() - success");
           $scope.isLoadingMembershipList = false;
           $scope.membershipList = membershipList;
         },
         function () {
-          $log.log("ReaderCtrl - getMembershipList() - error");
+          $log.log("UnreadTextsCtrl - getMembershipList() - error");
           $scope.isLoadingMembershipList = false;
           messagesService.showMessage('error', 'Failed to get membership list.');
         });
@@ -1258,7 +1258,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       
       
       $scope.showCommented = function() {
-        $log.log('ReaderCtrl - showCommented()');
+        $log.log('UnreadTextsCtrl - showCommented()');
         if ($scope.text && !_.isEmpty($scope.text.comment_to_list)) {
           $scope.reader.unshiftPending.apply(
             $scope.reader,
@@ -1271,7 +1271,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       };
       
       $scope.showAllComments = function() {
-        $log.log('ReaderCtrl - showAllComments()');
+        $log.log('UnreadTextsCtrl - showAllComments()');
         if ($scope.text && !_.isEmpty($scope.text.comment_in_list)) {
           $scope.reader.unshiftPending.apply(
             $scope.reader,
@@ -1311,4 +1311,14 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       });
     }
+  ]).
+  controller('ReaderCtrl', [
+    '$scope', '$rootScope', '$routeParams', '$log', '$window', '$location',
+    'messagesService', 'textsService', 'pageTitleService', 'keybindingService', 'readerFactory',
+    'sessionsService', 'membershipListService',
+    function($scope, $rootScope, $routeParams, $log, $window, $location,
+             messagesService, textsService, pageTitleService, keybindingService, readerFactory,
+             sessionsService, membershipListService) {
+      
+    }    
   ]);
