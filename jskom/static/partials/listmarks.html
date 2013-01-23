@@ -21,15 +21,21 @@
   
   <ul class="pagination">
     <li ng-class="{'unavailable': currentPage < 1 }">
+      <a ng-click="currentPage = 0">First</a>
+    </li>
+    
+    <li ng-class="{'unavailable': currentPage < 1 }">
       <a ng-click="previousPage()">Previous</a>
     </li>
 
-    <li ng-repeat="p in pageNumbers" ng-class="currentPageClass(p)">
-      <a ng-click="showPage(p)">{{p+1}}</a>
-    </li>
+    <li>{{currentPage+1}} / {{numberOfPages}}</li>
     
     <li ng-class="{'unavailable': currentPage >= numberOfPages - 1}">
       <a ng-click="nextPage()">Next</a>
+    </li>
+    
+    <li ng-class="{'unavailable': currentPage >= numberOfPages - 1}">
+      <a ng-click="currentPage = numberOfPages - 1">Last</a>
     </li>
   </ul>
 </div>
