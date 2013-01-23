@@ -57,14 +57,14 @@ js_angular = Bundle('lib/angular.js',
                     output='gen/packed_angular.js')
 assets.register('js_angular', js_angular)
 
-js_jskom = Bundle('jskom.js',
-                  'jskom.controllers.js',
-                  'jskom.connections.js',
-                  'jskom.directives.js',
-                  'jskom.filters.js',
-                  'jskom.keybindings.js',
-                  'jskom.services.js',
-                  'jskom.templates.js',
+js_jskom = Bundle('app/jskom.js',
+                  'app/jskom.controllers.js',
+                  'app/jskom.connections.js',
+                  'app/jskom.directives.js',
+                  'app/jskom.filters.js',
+                  'app/jskom.keybindings.js',
+                  'app/jskom.services.js',
+                  'app/jskom.templates.js',
                   
                   # app.js is probably not needed, was introduced with Foundation
                   'javascripts/foundation/app.js',
