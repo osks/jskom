@@ -5288,39 +5288,43 @@ nav.sidebar h6 {
 nav.sidebar h6 ul.pagination {
   margin-bottom: 0px;
 }
-/* line 235, ../../../foundation/scss/_jskom.scss */
+/* line 234, ../../../foundation/scss/_jskom.scss */
+nav.sidebar h6 a {
+  color: #555;
+}
+/* line 239, ../../../foundation/scss/_jskom.scss */
 nav.sidebar .tabs.vertical {
   clear: both;
 }
-/* line 239, ../../../foundation/scss/_jskom.scss */
+/* line 243, ../../../foundation/scss/_jskom.scss */
 nav.sidebar .tabs.vertical li.active a {
   font-weight: normal;
 }
-/* line 242, ../../../foundation/scss/_jskom.scss */
+/* line 246, ../../../foundation/scss/_jskom.scss */
 nav.sidebar .tabs.vertical li.active a:active {
   font-weight: normal;
 }
-/* line 247, ../../../foundation/scss/_jskom.scss */
+/* line 251, ../../../foundation/scss/_jskom.scss */
 nav.sidebar .tabs.vertical li a {
   padding: 10px 10px;
 }
-/* line 250, ../../../foundation/scss/_jskom.scss */
+/* line 254, ../../../foundation/scss/_jskom.scss */
 nav.sidebar .tabs.vertical li a:focus {
   font-weight: normal;
 }
-/* line 254, ../../../foundation/scss/_jskom.scss */
+/* line 258, ../../../foundation/scss/_jskom.scss */
 nav.sidebar .tabs.vertical li a.membership-name {
   text-overflow: ellipsis;
 }
-/* line 262, ../../../foundation/scss/_jskom.scss */
+/* line 266, ../../../foundation/scss/_jskom.scss */
 nav.sidebar .tabs.vertical li.unread.membership.active a.membership-name {
   border-right: 1px solid #666;
 }
-/* line 268, ../../../foundation/scss/_jskom.scss */
+/* line 272, ../../../foundation/scss/_jskom.scss */
 nav.sidebar .tabs.vertical li.unread.membership a.membership-name {
   /*border-right: none*/
 }
-/* line 271, ../../../foundation/scss/_jskom.scss */
+/* line 275, ../../../foundation/scss/_jskom.scss */
 nav.sidebar .tabs.vertical li.unread.membership a.unread-count {
   float: right;
   text-align: center;

@@ -421,24 +421,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       };
       
-      // TODO: This is more "global", so it shouldn't be a button on
-      // the unread conference page. The sidebarctrl has the
-      // keybinding, and this refreshUnread is more or less duplicated
-      // here.
-      $scope.refreshUnread = function() {
-        if (!$scope.isLoading && $scope.membershipList != null) {
-          $scope.connection.userIsActive();
-          $scope.isLoading = true;
-          $scope.membershipList.refreshUnread().then(
-            function () {
-              $scope.isLoading = false;
-            },
-            function () {
-              $scope.isLoading = false;
-            });
-        }
-      };
-      
       keybindingService.bindPageSpecific('space', 'Read first conference', function(e) {
         if ($scope.unreadMemberships.length > 0) {
           $scope.$apply(function() {

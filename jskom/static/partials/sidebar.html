@@ -1,5 +1,14 @@
 <nav class="sidebar" ng-controller="SidebarCtrl" ng-hide="connection == null" ng-cloak>
-  <h6>Unread <span ng-show="unreadMemberships != null">({{unreadMemberships.length}})</span></h6>
+  <h6>
+    Unread <span ng-show="unreadMemberships != null">({{unreadMemberships.length}})</span>
+    
+    <span class="right">
+      <a ng-hide="isRefreshing" ng-click="refreshUnread()">
+        <i class="icon-repeat"></i>
+      </a>
+      <i ng-show="isRefreshing" class="icon-spinner icon-spin"></i>
+    </span>
+  </h6>
   
   <div ng-show="unreadMemberships.length > 0">
     <ul class="tabs vertical">
