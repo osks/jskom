@@ -1,7 +1,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Unit Tests</title>
+  <title>Jskom Unit Tests</title>
   <link rel="stylesheet" href="../lib/mocha/mocha.css" />
   
   <!-- jskom libs -->
@@ -19,18 +19,22 @@
       constant('httpkomServer', null).
       constant('httpkomConnectionHeader', 'Httpkom-Connection');
   </script>
-  <script src="../../jskom/static/jskom.js"></script>
-  <script src="../../jskom/static/jskom.connections.js"></script>
-  <script src="../../jskom/static/jskom.directives.js"></script>
-  <script src="../../jskom/static/jskom.filters.js"></script>
-  <script src="../../jskom/static/jskom.services.js"></script>
-  <script src="../../jskom/static/jskom.templates.js"></script>
+  <script src="../../jskom/static/app/jskom.js"></script>
+  <script src="../../jskom/static/app/jskom.connections.js"></script>
+  <script src="../../jskom/static/app/jskom.controllers.js"></script>
+  <script src="../../jskom/static/app/jskom.directives.js"></script>
+  <script src="../../jskom/static/app/jskom.filters.js"></script>
+  <script src="../../jskom/static/app/jskom.services.js"></script>
+  <script src="../../jskom/static/app/jskom.templates.js"></script>
+  <script src="../../jskom/static/app/jskom.keybindings.js"></script>
   
   <!-- Test libs -->
   <script src="../lib/diff.js"></script>
   <script src="../lib/mocha/mocha.js"></script>
   <script>mocha.setup('tdd')</script>
   <script src="../lib/chai.js"></script>
+  <script>assert = chai.assert;</script>
+  <script src="../lib/sinon.js"></script>
   <script src="../lib/angular/angular-mocks.js"></script>
   
   <!-- Tests -->
