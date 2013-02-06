@@ -156,7 +156,7 @@ angular.module('jskom.services', ['jskom.settings']).
       return {
         set: function(title) {
           if (title && title.length > 0) {
-            $window.document.title = "jskom - " + title;
+            $window.document.title = title + " - jskom";
           } else {
             $window.document.title = "jskom";
           }
