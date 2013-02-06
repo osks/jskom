@@ -19,8 +19,10 @@
       constant('httpkomServer', null).
       constant('httpkomConnectionHeader', 'Httpkom-Connection');
   </script>
+  
   <script src="../../jskom/static/app/jskom.js"></script>
   <script src="../../jskom/static/app/jskom.MembershipList.js"></script>
+  <script src="../../jskom/static/app/jskom.Reader.js"></script>
   <script src="../../jskom/static/app/jskom.connections.js"></script>
   <script src="../../jskom/static/app/jskom.controllers.js"></script>
   <script src="../../jskom/static/app/jskom.directives.js"></script>
@@ -39,7 +41,9 @@
   <script src="../lib/angular/angular-mocks.js"></script>
   
   <!-- Tests -->
+  <script src="helpers.js"></script>
   <script src="tests.jskom.services.js"></script>
+  <script src="testReader.js"></script>
 </head>
 <body>
   <div id="mocha"></div>

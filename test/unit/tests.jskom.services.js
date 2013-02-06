@@ -1,13 +1,10 @@
 'use strict';
 
-mocha.setup('tdd')
-var assert = chai.assert;
-
 suite('htmlFormattingService', function() {
-  beforeEach(module('jskom.services'));
+  setup(module('jskom.services'));
   
   var service;
-  beforeEach(inject(function(htmlFormattingService) {
+  setup(inject(function(htmlFormattingService) {
     service = htmlFormattingService;
   }));
   
