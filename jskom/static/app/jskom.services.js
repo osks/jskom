@@ -342,7 +342,7 @@ angular.module('jskom.services', ['jskom.settings']).
           var cachedResp = conn.textsCache.get(textNo);
           
           if (cachedResp) {
-            $log.log("textsService - getText(" + textNo + ") - cached");
+            //$log.log("textsService - getText(" + textNo + ") - cached");
             return cachedResp;
           } else {
             var deferred = $q.defer();

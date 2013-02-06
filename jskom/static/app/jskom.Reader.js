@@ -13,7 +13,7 @@
     this._pending = [];
     this._threadStack = [];
     
-    this._numPrefetches = 10;
+    this._numPrefetches = 7;
   };
   
   _.extend(Reader.prototype, {
@@ -46,7 +46,7 @@
       return this._getNextUnreadText(this._membership.unread_texts, this._threadStack).then(
         function(textNo) {
           if (textNo != null) {
-            self._startPrefetch(textNo);
+            self._runPrefetch();
           }
           return textNo;
         });
@@ -64,9 +64,20 @@
       return !(this.hasPending() || this.hasUnread());
     },
     
-    _startPrefetch: function (startTextNo) {
-      // We rely on that there is a cache, otherwise we would just do
-      // unnessecery work.
+    _runPrefetch: function () {
+      // Prefetch N number of texts following the threads/branches
+      // just like the normal reader. Relies on that there is a text cache,
+      // otherwise this would cause a lot of unnessecery work.
+      // 
+      // Currently it will always fetch N texts, but it could be
+      // improved to store the prefetch thread stack and unread texts
+      // so it would only need to prefetch enough texts to keep N
+      // prefetched.
+      // 
+      // The current implementation isn't perfect, but because of the
+      // (assumption of a) text cache, it's not that horrible. During
+      // the typical usage it would fetch the first N-1 texts from
+      // cache, and then the N:th text from the server.
       
       // Use a separate set of state variables to not mess with the
       // real ones.
@@ -79,7 +90,7 @@
         self._getNextUnreadText(unreadTexts, threadStack).then(
           function (textNo) {
             if (textNo != null) {
-              self._$log.log("Reader - prefetch(" + textNo + ")");
+              //self._$log.log("Reader - prefetch(" + textNo + ") - success");
               --numPrefetchesLeft;
               if (numPrefetchesLeft > 0) {
               // Fake read marking by removing the text
