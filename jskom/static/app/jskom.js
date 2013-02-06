@@ -62,6 +62,9 @@ angular.module('jskom.httpkom', []).
     ];
   });
 
+
+window.jskom = {};
+
 angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
                          'jskom.controllers', 'jskom.filters', 'jskom.directives',
                          'jskom.connections']).

@@ -48,6 +48,7 @@ js_angular = Bundle('lib/angular.js',
 assets.register('js_angular', js_angular)
 
 js_jskom = Bundle('app/jskom.js',
+                  'app/jskom.MembershipList.js',
                   'app/jskom.controllers.js',
                   'app/jskom.connections.js',
                   'app/jskom.directives.js',
