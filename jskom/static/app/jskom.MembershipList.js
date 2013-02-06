@@ -104,17 +104,19 @@
       // updating both memberships and membershipUnreads.
       var shouldUpdate = false;
       var self = this;
-      _.each(text.recipient_list, function(recipient) {
-        var mu = self._membershipUnreadsMap[recipient.recpt.conf_no];
-        if (mu != null) {
-          var idx = mu.unread_texts.indexOf(text.text_no);
-          if (idx !== -1) {
-            mu.unread_texts.splice(idx, 1);
-            mu.no_of_unread -= 1;
-            shouldUpdate = true;
+      if (self._membershipUnreadsMap != null) {
+        _.each(text.recipient_list, function(recipient) {
+          var mu = self._membershipUnreadsMap[recipient.recpt.conf_no];
+          if (mu != null) {
+            var idx = mu.unread_texts.indexOf(text.text_no);
+            if (idx !== -1) {
+              mu.unread_texts.splice(idx, 1);
+              mu.no_of_unread -= 1;
+              shouldUpdate = true;
+            }
           }
-        }
-      });
+        });
+      }
       
       if (shouldUpdate) {
         self._rebuildMembershipLists();
@@ -128,17 +130,19 @@
       // updating both memberships and membershipUnreads.
       var shouldUpdate = false;
       var self = this;
-      _.each(text.recipient_list, function(recipient) {
-        var mu = self._membershipUnreadsMap[recipient.recpt.conf_no];
-        if (mu != null) {
-          var idx = mu.unread_texts.indexOf(text.text_no);
-          if (idx === -1) {
-            mu.unread_texts.push(text.text_no);
-            mu.no_of_unread += 1;
+      if (self._membershipUnreadsMap != null) {
+        _.each(text.recipient_list, function(recipient) {
+          var mu = self._membershipUnreadsMap[recipient.recpt.conf_no];
+          if (mu != null) {
+            var idx = mu.unread_texts.indexOf(text.text_no);
+            if (idx === -1) {
+              mu.unread_texts.push(text.text_no);
+              mu.no_of_unread += 1;
             shouldUpdate = true; // We change something, so we need to run update
+            }
           }
-        }
-      });
+        });
+      }
       
       if (shouldUpdate) {
         self._rebuildMembershipLists();
