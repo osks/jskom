@@ -342,7 +342,7 @@ angular.module('jskom.services', ['jskom.settings']).
           var cachedResp = conn.textsCache.get(textNo);
           
           if (cachedResp) {
-            //$log.log("textsService - getText(" + textNo + ") - cached");
+            $log.log("textsService - getText(" + textNo + ") - cached");
             return cachedResp;
           } else {
             var deferred = $q.defer();
@@ -719,11 +719,11 @@ angular.module('jskom.services', ['jskom.settings']).
     }
   ]).
   factory('readerFactory', [
-    '$q', 'textsService',
-    function($q, textsService) {
+    '$log', '$q', 'textsService',
+    function($log, $q, textsService) {
       return {
         createReader: function(conn) {
-          return new jskom.Reader($q, textsService, conn);
+          return new jskom.Reader($log, $q, textsService, conn);
         }
       };
     }

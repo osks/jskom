@@ -4,13 +4,16 @@
   // able to only keep partial lists of unread texts in the future
   // (i.e unread_texts.length != no_of_unread).
   
-  var Reader = function($q, textsService, conn) {
+  var Reader = function($log, $q, textsService, conn) {
+    this._$log = $log;
     this._$q = $q;
     this._textsService = textsService;
     this._conn = conn;
     this._membership = { unread_texts: [], no_of_unread: 0 }; // fake to avoid null
     this._pending = [];
     this._threadStack = [];
+    
+    this._numPrefetches = 5
   };
   
   _.extend(Reader.prototype, {
@@ -36,7 +39,17 @@
     },
     
     shiftUnread: function () {
-      return this._getNextUnreadText(this._membership.unread_texts, this._threadStack);
+      // Todo: shift isn't a good name (it's a remain from
+      // UnreadQueue). We don't actually remove anything now, but
+      // rather let the read-marking update the membership.
+      var self = this;
+      return this._getNextUnreadText(this._membership.unread_texts, this._threadStack).then(
+        function(textNo) {
+          if (textNo != null) {
+            self._startPrefetch(textNo);
+          }
+          return textNo;
+        });
     },
     
     unreadCount: function () {
@@ -49,6 +62,35 @@
     
     isEmpty: function () {
       return !(this.hasPending() || this.hasUnread());
+    },
+    
+    _startPrefetch: function (startTextNo) {
+      // We rely on that there is a cache, otherwise we would just do
+      // unnessecery work.
+      
+      // Use a separate set of state variables to not mess with the
+      // real ones.
+      var threadStack = this._threadStack.slice(0);
+      var unreadTexts = this._membership.unread_texts;
+      var numPrefetchesLeft = this._numPrefetches;
+      var self = this;
+      
+      function prefetch() {
+        self._getNextUnreadText(unreadTexts, threadStack).then(
+          function (textNo) {
+            if (textNo != null) {
+              self._$log.log("Reader - prefetch(" + textNo + ")");
+              --numPrefetchesLeft;
+              if (numPrefetchesLeft > 0) {
+              // Fake read marking by removing the text
+                unreadTexts = _.without(unreadTexts, textNo);
+                prefetch();
+              }
+            }
+          });
+      }
+      
+      prefetch();
     },
     
     // The algorithm for finding the next unread text
