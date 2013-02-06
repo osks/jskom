@@ -126,6 +126,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.newConnection = function() {
         connectionsService.newConnectionPromise().then(
           function(conn) {
+            $location.url('/');
             connectionsService.setCurrentConnection(conn);
           },
           function(response) {
