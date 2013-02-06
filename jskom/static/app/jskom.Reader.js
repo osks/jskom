@@ -1,14 +1,24 @@
 (function (jskom) {
   
+  // We want to handle unread_texts and no_of_unread differently to be
+  // able to only keep partial lists of unread texts in the future
+  // (i.e unread_texts.length != no_of_unread).
+  
   var Reader = function($q, textsService, conn) {
     this._$q = $q;
     this._textsService = textsService;
-    this.conn = conn;
+    this._conn = conn;
+    this._membership = { unread_texts: [], no_of_unread: 0 }; // fake to avoid null
     this._pending = [];
     this._threadStack = [];
   };
   
   _.extend(Reader.prototype, {
+    setMembership: function (membership) {
+      // membership cannot be null
+      this._membership = membership;
+    },
+    
     unshiftPending: function() {
       this._pending.unshift.apply(this._pending, arguments);
     },
@@ -17,18 +27,29 @@
       return this._pending.shift();
     },
     
-    shiftUnread: function (unreadTextNos) {
-      return this._getNextUnreadText(unreadTextNos, this._threadStack);
-    },
-    
-    hasPending: function() {
-      return this._pending.length > 0;
-    },
-    
-    pendingSize: function() {
+    pendingCount: function () {
       return this._pending.length;
     },
     
+    hasPending: function () {
+      return this._pending.length > 0;
+    },
+    
+    shiftUnread: function () {
+      return this._getNextUnreadText(this._membership.unread_texts, this._threadStack);
+    },
+    
+    unreadCount: function () {
+      return this._membership.no_of_unread;
+    },
+    
+    hasUnread: function () {
+      return this._membership.no_of_unread > 0;
+    },
+    
+    isEmpty: function () {
+      return !(this.hasPending() || this.hasUnread());
+    },
     
     // The algorithm for finding the next unread text
     // ----------------------------------------------
@@ -80,7 +101,7 @@
     },
 
     _getUnreadComments: function (unreadTextNo, unreadTextNos) {
-      return this._textsService.getText(this.conn, unreadTextNo).then(
+      return this._textsService.getText(this._conn, unreadTextNo).then(
         function(text) {
           var comments = _.map(text.comment_in_list, function(comment) {
             return comment.text_no;

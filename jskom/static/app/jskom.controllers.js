@@ -1071,14 +1071,11 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
   controller('UnreadTextsCtrl', [
     '$scope', '$rootScope', '$routeParams', '$log', '$window', '$location', '$q',
     'messagesService', 'textsService', 'pageTitleService', 'keybindingService', 'readerFactory',
-    'sessionsService', 'membershipListService', 'readMarkingsService',
+    'sessionsService', 'membershipListService', 'membershipsService', 'readMarkingsService',
     function($scope, $rootScope, $routeParams, $log, $window, $location, $q,
              messagesService, textsService, pageTitleService, keybindingService, readerFactory,
-             sessionsService, membershipListService, readMarkingsService) {
-      $scope.textIsLoading = false;
-      $scope.text = null;
-      
-      var isScrolledIntoView = function(elem) {
+             sessionsService, membershipListService, membershipsService, readMarkingsService) {
+      function isScrolledIntoView(elem) {
         if (elem) {
           var docViewTop = angular.element($window).scrollTop();
           var docViewBottom = docViewTop + angular.element($window).height();
@@ -1090,7 +1087,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         } else {
           return false;
         }
-      };
+      }
       
       function setText(textPromise) {
         $scope.connection.userIsActive();
@@ -1163,26 +1160,17 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           });
       }
       
-      function hasUnread() {
-        return $scope.membership.no_of_unread > 0;
-      }
-      
-      function isEmpty() {
-        // TODO: rename function
-        return (!$scope.reader.hasPending() && !hasUnread());
-      }
-      
       function showNextText() {
         // This function shouldn't do anything if we don't have any
         // pending or unread texts.
         
         if ($scope.reader.hasPending()) {
           showText($scope.reader.shiftPending());
-        } else if (hasUnread()) {
+        } else if ($scope.reader.hasUnread()) {
           // set is loading here because we're waiting on a text
           // before we get the text number.
           $scope.textIsLoading = true;
-          $scope.reader.shiftUnread($scope.membership.unread_texts).then(function (textNo) {
+          $scope.reader.shiftUnread().then(function (textNo) {
             showText(textNo).then(function(text) {
               text._is_unread = true;
               markAsRead(text);
@@ -1190,6 +1178,75 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           });
         }
       }
+      
+      function getMembership(scope) {
+        if (scope.membershipList != null) {
+          return scope.membershipList.getMembership(scope.confNo);
+        } else {
+          return null;
+        }
+      }
+
+      $scope.textIsLoading = false;
+      $scope.text = null;
+      $scope.confNo = parseInt($routeParams.confNo);
+      $scope.reader = readerFactory.createReader($scope.connection);
+      if ($routeParams.text) {
+        // If we have a text number in the route parameters, add
+        // it to the reader.
+        $scope.reader.unshiftPending($routeParams.text);
+      }
+      
+      
+      membershipsService.getMembership($scope.connection, $scope.confNo).then(
+        function() {
+          $log.log("UnreadTextsCtrl - getMembership(" + $scope.confNo + ") - success");
+          // Don't use the fetched membership because this does not
+          // contain the unread texts.  We only use this to make sure
+          // we're a member of the conference.
+          if ($scope.connection.currentConferenceNo !== $scope.confNo) {
+            sessionsService.changeConference($scope.connection, $scope.confNo);
+          }
+        },
+        function(response) {
+          $log.log("UnreadTextsCtrl - getMembership(" + $scope.confNo + ") - error");
+          messagesService.showMessage('error', 'Failed to get conference membership.',
+                                      response.data, true);
+          $location.url('/');
+        });
+      
+      
+      $scope.membership = null;
+      $scope.membershipList = null;
+      membershipListService.getMembershipList($scope.connection).then(
+        function (membershipList) {
+          $log.log("UnreadTextsCtrl - getMembershipList() - success");
+          $scope.membershipList = membershipList;
+        },
+        function () {
+          $log.log("UnreadTextsCtrl - getMembershipList() - error");
+          messagesService.showMessage('error', 'Failed to get membership list.');
+        });
+      
+      $scope.isLoadingMembership = true;
+      $scope.$watch(getMembership, function (newMembership) {
+        // We $watch the membership because the MembershipList can
+        // return a different object after it has been updated.
+        $scope.membership = newMembership;
+        if ($scope.membership != null) {
+          $scope.reader.setMembership($scope.membership);
+          showNextText();
+          $scope.isLoadingMembership = false;
+        }
+      });
+      
+      pageTitleService.set("");
+      $scope.$watch('reader.unreadCount()', function (newUnreadCount) {
+        if ($scope.membership != null && newUnreadCount != null) {
+          var confName = $scope.membership.conference.conf_name;
+          pageTitleService.set("(" + newUnreadCount + ") " + confName);
+        }
+      });
       
       $rootScope.$on('$routeUpdate', function(event) {
         // We manually clear messages. It is done on route change, but
@@ -1210,74 +1267,13 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       
       $scope.readNext = function() {
         if (!$scope.textIsLoading) {
-          if (!isEmpty()) {
+          if (!$scope.reader.isEmpty()) {
             showNextText();
           } else {
             $location.url('/');
           }
         }
       };
-      
-      function getMembership(scope) {
-        if (scope.membershipList != null) {
-          return scope.membershipList.getMembership(scope.confNo);
-        } else {
-          return null;
-        }
-      }
-      
-      $scope.confNo = parseInt($routeParams.confNo);
-      
-      $scope.reader = readerFactory.createReader($scope.connection);
-      if ($routeParams.text) {
-        // If we have a text number in the route parameters, add
-        // it to the reader.
-        $scope.reader.unshiftPending($routeParams.text);
-      }
-      
-      $scope.membership = null;
-      $scope.membershipList = null;
-      $scope.isLoadingMembership = true;
-      membershipListService.getMembershipList($scope.connection).then(
-        function (membershipList) {
-          $log.log("UnreadTextsCtrl - getMembershipList() - success");
-          $scope.membershipList = membershipList;
-          
-          $scope.membership = $scope.membershipList.getMembership($scope.confNo);
-          if ($scope.membership != null
-              && $scope.connection.currentConferenceNo !== $scope.confNo) {
-              sessionsService.changeConference($scope.connection, $scope.confNo);
-          }
-          // TODO: if we get null, try to fetch the membership from
-          // the server, because membershiplist might not be loaded!
-          // (That also means that we probably want to move
-          // changeConference to the $watch of getMembership().
-          
-          showNextText();
-          
-          $scope.isLoadingMembership = false;
-        },
-        function () {
-          $log.log("UnreadTextsCtrl - getMembershipList() - error");
-          $scope.isLoadingMembership = false;
-          messagesService.showMessage('error', 'Failed to get membership list.');
-        });
-      
-      
-      $scope.$watch(getMembership, function (newMembership) {
-        // We $watch the membership because the MembershipList can
-        // return a different object after it has been updated.
-        $scope.membership = newMembership;
-      });
-      
-      $scope.$watch('membership.no_of_unread', function (newUnreadCount) {
-        if (newUnreadCount != null) {
-          var confName = $scope.membership.conference.conf_name;
-          pageTitleService.set("(" + newUnreadCount + ") " + confName);
-        } else {
-          pageTitleService.set("");
-        }
-      });
       
       
       $scope.showCommented = function() {
