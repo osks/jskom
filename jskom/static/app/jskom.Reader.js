@@ -101,7 +101,9 @@
           });
       }
       
-      prefetch();
+      if (numPrefetchesLeft > 0) {
+        prefetch();
+      }
     },
     
     // The algorithm for finding the next unread text
