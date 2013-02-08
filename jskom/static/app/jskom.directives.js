@@ -251,7 +251,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
         link: function(scope, iElement, iAttrs) {
           scope.$watch('textNo', function(newValue) {
             if (newValue) {
-              scope.href = '/texts/' + newValue;
+              scope.href = '/texts/?text=' + newValue;
             }
           });
           

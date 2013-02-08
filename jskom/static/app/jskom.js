@@ -99,12 +99,12 @@ angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
           templateUrl: templatePathProvider.path('newtext.html'),
           controller: 'NewTextCtrl'
         }).
-        when('/conferences/:confNo/texts/unread/', {
+        when('/conferences/:confNo/texts/', {
           templateUrl: templatePathProvider.path('unreadtexts.html'),
           controller: 'UnreadTextsCtrl',
           reloadOnSearch: false
         }).
-        when('/conferences/:confNo/texts/', {
+        when('/conferences/:confNo/texts/latest/', {
           templateUrl: templatePathProvider.path('listconftexts.html'),
           controller: 'ListConfTextsCtrl'
         }).
@@ -121,8 +121,12 @@ angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
           controller: 'ListMarksCtrl'
         }).
         when('/texts/:textNo', {
+          // :textNo is obsolete (new way uses search) because we need
+          // to change the text without reloading.  We keep it to
+          // handle redirects (see ShowTextCtrl).
           templateUrl: templatePathProvider.path('showtext.html'),
-          controller: 'ShowTextCtrl'
+          controller: 'ShowTextCtrl',
+          reloadOnSearch: false
         }).
         when('/help', {
           templateUrl: templatePathProvider.path('help.html'),

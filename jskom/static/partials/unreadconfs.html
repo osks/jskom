@@ -15,7 +15,7 @@
     <tbody>
       <tr ng-repeat="membership in unreadMemberships | orderBy:['-priority']">
         <td>
-          <a href="/conferences/{{ membership.conference.conf_no }}/texts/unread/">
+          <a href="/conferences/{{ membership.conference.conf_no }}/texts/">
             {{ membership.conference.conf_name }}
           </a>
         </td>

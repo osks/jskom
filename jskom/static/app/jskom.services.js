@@ -953,7 +953,7 @@ angular.module('jskom.services', ['jskom.settings']).
         _enableAutoRefresh: function () {
           $log.log(this._logPrefix + "enabling auto-refresh");
           var self = this;
-          var scheduleReload = function() {
+          function scheduleReload() {
             self._autoRefreshPromise = $timeout(function() {
               self.refreshUnread().then(
                 function() {

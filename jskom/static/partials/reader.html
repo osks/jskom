@@ -1,0 +1,18 @@
+<div ng-controller="TextCtrl" ng-cloak>
+  <div ng-controller="ReaderCtrl">
+    <div ng-controller="TextControlsCtrl">
+      <div ng-show="reader">
+        
+        <jskom:loading ng-show="textIsLoading"></jskom:loading>
+        <div ng-show="text">
+          <ng-include src="'text.html'|jskomTemplate"></ng-include>
+        </div>
+        
+      </div>
+      
+      <div id="jskomControlBar">
+        <ng-include src="'textcontrols.html'|jskomTemplate"></ng-include>
+      </div>
+    </div>
+  </div>
+</div>

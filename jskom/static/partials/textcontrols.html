@@ -102,7 +102,7 @@
   <div class="three mobile-one columns">
     <button type="submit" class="button right"
             ng-show="reader"
-            ng-click="readNext()" ng-disabled="!reader || textIsLoading">
+            ng-click="readNext()" ng-disabled="!canReadNext()">
       <i class="icon-arrow-right"></i>
       <span>
         <!-- Must nest hide-for-small in span because of "display: inherit" -->

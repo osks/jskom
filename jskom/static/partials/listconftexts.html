@@ -48,7 +48,7 @@
         <tbody>
           <tr ng-show="texts.length == 0"><td>No texts</td></tr>
           <tr ng-repeat="text in texts">
-            <td><a href="/texts/{{text.text_no}}">{{ text.text_no }}</a></td>
+            <td><a href="/conferences/{{conf.conf_no}}/texts/?text={{text.text_no}}">{{ text.text_no }}</a></td>
             <td>{{ text.creation_time }}</td>
             <td>
               <a href="/conferences/{{text.author.pers_no}}">
@@ -67,7 +67,7 @@
       
       <div class="six mobile-two columns">
         <a type="submit" class="button right" ng-disabled="conf == null"
-           href="/conferences/{{conf.conf_no}}/texts/unread/">
+           href="/conferences/{{conf.conf_no}}/texts/">
           <i class="icon-arrow-right"></i>
           Read
         </a>
