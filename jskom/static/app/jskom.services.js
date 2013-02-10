@@ -298,15 +298,20 @@ angular.module('jskom.services', ['jskom.settings']).
           var request = { method: 'post', url: '/sessions/current/working-conference',
                           data: { conf_no: confNo }};
           var previousConfNo = conn.currentConferenceNo;
+          conn.currentConferenceNo = confNo; // update pre-request 
           return conn.http(request, true, true).then(
             function (response) {
               $log.log("sessionsService - changeConference(" + confNo + ")");
               // Change conference triggers the lyskom server to
               // update last-time-read for the previous conference.
-              conn.currentConferenceNo = confNo;
+              conn.currentConferenceNo = confNo; // make sure we have the correct conf
               if (previousConfNo !== 0) {
                 conn.broadcast('jskom:membership:changed:', previousConfNo);
               }
+            },
+            function (response) {
+              conn.currentConferenceNo = previousConfNo; // revert if request failed
+              return $q.reject(response);
             });
         }
       };
