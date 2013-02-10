@@ -1219,9 +1219,11 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         // show text and mark it as read
         
         return showText(textNo).then(function (text) {
-          if (text.jskomIsUnread) {
-            markAsRead(text);
-          }
+          // Always mark as read, even if text.jskomIsUnread is false
+          // before. Also set jskomIsUnread = true. We assume that the
+          // callee knows best about if this text was unread or not.
+          text.jskomIsUnread = true;
+          markAsRead(text);
           return text;
         });
       }
