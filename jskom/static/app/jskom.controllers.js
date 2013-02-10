@@ -694,7 +694,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
     '$scope', '$log',
     'marksService', 'messagesService',
     function($scope, $log, marksService, messagesService) {
-      $scope.markType = 0;
+      $scope.markType = 100;
       $scope.isMarking = false;
       
       var markText = function(textNo, markType) {
