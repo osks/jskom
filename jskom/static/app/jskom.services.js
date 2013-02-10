@@ -357,6 +357,7 @@ angular.module('jskom.services', ['jskom.settings']).
               function(response) {
                 $log.log("textsService - getText(" + textNo + ") - success");
                 response.data = enhanceText(conn, response.data);
+                conn.broadcast('jskom:text:fetched', response.data);
                 deferred.resolve(response.data);
               },
               function(response) {
@@ -385,6 +386,12 @@ angular.module('jskom.services', ['jskom.settings']).
               // text numbers (which would be nice to have anyway, for
               // example in Reader prefetch). Then we only have to do
               // at most 2 request even without anything in the cache.
+              
+              _.each(response.data, function (text) {
+                // not sure if we want to do this. the texts here are
+                // not "full" texts right now.
+                conn.broadcast('jskom:text:fetched', text);
+              });
               return response.data;
             });
         },
@@ -848,11 +855,19 @@ angular.module('jskom.services', ['jskom.settings']).
           });
           
           conn.on('jskom:text:created', function ($event, textNo, recipientList) {
-            $log.log(self._logPrefix + 'on(jskom:text:created)');
+            $log.log(self._logPrefix + 'on(jskom:text:created, ' + textNo + ')');
             var recipientConfNos = _.map(recipientList, function (r) {
               return r.recpt.conf_no;
             });
             self._membershipList.markTextAsUnread(textNo, recipientConfNos);
+          });
+          
+          conn.on('jskom:text:fetched', function ($event, text) {
+            $log.log(self._logPrefix + 'on(jskom:text:fetched, ' + text.text_no + ')');
+            var recipientConfNos = _.map(text.recipient_list, function (r) {
+              return r.recpt.conf_no;
+            });
+            text.jskomIsUnread = self._membershipList.isTextUnread(text.text_no, recipientConfNos);
           });
         },
         
