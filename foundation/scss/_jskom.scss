@@ -283,3 +283,14 @@ nav.sidebar {
         }
     }
 }
+
+
+i.icon-unread {
+    font-size: 60%; /* ~8px - not sure if we want % or px */
+    color: $mainColor;
+    vertical-align: middle;
+    
+    &:before {
+        content: "\f111";
+    }
+}

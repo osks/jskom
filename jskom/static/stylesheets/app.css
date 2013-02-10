@@ -5332,3 +5332,15 @@ nav.sidebar .tabs.vertical li.unread.membership a.unread-count {
   padding-right: 5px;
   min-width: 60px;
 }
+
+/* line 288, ../../../foundation/scss/_jskom.scss */
+i.icon-unread {
+  font-size: 60%;
+  /* ~8px - not sure if we want % or px */
+  color: #2ba6cb;
+  vertical-align: middle;
+}
+/* line 293, ../../../foundation/scss/_jskom.scss */
+i.icon-unread:before {
+  content: "\f111";
+}

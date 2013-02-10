@@ -40,6 +40,7 @@
       <table class="twelve" ng-hide="texts == null">
         <thead>
           <tr>
+            <th></th>
             <th>Text number</th>
             <th>Date</th>
             <th>Author</th>
@@ -48,7 +49,15 @@
         <tbody>
           <tr ng-show="texts.length == 0"><td>No texts</td></tr>
           <tr ng-repeat="text in texts">
-            <td><a href="/conferences/{{conf.conf_no}}/texts/?text={{text.text_no}}">{{ text.text_no }}</a></td>
+            <td>
+              <!--<span class="round label" ng-show="text.jskomIsUnread == true">Unread</span>-->
+              <i class="icon-unread" ng-show="text.jskomIsUnread == true"></i>
+            </td>
+            <td>
+              <a href="/conferences/{{conf.conf_no}}/texts/?text={{text.text_no}}">
+                {{ text.text_no }}
+              </a>
+            </td>
             <td>{{ text.creation_time }}</td>
             <td>
               <a href="/conferences/{{text.author.pers_no}}">
