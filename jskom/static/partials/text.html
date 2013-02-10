@@ -92,11 +92,10 @@
     
     <div class="three mobile-one columns">
       <div class="jskomRight">
-        <span  ng-show="text.jskomIsUnread == true">
-          <i class="icon-unread"></i>
-          <span class="secondary label">Unread</span>
+        <span ng-show="text.text_no|isUnread:membership">
+          <span class="secondary label"><i class="icon-unread"></i> Unread</span>
         </span>
-        <span class="success label" ng-show="text.jskomIsUnread == false">Read</span>
+        <span class="success label" ng-hide="text.text_no|isUnread:membership">Read</span>
       </div>
       <div style="clear: both;">&nbsp;</div>
     </div>

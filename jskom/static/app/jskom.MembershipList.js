@@ -97,24 +97,6 @@
       }
     },
     
-    isTextUnread: function (textNo, recipientConfNos) {
-      var isUnread = false;
-      if (this._membershipUnreadsMap != null) {
-        var self = this;
-        _.each(recipientConfNos, function(confNo) {
-          var mu = self._membershipUnreadsMap[confNo];
-          if (mu != null) {
-            var idx = mu.unread_texts.indexOf(textNo);
-            if (idx !== -1) {
-              isUnread = true;
-            }
-          }
-        });
-      }
-      
-      return isUnread;
-    },
-    
     markTextAsRead: function (textNo, recipientConfNos) {
       // Since memberships are update from membershipUnreads, we
       // only update membershipUnreads and then run

@@ -50,8 +50,7 @@
           <tr ng-show="texts.length == 0"><td>No texts</td></tr>
           <tr ng-repeat="text in texts">
             <td>
-              <!--<span class="round label" ng-show="text.jskomIsUnread == true">Unread</span>-->
-              <i class="icon-unread" ng-show="text.jskomIsUnread == true"></i>
+              <i class="icon-unread" ng-show="text.text_no|isUnread:membership"></i>
             </td>
             <td>
               <a href="/conferences/{{conf.conf_no}}/texts/?text={{text.text_no}}">
@@ -75,7 +74,7 @@
       <div class="six mobile-two columns"></div>
       
       <div class="six mobile-two columns">
-        <a type="submit" class="button right" ng-disabled="conf == null"
+        <a type="submit" class="button right" ng-disabled="conf == null || membership == null "
            href="/conferences/{{conf.conf_no}}/texts/">
           <i class="icon-arrow-right"></i>
           Read

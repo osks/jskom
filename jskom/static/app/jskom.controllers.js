@@ -836,15 +836,11 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
   controller('ListConfTextsCtrl', [
     '$scope', '$routeParams', '$log', '$location',
     'pageTitleService', 'conferencesService', 'messagesService', 'textsService',
-    'keybindingService',
+    'keybindingService', 'membershipListService',
     function($scope, $routeParams, $log, $location,
              pageTitleService, conferencesService, messagesService, textsService,
-             keybindingService) {
-      $scope.conf = null;
-      $scope.isLoadingTexts = false;
-      $scope.texts = null;
-      
-      var getLastTexts = function (confNo) {
+             keybindingService, membershipListService) {
+      function getLastTexts(confNo) {
         $scope.isLoadingTexts = true;
         textsService.getLastCreatedTextsInConference($scope.connection, confNo).then(
           function (texts) {
@@ -856,20 +852,43 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             $log.log("ListConfTextsCtrl - getLastCreatedTextsInConference() - error");
             $scope.isLoadingTexts = false;
           });
-      };
+      }
       
-      conferencesService.getConference($scope.connection, $routeParams.confNo).then(
-        function(conference) {
-          $log.log("ListConfTextsCtrl - getConference(" + $routeParams.confNo + ") - success");
-          $scope.conf = conference;
-          pageTitleService.set("Last texts in " + $scope.conf.name);
-          getLastTexts($scope.conf.conf_no);
-        },
-        function(response) {
-          $log.log("ListConfTextsCtrl - getConference(" + $routeParams.confNo + ") - error");
-          messagesService.showMessage('error', 'Failed to get conference.', response.data);
-          pageTitleService.set("");
-        });
+      function getMembership(confNo) {
+        membershipListService.getMembershipList($scope.connection).then(
+          function (membershipList) {
+            $log.log("ListConfTextsCtrl - getMembershipList() - success");
+            $scope.membership = membershipList.getMembership(confNo);
+          },
+          function () {
+            $log.log("ListConfTextsCtrl - getMembershipList() - error");
+            messagesService.showMessage('error', 'Failed to get membership list.');
+          });
+      }
+      
+      function getConference(confNo) {
+        pageTitleService.set("");
+        conferencesService.getConference($scope.connection, confNo).then(
+          function(conference) {
+            $log.log("ListConfTextsCtrl - getConference(" + confNo + ") - success");
+            $scope.conf = conference;
+            pageTitleService.set("Last texts in " + $scope.conf.name);
+            getLastTexts($scope.conf.conf_no);
+          },
+          function(response) {
+            $log.log("ListConfTextsCtrl - getConference(" + confNo + ") - error");
+            messagesService.showMessage('error', 'Failed to get conference.', response.data);
+          });
+      }
+      
+      $scope.confNo = $routeParams.confNo;
+      $scope.conf = null;
+      $scope.isLoadingTexts = false;
+      $scope.texts = null;
+      getConference($scope.confNo);
+      
+      $scope.membership = null;
+      getMembership($scope.confNo);
       
       keybindingService.bindPageSpecific('space', 'Read conference', function(e) {
         if ($scope.conf != null) {
@@ -1211,10 +1230,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         // show text and mark it as read
         
         return showText(textNo).then(function (text) {
-          // Always mark as read, even if text.jskomIsUnread is false
-          // before. Also set jskomIsUnread = true. We assume that the
-          // callee knows best about if this text was unread or not.
-          text.jskomIsUnread = true;
+          // TODO: Check if text is unread before marking as read?
           markAsRead(text);
           return text;
         });

@@ -72,13 +72,13 @@
         <li class="divider"></li>
         <li>
           <button ng-click="markAsRead()"
-                  ng-disabled="readmarkIsLoading || text.jskomIsUnread == false">
+                  ng-disabled="readmarkIsLoading || !(text.text_no|isUnread:membership)">
             Mark as read
           </button>
         </li>
         <li>
           <button ng-click="markAsUnread()"
-                  ng-disabled="readmarkIsLoading || text.jskomIsUnread == true">
+                  ng-disabled="readmarkIsLoading || text.text_no|isUnread:membership">
             Mark as unread
           </button>
         </li>

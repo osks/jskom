@@ -87,4 +87,20 @@ angular.module('jskom.filters', ['jskom.templates']).
         }
       };
     }
+  ]).
+  filter('isUnread', [
+    '$log',
+    function ($log) {
+      return function (textNo, membership) {
+        if (membership != null && membership.unread_texts != null) {
+          if (membership.unread_texts.indexOf(parseInt(textNo, 10)) !== -1) {
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      };
+    }
   ]);
