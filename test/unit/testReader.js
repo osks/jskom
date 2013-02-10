@@ -3,10 +3,11 @@
 suite('Reader', function () {
   //setup(module('jskom.services'));
   
-  var _reader, _getTextDeferred, _textsServiceStub, _$rootScope, _$q;
+  var _reader, _getTextDeferred, _textsServiceStub, _$rootScope, _$q, _$log;
   setup(inject(function ($rootScope, $q, $log) {
     _$rootScope = $rootScope;
     _$q = $q;
+    _$log = $log;
     
     _getTextDeferred = $q.defer();
     _textsServiceStub = {
@@ -16,7 +17,7 @@ suite('Reader', function () {
     
     // Right now we don't test anything that uses anything other than
     // the textsService, so we just give it nulls instead for now.
-    _reader = new jskom.Reader(_$q, _textsServiceStub,
+    _reader = new jskom.Reader(_$log, _$q, _textsServiceStub,
                                null /*conn*/, null /*unreadQueue*/);
   }));
   
