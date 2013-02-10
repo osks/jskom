@@ -834,6 +834,7 @@ angular.module('jskom.services', ['jskom.settings']).
               return r.recpt.conf_no;
             });
             self._membershipList.markTextAsRead(text.text_no, recipientConfNos);
+            text.jskomIsUnread = false;
           });
           
           conn.on('jskom:readMarking:deleted', function ($event, text) {
@@ -842,6 +843,7 @@ angular.module('jskom.services', ['jskom.settings']).
               return r.recpt.conf_no;
             });
             self._membershipList.markTextAsUnread(text.text_no, recipientConfNos);
+            text.jskomIsUnread = true;
           });
           
           conn.on('jskom:membership:changed', function ($event, confNo) {

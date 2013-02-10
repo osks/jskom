@@ -608,7 +608,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           function() {
             $log.log("TextControlsCtrl - markAsRead(" + text.text_no + ") - success");
             $scope.readmarkIsLoading = false;
-            text.jskomIsUnread = false;
           },
           function(response) {
             $log.log("TextControlsCtrl - markAsRead(" + text.text_no + ") - error");
@@ -625,7 +624,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           function() {
             $log.log("TextControlsCtrl - markAsUnread(" + text.text_no + ") - success");
             $scope.readmarkIsLoading = false;
-            text.jskomIsUnread = true;
           },
           function(response) {
             $log.log("TextControlsCtrl - markAsUnread(" + text.text_no + ") - error");
@@ -1186,8 +1184,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         $scope.connection.broadcast('jskom:readMarking:created', text);
         readMarkingsService.createGlobalReadMarking($scope.connection, text).then(
           function() {
-            $log.log("ReaderCtrl - markAsRead(" + text.text_no + ") - success");
-            text.jskomIsUnread = false;
+            //$log.log("ReaderCtrl - markAsRead(" + text.text_no + ") - success");
           },
           function(response) {
             $log.log("ReaderCtrl - markAsRead(" + text.text_no + ") - error");
