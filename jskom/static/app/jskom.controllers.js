@@ -1016,7 +1016,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       }
       
       $scope.reader = readerFactory.createReader($scope.connection);
-
+      
       pageTitleService.set("Text " + $scope.textNo);
       $rootScope.$on('$routeUpdate', function($event) {
         $scope.textNo = $location.search().text;
@@ -1133,10 +1133,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
     }
   ]).
   controller('ReaderCtrl', [
-    '$scope', '$rootScope', '$routeParams', '$log', '$window', '$location',
+    '$scope', '$rootScope', '$routeParams', '$log', '$window', '$location', '$q',
     'messagesService', 'textsService', 'keybindingService', 'readerFactory',
     'sessionsService', 'membershipListService', 'readMarkingsService',
-    function($scope, $rootScope, $routeParams, $log, $window, $location,
+    function($scope, $rootScope, $routeParams, $log, $window, $location, $q,
              messagesService, textsService, keybindingService, readerFactory,
              sessionsService, membershipListService, readMarkingsService) {
       function isScrolledIntoView(elem) {
@@ -1193,26 +1193,9 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           });
       }
       
-      function showNextText() {
-        // This function shouldn't do anything if we don't have any
-        // pending or unread texts.
-        $scope.readerTextIsLoading = false;
-        if ($scope.reader.hasPending()) {
-          showText($scope.reader.shiftPending());
-        } else if ($scope.reader.hasUnread()) {
-          // set is loading here because we're waiting on a text
-          // before we get the text number.
-          $scope.readerTextIsLoading = true;
-          $scope.reader.shiftUnread().then(function (textNo) {
-            showText(textNo).then(function(text) {
-              $scope.readerTextIsLoading = false;
-              markAsRead(text);
-            });
-          });
-        }
-      }
-      
       function showText(textNo) {
+        // show text
+        
         $scope.connection.userIsActive();
         
         return $scope.showText(textNo).then(
@@ -1228,9 +1211,38 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
               }
               $location.search('text', text.text_no);
             }
-            
             return text;
           });
+      }
+      
+      function readText(textNo) {
+        // show text and mark it as read
+        
+        return showText(textNo).then(function (text) {
+          if (text.jskomIsUnread) {
+            markAsRead(text);
+          }
+          return text;
+        });
+      }
+      
+      function showNextText() {
+        // This function shouldn't do anything if we don't have any
+        // pending or unread texts.
+        
+        $scope.readerTextIsLoading = false;
+        if ($scope.reader.hasPending()) {
+          showText($scope.reader.shiftPending());
+        } else if ($scope.reader.hasUnread()) {
+          // set is loading here because we're waiting on a text
+          // before we get the text number.
+          $scope.readerTextIsLoading = true;
+          $scope.reader.shiftUnread().then(function (textNo) {
+            readText(textNo).then(function (text) {
+              $scope.readerTextIsLoading = false;
+            });
+          });
+        }
       }
       
       $rootScope.$on('$routeUpdate', function(event) {
@@ -1278,12 +1290,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         showText(textNo);
       });
       
-      if ($routeParams.text) {
-        // If we have a text number in the route parameters, add
-        // it to the reader.
-        $scope.reader.unshiftPending($routeParams.text);
-      }
-      
       $scope.canReadNext = function () {
         // Called to check if $scope.readNext() can be called or not.
         if ($scope.$parent.canReadNext != null) {
@@ -1312,14 +1318,32 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       };
       
-      // fixme: this check doesn't feel good. what can we do instead?
       var hasInitialized = false;
-      $scope.$watch('reader.isEmpty()', function (isEmpty) {
-        if (!hasInitialized && !isEmpty) {
-          hasInitialized = true;
-          showNextText();
-        }
-      });
+      if ($routeParams.text) {
+        // If we have a text number in the route parameters, add it to
+        // the reader. We want to read this text rather than just show
+        // it.
+        readText($routeParams.text);
+        hasInitialized = true;
+      } else {
+        // fixme: this initialization isn't nice. what can we do instead?
+        // 
+        // The reason why we do this is because we don't know when the
+        // parent controller has set the membership for the reader.
+        // The pending text (if any) is available directly, but not
+        // the membership, so if we should start with a new unread
+        // text, we don't know when.
+        // 
+        // Perhaps the parent shouldn't give us the reader until it
+        // has set the membership? Then we could $watch $scope.reader
+        // instead.
+        $scope.$watch('reader.isEmpty()', function (isEmpty) {
+          if (!hasInitialized && !isEmpty) {
+            hasInitialized = true;
+            showNextText();
+          }
+        });
+      }
       
       $scope.showCommented = function() {
         $log.log('ReaderCtrl - showCommented()');
@@ -1331,7 +1355,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             }));
 
           if ($scope.reader.hasPending()) {
-            showText($scope.reader.shiftPending());
+            showNextText();
           }
         }
       };
@@ -1346,7 +1370,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             }));
           
           if ($scope.reader.hasPending()) {
-            showText($scope.reader.shiftPending());
+            showNextText();
           }
         }
       };

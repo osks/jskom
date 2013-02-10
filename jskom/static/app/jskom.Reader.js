@@ -13,7 +13,7 @@
     this._pending = [];
     this._threadStack = [];
     
-    this._numPrefetches = 7;
+    this._numPrefetches = 5;
   };
   
   _.extend(Reader.prototype, {
