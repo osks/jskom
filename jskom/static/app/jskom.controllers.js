@@ -853,7 +853,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             $log.log("ListConfTextsCtrl - getLastCreatedTextsInConference() - success");
             $scope.isLoadingTexts = false;
             $scope.texts = texts;
-            $scope.texts.reverse();
           },
           function (response) {
             $log.log("ListConfTextsCtrl - getLastCreatedTextsInConference() - error");
