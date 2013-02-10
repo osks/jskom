@@ -876,7 +876,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       keybindingService.bindPageSpecific('space', 'Read conference', function(e) {
         if ($scope.conf != null) {
           $scope.$apply(function() {
-            $location.path('/conferences/' + parseInt($scope.conf.conf_no) + "/texts/unread/");
+            $location.path('/conferences/' + parseInt($scope.conf.conf_no) + "/texts/");
           });
         }
         return false;
