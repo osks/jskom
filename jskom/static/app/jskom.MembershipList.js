@@ -97,7 +97,7 @@
       }
     },
     
-    markTextAsRead: function (text) {
+    markTextAsRead: function (textNo, recipientConfNos) {
       // Since memberships are update from membershipUnreads, we
       // only update membershipUnreads and then run
       // _update(). Possible not as fast, but much easier than
@@ -105,10 +105,10 @@
       var shouldUpdate = false;
       var self = this;
       if (self._membershipUnreadsMap != null) {
-        _.each(text.recipient_list, function(recipient) {
-          var mu = self._membershipUnreadsMap[recipient.recpt.conf_no];
+        _.each(recipientConfNos, function(confNo) {
+          var mu = self._membershipUnreadsMap[confNo];
           if (mu != null) {
-            var idx = mu.unread_texts.indexOf(text.text_no);
+            var idx = mu.unread_texts.indexOf(textNo);
             if (idx !== -1) {
               mu.unread_texts.splice(idx, 1);
               mu.no_of_unread -= 1;
@@ -123,7 +123,7 @@
       }
     },
     
-    markTextAsUnread: function (text) {
+    markTextAsUnread: function (textNo, recipientConfNos) {
       // Since memberships are update from membershipUnreads, we
       // only update membershipUnreads and then run
       // _update(). Possible not as fast, but much easier than
@@ -131,12 +131,12 @@
       var shouldUpdate = false;
       var self = this;
       if (self._membershipUnreadsMap != null) {
-        _.each(text.recipient_list, function(recipient) {
-          var mu = self._membershipUnreadsMap[recipient.recpt.conf_no];
+        _.each(recipientConfNos, function(confNo) {
+          var mu = self._membershipUnreadsMap[confNo];
           if (mu != null) {
-            var idx = mu.unread_texts.indexOf(text.text_no);
+            var idx = mu.unread_texts.indexOf(textNo);
             if (idx === -1) {
-              mu.unread_texts.push(text.text_no);
+              mu.unread_texts.push(textNo);
               mu.no_of_unread += 1;
             shouldUpdate = true; // We change something, so we need to run update
             }

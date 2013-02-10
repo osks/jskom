@@ -394,7 +394,7 @@ angular.module('jskom.services', ['jskom.settings']).
                 // comment_in_list.
                 conn.textsCache.remove(commentedText.text_no.toString());
               });
-              conn.broadcast('jskom:text:created', response.data.text_no);
+              conn.broadcast('jskom:text:created', response.data.text_no, text.recipient_list);
               return response.data;
             });
         },
@@ -752,8 +752,8 @@ angular.module('jskom.services', ['jskom.settings']).
     }    
   ]).
   factory('membershipListHandlerFactory', [
-    '$log', '$q', '$timeout', '$rootScope', 'membershipsService', 'textsService',
-    function($log, $q, $timeout, $rootScope, membershipsService, textsService) {
+    '$log', '$q', '$timeout', '$rootScope', 'membershipsService',
+    function($log, $q, $timeout, $rootScope, membershipsService) {
       // The MembershipListHandler regularly polls the server for any
       // new unread texts/memberships and upates the membership
       // list. The handling parts include updating the list of
@@ -818,12 +818,18 @@ angular.module('jskom.services', ['jskom.settings']).
           
           conn.on('jskom:readMarking:created', function ($event, text) {
             $log.log(self._logPrefix + 'on(jskom:readMarking:created)');
-            self._membershipList.markTextAsRead(text);
+            var recipientConfNos = _.map(text.recipient_list, function (r) {
+              return r.recpt.conf_no;
+            });
+            self._membershipList.markTextAsRead(text.text_no, recipientConfNos);
           });
           
           conn.on('jskom:readMarking:deleted', function ($event, text) {
             $log.log(self._logPrefix + 'on(jskom:readMarking:deleted)');
-            self._membershipList.markTextAsUnread(text);
+            var recipientConfNos = _.map(text.recipient_list, function (r) {
+              return r.recpt.conf_no;
+            });
+            self._membershipList.markTextAsUnread(text.text_no, recipientConfNos);
           });
           
           conn.on('jskom:membership:changed', function ($event, confNo) {
@@ -836,11 +842,12 @@ angular.module('jskom.services', ['jskom.settings']).
             self._fetchMembershipUnread(confNo);
           });
           
-          conn.on('jskom:text:created', function ($event, textNo) {
+          conn.on('jskom:text:created', function ($event, textNo, recipientList) {
             $log.log(self._logPrefix + 'on(jskom:text:created)');
-            textsService.getText(self._conn, textNo).then(function (text) {
-              self._membershipList.markTextAsUnread(text);
+            var recipientConfNos = _.map(recipientList, function (r) {
+              return r.recpt.conf_no;
             });
+            self._membershipList.markTextAsUnread(textNo, recipientConfNos);
           });
         },
         
