@@ -14,7 +14,7 @@
       
       <tr ng-repeat="mark in marks | startFrom:currentPage*pageSize | limitTo:pageSize">
         <td>{{mark.type}}</td>
-        <td><a href="/texts/{{mark.text_no}}">{{mark.text_no}}</a></td>
+        <td><a href="/texts/?text={{mark.text_no}}">{{mark.text_no}}</a></td>
       </tr>
     </tbody>
   </table>

@@ -120,10 +120,7 @@ angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
           templateUrl: templatePathProvider.path('listmarks.html'),
           controller: 'ListMarksCtrl'
         }).
-        when('/texts/:textNo', {
-          // :textNo is obsolete (new way uses search) because we need
-          // to change the text without reloading.  We keep it to
-          // handle redirects (see ShowTextCtrl).
+        when('/texts/', {
           templateUrl: templatePathProvider.path('showtext.html'),
           controller: 'ReadTextsCtrl',
           reloadOnSearch: false

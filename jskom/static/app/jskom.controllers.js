@@ -1006,15 +1006,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
     'readerFactory', 'textsService', 'messagesService', 'pageTitleService',
     function($scope, $rootScope, $routeParams, $location, $log, $window,
              readerFactory, textsService, messagesService, pageTitleService) {
-      // Handle old URL format and redirect from /texts/:textNo to
-      // /texts/?text=:textNo
-      if ($routeParams.textNo != null && $routeParams.textNo !== "") {
-        $location.url("/texts/?text=" + $routeParams.textNo);
-        $location.replace();
-      } else {
-        $scope.textNo = $location.search().text;
-      }
-      
+      $scope.textNo = $location.search().text;
       $scope.reader = readerFactory.createReader($scope.connection);
       
       pageTitleService.set("Text " + $scope.textNo);
