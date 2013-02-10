@@ -1,10 +1,8 @@
 <jskom:loading ng-show="isLoadingMembership"></jskom:loading>
 <div ng-hide="isLoadingMembership" ng-cloak>
   <h2 class="jskomNoWrap">
-    {{ membership.no_of_unread }} unread in
-    <a href="/conferences/{{membership.conference.conf_no}}">
-      {{ membership.conference|confName }}
-    </a>
+    <span ng-hide="membership == null">{{ membership.no_of_unread }} unread in</span>
+    <a href="/conferences/{{conf.conf_no}}">{{ conf.name }}</a>
   </h2>
   
   <ng-include src="'reader.html'|jskomTemplate"></ng-include>

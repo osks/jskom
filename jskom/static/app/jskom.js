@@ -101,7 +101,7 @@ angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
         }).
         when('/conferences/:confNo/texts/', {
           templateUrl: templatePathProvider.path('unreadtexts.html'),
-          controller: 'UnreadTextsCtrl',
+          controller: 'ReadConferenceTextsCtrl',
           reloadOnSearch: false
         }).
         when('/conferences/:confNo/texts/latest/', {
@@ -125,7 +125,7 @@ angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
           // to change the text without reloading.  We keep it to
           // handle redirects (see ShowTextCtrl).
           templateUrl: templatePathProvider.path('showtext.html'),
-          controller: 'ShowTextCtrl',
+          controller: 'ReadTextsCtrl',
           reloadOnSearch: false
         }).
         when('/help', {

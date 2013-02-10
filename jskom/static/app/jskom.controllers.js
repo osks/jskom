@@ -1004,7 +1004,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         });
     }
   ]).
-  controller('ShowTextCtrl', [
+  controller('ReadTextsCtrl', [
     '$scope', '$rootScope', '$routeParams', '$location', '$log', '$window',
     'readerFactory', 'textsService', 'messagesService', 'pageTitleService',
     function($scope, $rootScope, $routeParams, $location, $log, $window,
@@ -1040,13 +1040,13 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       };
     }
   ]).
-  controller('UnreadTextsCtrl', [
+  controller('ReadConferenceTextsCtrl', [
     '$scope', '$rootScope', '$routeParams', '$log', '$window', '$location', '$q',
     'messagesService', 'textsService', 'pageTitleService', 'keybindingService', 'readerFactory',
-    'sessionsService', 'membershipListService', 'membershipsService', 'readMarkingsService',
+    'sessionsService', 'membershipListService', 'membershipsService', 'conferencesService',
     function($scope, $rootScope, $routeParams, $log, $window, $location, $q,
              messagesService, textsService, pageTitleService, keybindingService, readerFactory,
-             sessionsService, membershipListService, membershipsService, readMarkingsService) {
+             sessionsService, membershipListService, membershipsService, conferencesService) {
       function getMembership(scope) {
         if (scope.membershipList != null) {
           return scope.membershipList.getMembership(scope.confNo);
@@ -1061,73 +1061,68 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       }
       
-      function getMembershipFromService() {
-        return membershipsService.getMembership($scope.connection, $scope.confNo).then(
-          function() {
-            $log.log("UnreadTextsCtrl - getMembership(" + $scope.confNo + ") - success");
-            // Don't use the fetched membership because this does not
-            // contain the unread texts.  We only use this to make sure
-            // we're a member of the conference.
-          },
-          function(response) {
-            $log.log("UnreadTextsCtrl - getMembership(" + $scope.confNo + ") - error");
-            messagesService.showMessage('error', 'Failed to get conference membership.',
-                                        response.data, true);
-            $location.url('/');
-          });
+      function getConference(confNo) {
+        conferencesService.getConference($scope.connection, confNo).then(
+          function(conference) {
+          $log.log("UnreadTextsCtrl - getConference(" + confNo + ") - success");
+          $scope.conf = conference;
+        },
+        function(response) {
+          $log.log("UnreadTextsCtrl - getConference(" + confNo + ") - error");
+          messagesService.showMessage('error', 'Failed to get conference.', response.data);
+        });
+      }
+      
+      function setPageTitle() {
+        if ($scope.conf != null && $scope.reader != null) {
+          pageTitleService.set("(" + $scope.reader.unreadCount() + ") " + $scope.conf.name);
+        }
       }
       
       $scope.confNo = parseInt($routeParams.confNo);
-      $scope.reader = readerFactory.createReader($scope.connection);
+      $scope.conf = null;
+      getConference($scope.confNo);
       
+      $scope.reader = readerFactory.createReader($scope.connection);
+        
       $scope.membership = null;
       $scope.membershipList = null;
+      $scope.isLoadingMembership = true;
       membershipListService.getMembershipList($scope.connection).then(
         function (membershipList) {
           $log.log("UnreadTextsCtrl - getMembershipList() - success");
           $scope.membershipList = membershipList;
-          
-          // Because the MembershipList cannot guarantee to be
-          // updated, we have no idea if the user is a member of this
-          // conference or not if membershipList.getMembership(..)
-          // returns null.  To find out, we call fetch the membership
-          // from the server in that case. We could probably improve
-          // the MembershipList somehow to handle this case.
-          if (membershipList.getMembership($scope.confNo) == null) {
-            getMembershipFromService().then(function () {
-              changeConference();
-            });
-          } else {
-            changeConference();
-          }
+          $scope.isLoadingMembership = false;
         },
         function () {
           $log.log("UnreadTextsCtrl - getMembershipList() - error");
           messagesService.showMessage('error', 'Failed to get membership list.');
         });
       
-      $scope.isLoadingMembership = true;
       $scope.$watch(getMembership, function (newMembership) {
         // We $watch the membership because the MembershipList can
         // return a different object after it has been updated.
         $scope.membership = newMembership;
         if ($scope.membership != null) {
           $scope.reader.setMembership($scope.membership);
-          //showNextText();
-          $scope.isLoadingMembership = false;
+          changeConference();
         }
       });
       
       pageTitleService.set("");
-      $scope.$watch('reader.unreadCount()', function (newUnreadCount) {
-        if ($scope.membership != null && newUnreadCount != null) {
-          var confName = $scope.membership.conference.conf_name;
-          pageTitleService.set("(" + newUnreadCount + ") " + confName);
-        }
+      $scope.$watch('conf', function () {
+        setPageTitle();
+      });
+      $scope.$watch('reader.unreadCount()', function () {
+        setPageTitle();
       });
       
       $scope.canReadNext = function () {
-        return $scope.reader != null;
+        if ($scope.membership == null) {
+          return $scope.reader != null && $scope.reader.hasPending();
+        } else {
+          return $scope.reader != null;
+        }
       };
       
       $scope.preReadNextCheck = function () {
