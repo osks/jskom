@@ -30,6 +30,11 @@
 <div id="jskomControlBar">
   <div class="row">
     <div class="three mobile-one columns">
+      <button class="secondary button"
+              ng-disabled="isRefreshing" ng-click="refreshUnread()">
+        <i ng-hide="isRefreshing" class="icon-repeat"></i>
+        <i ng-show="isRefreshing" class="icon-spinner icon-spin"></i>
+      </button>
     </div>
     
     <div class="three mobile-one columns"></div>
