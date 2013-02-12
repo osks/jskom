@@ -53,17 +53,30 @@
       </div>
       
       <div ng-switch-when="true">
-        <div class="row">
-          <div id="jskomContent" class="nine columns push-three">
-            <ng-include src="'keybindinghelp.html'|jskomTemplate"></ng-include>
-            <ng-include src="'messages.html'|jskomTemplate"></ng-include>
-            <ng-view></ng-view>
-            
-          </div>
+        <div class="row" ng-controller="MembershipsCtrl">
+          <!-- Since so many controllers rely on the membershipList,
+          we use ng-switch to not render the rest when the
+          membershipList is null. -->
           
-          <div class="three columns pull-nine hide-for-small">
-            <ng-include src="'sidebar.html'|jskomTemplate"></ng-include>
-          </div>
+          <ng-switch on="membershipList != null">
+            <div ng-switch-default>
+              <jskom:loading ng-show="true"></jskom:loading>
+            </div>
+            
+            <div ng-switch-when="true">
+              <div id="jskomContent" class="nine columns push-three">
+                <ng-include src="'keybindinghelp.html'|jskomTemplate"></ng-include>
+                <ng-include src="'messages.html'|jskomTemplate"></ng-include>
+                <ng-view></ng-view>
+                
+              </div>
+              
+              <div class="three columns pull-nine hide-for-small">
+                <ng-include src="'sidebar.html'|jskomTemplate"></ng-include>
+              </div>
+            </div>
+          </ng-switch>
+          
         </div>
       </div>
       

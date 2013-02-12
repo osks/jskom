@@ -34,41 +34,70 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       });
     }
   ]).
-  controller('SidebarCtrl', [
+  controller('MembershipsCtrl', [
     '$scope', '$log', '$routeParams',
     'messagesService', 'keybindingService', 'membershipListService',
     function($scope, $log, $routeParams,
              messagesService, keybindingService, membershipListService) {
       $scope.membershipList = null;
-      $scope.readMemberships = null;
-      $scope.unreadMemberships = null;
+      
+      $scope.$watch('connection', function (newConnection) {
+        $scope.membershipList = null;
+        
+        if (newConnection != null) {
+          membershipListService.getMembershipList($scope.connection).then(
+            function (membershipList) {
+              $log.log("MembershipsCtrl - getMembershipList() - success");
+              $scope.membershipList = membershipList;
+            },
+            function () {
+              $log.log("MembershipsCtrl - getMembershipList() - error");
+              $scope.membershipList = null;
+            });
+        }
+      });
+      
+      $scope.isRefreshing = false;
+      $scope.refreshUnread = function() {
+        if ($scope.membershipList != null && !$scope.isRefreshing) {
+          $scope.isRefreshing = true;
+          $scope.connection.userIsActive();
+          membershipListService.refreshUnread($scope.connection).then(
+            function () { $scope.isRefreshing = false; },
+            function () { $scope.isRefreshing = false; });
+        }
+      };
+      
+      
+      keybindingService.bindGeneral('R', 'Refresh unread texts', function(e) {
+        $scope.$apply(function() {
+          $scope.refreshUnread();
+        });
+        return false;
+      });
+
+    }    
+  ]).
+  controller('SidebarCtrl', [
+    '$scope', '$log', '$routeParams', 'messagesService',
+    function($scope, $log, $routeParams, messagesService) {
       $scope.currentConfNo = null;
       
       $scope.$watch(function() { return $routeParams.confNo; }, function(newConfNo) {
         $scope.currentConfNo = newConfNo;
       }, true);
       
-      $scope.$watch('connection', function (newConnection) {
-        $scope.membershipList = null;
-        $scope.readMemberships = null;
-        $scope.unreadMemberships = null;
-        
-        if (newConnection != null) {
-          membershipListService.getMembershipList($scope.connection).then(
-            function (membershipList) {
-              $log.log("SidebarCtrl - getMembershipList() - success");
-              $scope.membershipList = membershipList;
-            },
-            function () {
-              $log.log("SidebarCtrl - getMembershipList() - error");
-              $scope.membershipList = null;
-            });
-        }
-      });
-      
       $scope.pageSize = 20;
       $scope.currentPage = 0;
       $scope.numberOfPages = 1;
+      
+      $scope.previousPage = function() {
+        $scope.currentPage = ($scope.currentPage < 1 ? 0 : $scope.currentPage - 1);
+      };
+      $scope.nextPage = function() {
+        $scope.currentPage = ($scope.currentPage >= $scope.numberOfPages -1 ?
+                              $scope.currentPage : $scope.currentPage + 1);
+      };
       
       $scope.$watch('membershipList.getReadMemberships()', function (newReadMemberships) {
         //$log.log("SidebarCtrl - watch(membershipList.getReadMemberships())");
@@ -83,36 +112,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       });
       
-      $scope.previousPage = function() {
-        $scope.currentPage = ($scope.currentPage < 1 ? 0 : $scope.currentPage - 1);
-      };
-      $scope.nextPage = function() {
-        $scope.currentPage = ($scope.currentPage >= $scope.numberOfPages -1 ?
-                              $scope.currentPage : $scope.currentPage + 1);
-      };
-      
       $scope.$watch('membershipList.getUnreadMemberships()', function (newUnreadMemberships) {
         //$log.log("SidebarCtrl - watch(membershipList.getUnreadMemberships())");
         //$log.log(newUnreadMemberships);
         $scope.unreadMemberships = newUnreadMemberships;
-      });
-      
-      $scope.isRefreshing = false;
-      $scope.refreshUnread = function() {
-        if ($scope.membershipList != null && !$scope.isRefreshing) {
-          $scope.isRefreshing = true;
-          $scope.connection.userIsActive();
-          membershipListService.refreshUnread($scope.connection).then(
-            function () { $scope.isRefreshing = false; },
-            function () { $scope.isRefreshing = false; });
-        }
-      };
-      
-      keybindingService.bindGeneral('R', 'Refresh unread texts', function(e) {
-        $scope.$apply(function() {
-          $scope.refreshUnread();
-        });
-        return false;
       });
     }
   ]).
@@ -368,31 +371,11 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
   controller('UnreadConfsCtrl', [
     '$scope', '$location', '$log',
     'conferencesService', 'pageTitleService', 'messagesService', 'keybindingService',
-    'membershipListService',
     function($scope, $location, $log,
-             conferencesService, pageTitleService, messagesService, keybindingService,
-             membershipListService) {
+             conferencesService, pageTitleService, messagesService, keybindingService) {
       pageTitleService.set("Unread conferences");
       
-      $scope.isLoading = false;
-      $scope.$watch('connection', function (newConnection) {
-        if (newConnection != null) {
-          $scope.isLoading = true;
-          membershipListService.getMembershipList($scope.connection).then(
-            function (membershipList) {
-              $log.log("UnreadConfsCtrl - getMembershipList() - success");
-              $scope.isLoading = false;
-              $scope.membershipList = membershipList;
-            },
-            function () {
-              $log.log("UnreadConfsCtrl - getMembershipList() - error");
-              $scope.isLoading = false;
-              $scope.membershipList = null;
-            });
-        } else {
-          $scope.membershipList = null;
-        }
-      });
+      $scope.unreadMemberships = null;
       
       $scope.$watch('membershipList.getUnreadMemberships()', function (newUnreadMemberships) {
         //$log.log("UnreadConfsCtrl - watch(membershipList.getUnreadMemberships())");
@@ -836,10 +819,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
   controller('ListConfTextsCtrl', [
     '$scope', '$routeParams', '$log', '$location',
     'pageTitleService', 'conferencesService', 'messagesService', 'textsService',
-    'keybindingService', 'membershipListService',
+    'keybindingService',
     function($scope, $routeParams, $log, $location,
              pageTitleService, conferencesService, messagesService, textsService,
-             keybindingService, membershipListService) {
+             keybindingService) {
       function getLastTexts(confNo) {
         $scope.isLoadingTexts = true;
         textsService.getLastCreatedTextsInConference($scope.connection, confNo).then(
@@ -851,18 +834,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           function (response) {
             $log.log("ListConfTextsCtrl - getLastCreatedTextsInConference() - error");
             $scope.isLoadingTexts = false;
-          });
-      }
-      
-      function getMembership(confNo) {
-        membershipListService.getMembershipList($scope.connection).then(
-          function (membershipList) {
-            $log.log("ListConfTextsCtrl - getMembershipList() - success");
-            $scope.membership = membershipList.getMembership(confNo);
-          },
-          function () {
-            $log.log("ListConfTextsCtrl - getMembershipList() - error");
-            messagesService.showMessage('error', 'Failed to get membership list.');
           });
       }
       
@@ -887,8 +858,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.texts = null;
       getConference($scope.confNo);
       
-      $scope.membership = null;
-      getMembership($scope.confNo);
+      $scope.membership = $scope.membershipList.getMembership($scope.confNo);
       
       keybindingService.bindPageSpecific('space', 'Read conference', function(e) {
         if ($scope.conf != null) {
@@ -1051,18 +1021,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
   controller('ReadConferenceTextsCtrl', [
     '$scope', '$rootScope', '$routeParams', '$log', '$window', '$location', '$q',
     'messagesService', 'textsService', 'pageTitleService', 'keybindingService', 'readerFactory',
-    'sessionsService', 'membershipListService', 'membershipsService', 'conferencesService',
+    'sessionsService', 'membershipsService', 'conferencesService',
     function($scope, $rootScope, $routeParams, $log, $window, $location, $q,
              messagesService, textsService, pageTitleService, keybindingService, readerFactory,
-             sessionsService, membershipListService, membershipsService, conferencesService) {
-      function getMembership(scope) {
-        if (scope.membershipList != null) {
-          return scope.membershipList.getMembership(scope.confNo);
-        } else {
-          return null;
-        }
-      }
-
+             sessionsService, membershipsService, conferencesService) {
       function changeConference() {
         if ($scope.connection.currentConferenceNo !== $scope.confNo) {
           sessionsService.changeConference($scope.connection, $scope.confNo);
@@ -1092,30 +1054,12 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       getConference($scope.confNo);
       
       $scope.reader = readerFactory.createReader($scope.connection);
-        
-      $scope.membership = null;
-      $scope.membershipList = null;
-      $scope.isLoadingMembership = true;
-      membershipListService.getMembershipList($scope.connection).then(
-        function (membershipList) {
-          $log.log("UnreadTextsCtrl - getMembershipList() - success");
-          $scope.membershipList = membershipList;
-          $scope.isLoadingMembership = false;
-        },
-        function () {
-          $log.log("UnreadTextsCtrl - getMembershipList() - error");
-          messagesService.showMessage('error', 'Failed to get membership list.');
-        });
       
-      $scope.$watch(getMembership, function (newMembership) {
-        // We $watch the membership because the MembershipList can
-        // return a different object after it has been updated.
-        $scope.membership = newMembership;
-        if ($scope.membership != null) {
-          $scope.reader.setMembership($scope.membership);
-          changeConference();
-        }
-      });
+      $scope.membership = $scope.membershipList.getMembership($scope.confNo);
+      if ($scope.membership != null) {
+        $scope.reader.setMembership($scope.membership);
+        changeConference();
+      }
       
       pageTitleService.set("");
       $scope.$watch('conf', function () {
@@ -1146,10 +1090,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
   controller('ReaderCtrl', [
     '$scope', '$rootScope', '$routeParams', '$log', '$window', '$location', '$q',
     'messagesService', 'textsService', 'keybindingService', 'readerFactory',
-    'sessionsService', 'membershipListService', 'readMarkingsService',
+    'sessionsService', 'readMarkingsService',
     function($scope, $rootScope, $routeParams, $log, $window, $location, $q,
              messagesService, textsService, keybindingService, readerFactory,
-             sessionsService, membershipListService, readMarkingsService) {
+             sessionsService, readMarkingsService) {
       function isScrolledIntoView(elem) {
         if (elem) {
           var docViewTop = angular.element($window).scrollTop();
