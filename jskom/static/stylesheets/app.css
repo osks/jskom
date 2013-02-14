@@ -2347,7 +2347,7 @@ ul.flyout li.active a, .nav-bar li ul li.active a {
   border: none;
   border: 1px solid #e6e6e6;
   border-width: 1px 1px 0 0;
-  color: #555;
+  color: #333;
   display: block;
   font-size: 14px;
   height: auto;
@@ -3552,7 +3552,7 @@ table tbody tr:nth-child(even) {
 
 /* line 242, ../../../foundation/scss/foundation/components/modules/_ui.scss */
 table tbody tr td {
-  color: #333;
+  color: black;
   padding: 9px 10px;
   vertical-align: top;
   border: none;
