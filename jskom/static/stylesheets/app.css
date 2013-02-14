@@ -20,7 +20,7 @@ body {
   font-style: normal;
   font-size: 14px;
   line-height: 1;
-  color: #333333;
+  color: black;
   position: relative;
 }
 
@@ -124,7 +124,7 @@ figure {
 .row {
   width: 1200px;
   max-width: 100%;
-  min-width: 768px;
+  min-width: 769px;
   margin: 0 auto;
 }
 /* line 4, ../../../foundation/scss/foundation/components/_grid.scss */
@@ -947,7 +947,7 @@ form {
 /* line 17, ../../../foundation/scss/foundation/common/_forms.scss */
 label {
   font-size: 14px;
-  color: #4d4d4d;
+  color: black;
   cursor: pointer;
   display: block;
   font-weight: 500;
@@ -2297,7 +2297,7 @@ ul.flyout li.active a, .nav-bar li ul li.active a {
 }
 /* line 11, ../../../foundation/scss/foundation/components/modules/_tabs.scss */
 .tabs dd a, .tabs li a {
-  color: gray;
+  color: #4d4d4d;
   display: block;
   font-size: 14px;
   height: 40px;
@@ -2317,7 +2317,7 @@ ul.flyout li.active a, .nav-bar li ul li.active a {
 /* line 15, ../../../foundation/scss/foundation/components/modules/_tabs.scss */
 .tabs dd.active a, .tabs li.active a {
   cursor: default;
-  color: #4d4d4d;
+  color: #1a1a1a;
   background: #fff;
   border-left: 1px solid #e6e6e6;
   border-right: 1px solid #e6e6e6;
@@ -2498,7 +2498,7 @@ ul.tabs-content.contained.vertical > li {
 /* Element that controls breakpoint, no need to change this ever */
 /* line 16, ../../../foundation/scss/foundation/components/modules/_topbar.scss */
 .top-bar-js-breakpoint {
-  width: 768px !important;
+  width: 769px !important;
   visibility: hidden;
 }
 
@@ -3700,7 +3700,7 @@ div.progress.round .meter {
   }
 }
 /* Medium display targeting */
-@media only screen and (max-width: 1279px) and (min-width: 768px) {
+@media only screen and (max-width: 1279px) and (min-width: 769px) {
   /* line 44, ../../../foundation/scss/foundation/components/modules/_mqueries.scss */
   .hide-for-small,
   .show-for-medium,
@@ -3722,7 +3722,7 @@ div.progress.round .meter {
   }
 }
 /* Small display targeting */
-@media only screen and (max-width: 767px) {
+@media only screen and (max-width: 768px) {
   /* line 61, ../../../foundation/scss/foundation/components/modules/_mqueries.scss */
   .show-for-small,
   .hide-for-medium,
@@ -3812,7 +3812,7 @@ table.hide-for-medium {
   display: table !important;
 }
 
-@media only screen and (max-width: 1279px) and (min-width: 768px) {
+@media only screen and (max-width: 1279px) and (min-width: 769px) {
   /* line 108, ../../../foundation/scss/foundation/components/modules/_mqueries.scss */
   .touch table.hide-for-xlarge,
   .touch table.hide-for-large,
@@ -3821,7 +3821,7 @@ table.hide-for-medium {
     display: table !important;
   }
 }
-@media only screen and (max-width: 767px) {
+@media only screen and (max-width: 768px) {
   /* line 115, ../../../foundation/scss/foundation/components/modules/_mqueries.scss */
   table.hide-for-xlarge,
   table.hide-for-large,
@@ -3847,7 +3847,7 @@ table.hide-for-medium {
   }
 }
 /* Between Medium and Small */
-@media only screen and (max-width: 1279px) and (min-width: 768px) {
+@media only screen and (max-width: 1279px) and (min-width: 769px) {
   /* NavBar --- */
   /*            */
   /* line 139, ../../../foundation/scss/foundation/components/modules/_mqueries.scss */
@@ -3864,7 +3864,7 @@ table.hide-for-medium {
   }
 }
 /* Small Devices ------------ */
-@media only screen and (max-width: 767px) {
+@media only screen and (max-width: 768px) {
   /* Global Misc --- */
   /*                 */
   /* line 152, ../../../foundation/scss/foundation/components/modules/_mqueries.scss */
@@ -4667,7 +4667,7 @@ table.hide-for-medium {
   }
 }
 /* Topbar Specific Breakpoint that you can customize */
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 769px) {
   /* line 309, ../../../foundation/scss/foundation/components/modules/_mqueries.scss */
   .top-bar {
     margin-bottom: 0;
@@ -5102,7 +5102,7 @@ div.alert-box a.close {
   color: #a2a2a2;
 }
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 769px) {
   /* Add some extra bottom margin to fix tab borders (blue bar on top)
      in mobile mode . Otherwise it shows on-top of the top-bar. */
   /* line 63, ../../../foundation/scss/_jskom.scss */
@@ -5138,7 +5138,7 @@ div.alert-box a.close {
     background: #3c3c3c;
   }
 }
-@media only screen and (min-width: 769px) {
+@media only screen and (min-width: 770px) {
   /* Override default height: inherit. */
   /* line 94, ../../../foundation/scss/_jskom.scss */
   .top-bar.expanded {

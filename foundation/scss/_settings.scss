@@ -4,7 +4,7 @@
 
 // Media Queries
 
-$screenSmall: 768px !default;
+$screenSmall: 769px !default;
 $screenMedium: 1279px !default;
 $screenXlarge: 1441px !default;
 
@@ -29,7 +29,7 @@ $columnGutter: 20px;
 // $alertColor: #c60f13;
 // $successColor: #5da423;
 // $txtColor: #222;
-$txtColor: #333;
+$txtColor: #000;
 // $highlightColor: #ffff99;
 // $black: #000;
 // $white: #fff;
@@ -68,6 +68,7 @@ $bodyFontFamily: "Open Sans", sans-serif;
 // $formSpacing: 12px;
 // $labelFontWeight: 500;
 // $labelFontColor: lighten(#000, 30%);
+$labelFontColor: #000;
 // $labelBtmMargin: 3px;
 // $inputFontColor: rgba(0,0,0,0.75);
 // $inputFontSize: 14px;
