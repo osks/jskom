@@ -858,7 +858,14 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.texts = null;
       getConference($scope.confNo);
       
-      $scope.membership = $scope.membershipList.getMembership($scope.confNo);
+      $scope.membership = null;
+      $scope.$watch(
+        function (scope) {
+          return scope.membershipList.getMembership($scope.confNo);
+        },
+        function (newMembership) {
+          $scope.membership = newMembership;
+        });
       
       keybindingService.bindPageSpecific('space', 'Read conference', function(e) {
         if ($scope.conf != null) {
@@ -1055,11 +1062,19 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       
       $scope.reader = readerFactory.createReader($scope.connection);
       
-      $scope.membership = $scope.membershipList.getMembership($scope.confNo);
-      if ($scope.membership != null) {
-        $scope.reader.setMembership($scope.membership);
+      if ($scope.membershipList.getMembership($scope.confNo) != null) {
         changeConference();
       }
+      
+      $scope.membership = null;
+      $scope.$watch(
+        function (scope) {
+          return scope.membershipList.getMembership($scope.confNo);
+        },
+        function (newMembership) {
+          $scope.membership = newMembership;
+          $scope.reader.setMembership($scope.membership);
+        });
       
       pageTitleService.set("");
       $scope.$watch('conf', function () {
