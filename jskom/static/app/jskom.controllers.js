@@ -538,6 +538,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       }
       
       $scope.createText = function() {
+        if ($scope.isCreating) {
+          return;
+        }
+        
         $scope.isCreating = true;
         textsService.createText($scope.connection, $scope.text).then(
           function(data) {
@@ -545,12 +549,12 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             messagesService.showMessage('success', 'Successfully created text.',
                                         'Text number ' + data.text_no + ' was created.',
                                         true);
-            $scope.isCreating = false;
             if ($scope.returnUrl) {
               $scope.goToReturnUrl();
             } else {
               $location.url('/texts/?text=' + data.text_no);
             }
+            $scope.isCreating = false;
           },
           function(response) {
             $log.log("NewTextCtrl - createText() - error");
