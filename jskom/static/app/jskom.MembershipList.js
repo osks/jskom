@@ -68,12 +68,23 @@
     },
     
     
+    addMembership: function (membership) {
+      return this.addMemberships([ membership ]);
+    },
+
     addMemberships: function (memberships) {
       var self = this;
       _.each(memberships, function (m) {
         self._membershipsMap[m.conference.conf_no] = m;
       });
       this._rebuildMembershipLists();
+    },
+    
+    deleteMembership: function (confNo) {
+      if (_.has(this._membershipsMap, confNo)) {
+        delete this._membershipsMap[confNo];
+        this._rebuildMembershipLists();
+      }
     },
     
     updateMembership: function (membership) {

@@ -532,7 +532,10 @@ angular.module('jskom.services', ['jskom.settings']).
           return conn.http({ method: 'put', url: '/persons/' + persNo + '/memberships/' + confNo,
                              data: data }, true, true).
             then(function(response) {
-              // TODO: event so we can update membershiplist
+              if (conn.getPersNo() === persNo) {
+                // Only broadcast changes for the current person
+                conn.broadcast('jskom:membership:created', confNo);
+              }
             });
         },
         
@@ -542,9 +545,12 @@ angular.module('jskom.services', ['jskom.settings']).
         
         deleteMembershipForPerson: function(conn, persNo, confNo) {
           return conn.http({ method: 'delete',
-                             url: '/persons/' + persNo + '/memberships/' + confNo }, true, true);
+                             url: '/persons/' + persNo + '/memberships/' + confNo }, true, true).
             then(function(response) {
-              // TODO: event so we can update membershiplist
+              if (conn.getPersNo() === persNo) {
+                // Only broadcast changes for the current person
+                conn.broadcast('jskom:membership:deleted', confNo);
+              }
             });
         },
         
@@ -876,8 +882,19 @@ angular.module('jskom.services', ['jskom.settings']).
             self._membershipList.markTextAsUnread(text.text_no, recipientConfNos);
           });
           
+          conn.on('jskom:membership:created', function ($event, confNo) {
+            $log.log(self._logPrefix + 'on(jskom:membership:created, ' + confNo + ')');
+            self._fetchMembership(confNo);
+            self._fetchMembershipUnread(confNo);
+          });
+
+          conn.on('jskom:membership:deleted', function ($event, confNo) {
+            $log.log(self._logPrefix + 'on(jskom:membership:deleted, ' + confNo + ')');
+            self._membershipList.deleteMembership(confNo);
+          });
+          
           conn.on('jskom:membership:changed', function ($event, confNo) {
-            $log.log(self._logPrefix + 'on(jskom:membership:changed)');
+            $log.log(self._logPrefix + 'on(jskom:membership:changed, ' + confNo + ')');
             self._fetchMembership(confNo);
           });
 
@@ -986,7 +1003,7 @@ angular.module('jskom.services', ['jskom.settings']).
           return membershipsService.getMembership(this._conn, confNo).then(
             function (membership) {
               $log.log(logp + "success");
-              self._membershipList.addMemberships([membership]);
+              self._membershipList.addMembership(membership);
             },
             function (response) {
               $log.log(logp + "error");
