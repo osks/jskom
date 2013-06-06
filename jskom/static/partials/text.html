@@ -55,7 +55,7 @@
         <ng-switch on="textMode">
           <div ng-switch-when="text" jskom-bind-body="text.body"></div>
           <pre ng-switch-when="raw" jskom-bind-body="text.body"></pre>
-          <div ng-switch-when="html" ng-bind-html="text.body"></div>
+          <div><p ng-switch-when="html" ng-bind-html="text.body"></p></div>
         </ng-switch>
       </div>
     </article>
