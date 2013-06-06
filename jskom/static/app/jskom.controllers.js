@@ -1422,6 +1422,13 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         return textsService.getText($scope.connection, textNo).then(
           function (text) {
             $scope.textIsLoading = false;
+            
+            if (text.jskomBodyType == 'html') {
+              $scope.textMode = 'html';
+            } else {
+              $scope.textMode = 'text';
+            }
+            
             $scope.text = text;
             $scope.$emit("jskom:text:shown", text);
             return text;

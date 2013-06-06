@@ -322,8 +322,12 @@ angular.module('jskom.services', ['jskom.settings']).
     function($log, $q) {
       var enhanceText = function(conn, text) {
         var mimeType = Mimeparse.parseMimeType(text.content_type);
-        text.jskomBodyType = mimeType[0];
-        
+        if (mimeType[0] == 'text' && mimeType[1] == 'html') {
+          text.jskomBodyType = 'html';
+        } else {
+          text.jskomBodyType = mimeType[0];
+        }
+
         if (text.jskomBodyType == 'image') {
           text.jskomImageUrl = conn.urlFor('/texts/' + text.text_no + '/body', true);
         } else {
