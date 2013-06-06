@@ -3,14 +3,35 @@
 'use strict';
 
 angular.module('jskom.filters', ['jskom.templates']).
-  //{{ text.author|personName }}
-
   filter('textDate', [
     function() {
+      
+      function parseMxDate(mxDate) {
+        // We have all other dates in unix timestamp format and we
+        // get the mx-date aux item in this format: "2013-06-01
+        // 04:20:00 +0200"
+        var utcMs = Date.UTC(
+          parseInt(mxDate.data.substr(0, 4), 10),
+          parseInt(mxDate.data.substr(5, 2), 10)-1,
+          parseInt(mxDate.data.substr(8, 2), 10),
+          parseInt(mxDate.data.substr(11, 2), 10),
+          parseInt(mxDate.data.substr(14, 2), 10),
+          parseInt(mxDate.data.substr(17, 2), 10));
+          
+          var tzOffset = (parseInt(mxDate.data.substr(20, 3), 10)*3600) +
+            (parseInt(mxDate.data.substr(23, 2), 10)*60);
+          
+          return (utcMs / 1000) - tzOffset;
+      }
+      
       return function(text) {
         if (text) {
-          if (text.jskomMxDate) {
-            return text.jskomMxDate;
+          var mxDate = _.find(text.aux_items, function(aux_item) {
+            return aux_item.tag == 'mx-date';
+          });
+          
+          if (mxDate) {
+            return parseMxDate(mxDate);
           } else {
             return text.creation_time;
           };
@@ -25,8 +46,12 @@ angular.module('jskom.filters', ['jskom.templates']).
     function($filter) {
       return function(text) {
         if (text) {
-          if (text.jskomMxAuthor) {
-            return text.jskomMxAuthor;
+          var mxAuthor = _.find(text.aux_items, function(aux_item) {
+            return aux_item.tag == 'mx-author';
+          });
+          
+          if (mxAuthor) {
+            return mxAuthor.data;
           } else {
             return $filter('personName')(text.author);
           };
@@ -41,13 +66,19 @@ angular.module('jskom.filters', ['jskom.templates']).
     function($filter) {
       return function(text) {
         if (text) {
-          if (text.jskomMxAuthor && text.jskomMxDate) {
+          var mxAuthor = _.find(text.aux_items, function(aux_item) {
+            return aux_item.tag == 'mx-author';
+          });
+          var mxDate = _.find(text.aux_items, function(aux_item) {
+            return aux_item.tag == 'mx-date';
+          });
+          if (mxAuthor && mxDate) {
             return "Imported " + $filter('dateString')(text.creation_time) +
               " by " + $filter('personName')(text.author);
-          } else if (text.jskomMxAuthor) {
+          } else if (mxAuthor) {
             return "Imported by " + $filter('personName')(text.author);
-          } else if (text.jskomMxDate) {
-            return "Created at " + $filter('dateString')(text.jskomMxDate);
+          } else if (mxDate) {
+            return "Created at " + $filter('dateString')(text.creation_time);
           } else {
             return "";
           }

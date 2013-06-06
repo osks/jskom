@@ -340,34 +340,6 @@ angular.module('jskom.services', ['jskom.settings']).
           text.jskomFastReplies = _.filter(text.aux_items, function(aux_item) {
             return aux_item.tag == 'fast-reply';
           });
-          
-          var mxAuthor = _.find(text.aux_items, function(aux_item) {
-            return aux_item.tag == 'mx-author';
-          });
-          if (mxAuthor) {
-            text.jskomMxAuthor = mxAuthor.data;
-          }
-          
-          var mxDate = _.find(text.aux_items, function(aux_item) {
-            return aux_item.tag == 'mx-date';
-          });
-          if (mxDate) {
-            // We have all other dates in unix timestamp format and we
-            // get the mx-date aux item in this format: "2013-06-01
-            // 04:20:00 +0200"
-            var utcMs = Date.UTC(
-              parseInt(mxDate.data.substr(0, 4), 10),
-              parseInt(mxDate.data.substr(5, 2), 10)-1,
-              parseInt(mxDate.data.substr(8, 2), 10),
-              parseInt(mxDate.data.substr(11, 2), 10),
-              parseInt(mxDate.data.substr(14, 2), 10),
-              parseInt(mxDate.data.substr(17, 2), 10));
-            
-            var tzOffset = (parseInt(mxDate.data.substr(20, 3), 10)*3600) +
-                (parseInt(mxDate.data.substr(23, 2), 10)*60);
-            
-            text.jskomMxDate = (utcMs / 1000) - tzOffset;
-          }
         }
         
         return text;

@@ -57,10 +57,10 @@
                 {{ text.text_no }}
               </a>
             </td>
-            <td>{{ text.creation_time | dateString }}</td>
+            <td>{{ text | textDate | dateString }}</td>
             <td>
               <a href="/conferences/{{text.author.pers_no}}">
-                {{ text.author|personName }}
+                {{ text | textAuthor }}
               </a>
             </td>
           </tr>
