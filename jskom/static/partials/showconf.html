@@ -84,7 +84,7 @@
             </tr>
             <tr>
               <td>Creation time</td>
-              <td>{{conf.creation_time}}</td>
+              <td>{{conf.creation_time | dateString }}</td>
             </tr>
             <tr>
               <td>Creator</td>
@@ -115,7 +115,7 @@
             </tr>
             <tr>
               <td>Last written</td>
-              <td>{{conf.last_written}}</td>
+              <td>{{conf.last_written | dateString }}</td>
             </tr>
             <tr>
               <td>Closed</td>
@@ -141,11 +141,11 @@
               <tbody>
                 <tr>
                   <td>Joined</td>
-                  <td>{{membership.added_at}}</td>
+                  <td>{{membership.added_at | dateString }}</td>
                 </tr>
                 <tr>
                   <td>Last time read</td>
-                  <td>{{membership.last_time_read}}</td>
+                  <td>{{membership.last_time_read | dateString }}</td>
                 </tr>
                 <tr>
                   <td>Priority</td>

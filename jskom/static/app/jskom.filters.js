@@ -3,6 +3,68 @@
 'use strict';
 
 angular.module('jskom.filters', ['jskom.templates']).
+  //{{ text.author|personName }}
+
+  filter('textDate', [
+    function() {
+      return function(text) {
+        if (text) {
+          if (text.jskomMxDate) {
+            return text.jskomMxDate;
+          } else {
+            return text.creation_time;
+          };
+        } else {
+          return text;
+        }
+      };
+    }
+  ]).
+  filter('textAuthor', [
+    '$filter',
+    function($filter) {
+      return function(text) {
+        if (text) {
+          if (text.jskomMxAuthor) {
+            return text.jskomMxAuthor;
+          } else {
+            return $filter('personName')(text.author);
+          };
+        } else {
+          return text;
+        }
+      };
+    }
+  ]).
+  filter('textExtraInfo', [
+    '$filter',
+    function($filter) {
+      return function(text) {
+        if (text) {
+          if (text.jskomMxAuthor && text.jskomMxDate) {
+            return "Imported " + $filter('dateString')(text.creation_time) +
+              " by " + $filter('personName')(text.author);
+          } else if (text.jskomMxAuthor) {
+            return "Imported by " + $filter('personName')(text.author);
+          } else if (text.jskomMxDate) {
+            return "Created at " + $filter('dateString')(text.jskomMxDate);
+          } else {
+            return "";
+          }
+        } else {
+          return text;
+        }
+      };
+    }
+  ]).
+  filter('dateString', [
+    '$filter',
+    function($filter) {
+      return function(unixTimestamp) {
+        return $filter('date')(new Date(unixTimestamp*1000), 'yyyy-MM-dd HH:mm:ss');
+      };
+    }
+  ]).
   filter('confName', [
     function() {
       return function(conf) {
@@ -11,7 +73,7 @@ angular.module('jskom.filters', ['jskom.templates']).
         } else {
           return "";
         }
-      }
+      };
     }
   ]).
   filter('confType', [
@@ -28,7 +90,7 @@ angular.module('jskom.filters', ['jskom.templates']).
         } else {
           return "";
         }
-      }
+      };
     }
   ]).
   filter('personName', [

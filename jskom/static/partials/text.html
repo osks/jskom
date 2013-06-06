@@ -2,11 +2,12 @@
   <dl>
     <dd>
       <strong class="jskomNoWrap">
-        <jskom:a text-no="{{ text.text_no }}">{{ text.text_no }}</jskom:a>
-        / {{ text.creation_time }} / {{ text.author|personName }}
+        <jskom:a text-no="{{ text.text_no }}">{{ text.text_no }}</jskom:a> /
+        {{ text | textDate | dateString }} / {{ text | textAuthor }}
       </strong>
+      {{ text | textExtraInfo }}
     </dd>
-    
+
     <dd class="jskomNoWrap" ng-repeat="ct in text.comment_to_list">
       <span class="secondary label">{{ ct.type|capitalize }}</span>
       to <jskom:a text-no="{{ ct.text_no }}">{{ ct.text_no }}</jskom:a>
@@ -20,7 +21,7 @@
       <span ng-show="r.sent_by">
         <span class="hide-for-small">
           <br/>Sent by: {{ r.sent_by|personName }}
-          <br/>Sent at: {{ r.sent_at }}
+          <br/>Sent at: {{ r.sent_at | dateString }}
         </span>
       </span>
     </dd>
