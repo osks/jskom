@@ -77,20 +77,6 @@ angular.module('jskom.services', ['jskom.settings']).
         formatBody: function(rawBody) {
           var escaped = replaceMultiple(rawBody, [
             {
-              regexp: lyskomUrlLinkRegexp,
-              func: function(match, p1) {
-                return '<a target="_blank" href="' + p1 + '">' + escapeExpression(match) +
-                  '</a>';
-              }
-            },
-            {
-              regexp: urlRegexp,
-              func: function(match) {
-                return '<a target="_blank" href="' + match + '">' + escapeExpression(match) +
-                  '</a>';
-              }
-            },
-            {
               regexp: lyskomTextLinkRegexp,
               func: function(match, p1) {
                 return '<jskom:a text-no="' + p1 + '">' + escapeExpression(match) + '</jskom:a>';
@@ -107,6 +93,20 @@ angular.module('jskom.services', ['jskom.settings']).
               func: function(match, p1) {
                 return '<jskom:a text-no="' + match + '">' + escapeExpression(match) +
                   '</jskom:a>';
+              }
+            },
+            {
+              regexp: lyskomUrlLinkRegexp,
+              func: function(match, p1) {
+                return '<a target="_blank" href="' + p1 + '">' + escapeExpression(match) +
+                  '</a>';
+              }
+            },
+            {
+              regexp: urlRegexp,
+              func: function(match) {
+                return '<a target="_blank" href="' + match + '">' + escapeExpression(match) +
+                  '</a>';
               }
             },
             {

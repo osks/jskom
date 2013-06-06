@@ -115,6 +115,14 @@ suite('htmlFormattingService', function() {
                    '<a target="_blank" href="http://google.com">http://google.com</a>' +
                    '<br/> and another url <a target="_blank" href="http://google.com/foo/bar">' +
                    'http://google.com/foo/bar</a>');
-    })
+    });
+    
+    test('should handle url as part of conference name in links', function () {
+      var text = "<möte 14567: KOMFeeder (-) www.skinnytaste.com/>";
+      
+      assert.equal(
+        service.formatBody(text),
+        '<a href="/conferences/14567">&lt;möte 14567: KOMFeeder (-) www.skinnytaste.com/&gt;</a>');
+    });
   });
 });
