@@ -19,6 +19,9 @@
   _.extend(Reader.prototype, {
     setMembership: function (membership) {
       // membership cannot be null
+      if (membership == null) {
+        throw "membership is null";
+      }
       this._membership = membership;
     },
     

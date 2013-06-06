@@ -1075,9 +1075,11 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         function (scope) {
           return scope.membershipList.getMembership($scope.confNo);
         },
-        function (newMembership) {
-          $scope.membership = newMembership;
-          $scope.reader.setMembership($scope.membership);
+        function (newMembership, oldMembership) {
+          if (newMembership != null) {
+            $scope.membership = newMembership;
+            $scope.reader.setMembership($scope.membership);
+          }
         });
       
       pageTitleService.set("");
