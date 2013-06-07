@@ -1366,6 +1366,15 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         return false;
       });*/
       
+      keybindingService.bindPageSpecific('j', 'Read next text immediately', function(e) {
+        $scope.$apply(function() {
+          if ($scope.canReadNext()) {
+            $scope.readNext();
+          }
+        });
+        return false;
+      });
+
       keybindingService.bindPageSpecific('space', 'Read next text', function(e) {
         if (isScrolledIntoView(angular.element('#jskomBelowText'))) {
           $scope.$apply(function() {
