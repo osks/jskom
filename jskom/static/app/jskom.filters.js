@@ -36,7 +36,7 @@ angular.module('jskom.filters', ['jskom.templates']).
             return text.creation_time;
           };
         } else {
-          return text;
+          return 0;
         }
       };
     }
@@ -56,7 +56,7 @@ angular.module('jskom.filters', ['jskom.templates']).
             return $filter('personName')(text.author);
           };
         } else {
-          return text;
+          return "";
         }
       };
     }
@@ -83,7 +83,7 @@ angular.module('jskom.filters', ['jskom.templates']).
             return "";
           }
         } else {
-          return text;
+          return "";
         }
       };
     }
