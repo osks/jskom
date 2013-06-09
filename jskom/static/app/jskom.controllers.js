@@ -400,7 +400,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       };
       
-      keybindingService.bindPageSpecific('space', 'Read first conference', function(e) {
+      keybindingService.bindPageSpecific(['space', 'j'], 'Read first conference', function(e) {
         if ($scope.unreadMemberships.length > 0) {
           $scope.$apply(function() {
             $scope.readFirstConference();
@@ -871,7 +871,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           $scope.membership = newMembership;
         });
       
-      keybindingService.bindPageSpecific('space', 'Read conference', function(e) {
+      keybindingService.bindPageSpecific(['space', 'j'], 'Read conference', function(e) {
         if ($scope.conf != null) {
           $scope.$apply(function() {
             $location.path('/conferences/' + parseInt($scope.conf.conf_no) + "/texts/");
@@ -1366,7 +1366,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         return false;
       });*/
       
-      keybindingService.bindPageSpecific('j', 'Read next text immediately', function(e) {
+      keybindingService.bindPageSpecific('j', 'Read next text', function(e) {
         $scope.$apply(function() {
           if ($scope.canReadNext()) {
             $scope.readNext();
@@ -1375,7 +1375,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         return false;
       });
 
-      keybindingService.bindPageSpecific('space', 'Read next text', function(e) {
+      keybindingService.bindPageSpecific('space', 'Read text', function(e) {
         if (isScrolledIntoView(angular.element('#jskomBelowText'))) {
           $scope.$apply(function() {
             // Check that the read next button is visible if we used space
