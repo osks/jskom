@@ -11,5 +11,7 @@ test: test-unit
 test-unit:
 	@$(PHANTOMJS) ./test/unit/unittests.html
 
+scss:
+	(cd foundation && compass compile)
 
-.PHONY: all run-debug-server test test-unit
+.PHONY: all run-debug-server test test-unit scss

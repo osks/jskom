@@ -115,6 +115,12 @@ div.alert-box {
 
 article {
     max-width: 45em;
+    
+    ul {
+        /* Set a default margin for ul's without class. This is needed because
+           we render other's HTML. */
+        margin-#{$defaultFloat}: ms(1);
+    }
 }
 
 
