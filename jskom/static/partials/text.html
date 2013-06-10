@@ -17,10 +17,10 @@
     <dd ng-repeat="r in text.recipient_list">
       <span class="secondary label">{{ r.type|capitalize }}</span>
       
-      <a href="/conferences/{{r.recpt.conf_no}}">{{ r.recpt|confName }}</a>
+      <a href="/conferences/{{r.recpt.conf_no}}">{{ r.recpt | confName }}</a>
       <span ng-show="r.sent_by">
         <span class="hide-for-small">
-          <br/>Sent by: {{ r.sent_by|personName }}
+          <br/>Sent by: {{ r.sent_by | personName }}
           <br/>Sent at: {{ r.sent_at | dateString }}
         </span>
       </span>
@@ -35,7 +35,12 @@
       <span ng-show="currentMark == null">{{text.no_of_marks}} persons</span>
     </dd>
     
-    <dd><span class="label">Subject</span> {{ text.subject }}</dd>
+    <dd>
+      <span class="label">Subject</span> {{ text.subject }}
+      <span ng-show="text | hasKomfeederUrl">
+        (<a href="{{ text | komfeederUrl}}"><i class="icon-external-link"></i></a>)
+      </span>
+    </dd>
   </dl>
   
   <div class="jskomTextBody">

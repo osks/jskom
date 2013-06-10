@@ -1,7 +1,7 @@
 <jskom:loading ng-hide="conf"></jskom:loading>
 
 <div ng-show="conf" ng-cloak>
-  <h2>{{ conf|confType }}: {{ conf.name }}</h2>
+  <h2>{{ conf|confType }}: {{ conf | confTitle }}</h2>
 
   <div class="row">
     <div class="twelve columns">

@@ -26,12 +26,16 @@ angular.module('jskom.filters', ['jskom.templates']).
       
       return function(text) {
         if (text) {
-          var mxDate = _.find(text.aux_items, function(aux_item) {
-            return aux_item.tag == 'mx-date';
+          var alternateDate = _.find(text.aux_items, function(aux_item) {
+            if ((aux_item.tag == 'komfeeder-date') || (aux_item.tag == 'mx-date')) {
+              return true;
+            } else {
+              return false;
+            }
           });
           
-          if (mxDate) {
-            return parseMxDate(mxDate);
+          if (alternateDate) {
+            return parseMxDate(alternateDate);
           } else {
             return text.creation_time;
           };
@@ -46,12 +50,16 @@ angular.module('jskom.filters', ['jskom.templates']).
     function($filter) {
       return function(text) {
         if (text) {
-          var mxAuthor = _.find(text.aux_items, function(aux_item) {
-            return aux_item.tag == 'mx-author';
+          var alternateAuthor = _.find(text.aux_items, function(aux_item) {
+            if ((aux_item.tag == 'komfeeder-author') || (aux_item.tag == 'mx-author')) {
+              return true;
+            } else {
+              return false;
+            }
           });
           
-          if (mxAuthor) {
-            return mxAuthor.data;
+          if (alternateAuthor) {
+            return alternateAuthor.data;
           } else {
             return $filter('personName')(text.author);
           };
@@ -93,6 +101,75 @@ angular.module('jskom.filters', ['jskom.templates']).
     function($filter) {
       return function(unixTimestamp) {
         return $filter('date')(new Date(unixTimestamp*1000), 'yyyy-MM-dd HH:mm:ss');
+      };
+    }
+  ]).
+  filter('confTitle', [
+    '$filter',
+    function($filter) {
+      return function(conf) {
+        if (conf) {
+          var alternateTitle = _.find(conf.aux_items, function(aux_item) {
+            if (aux_item.tag == 'komfeeder-title') {
+              return true;
+            } else {
+              return false;
+            }
+          });
+          if (alternateTitle) {
+            return alternateTitle.data;
+          } else {
+            return conf.name;
+          }
+        } else {
+          return "";
+        }
+      };
+    }
+  ]).
+  filter('hasKomfeederUrl', [
+    '$filter',
+    function($filter) {
+      return function(confOrText) {
+        if (confOrText) {
+          var url = _.find(confOrText.aux_items, function(aux_item) {
+            if (aux_item.tag == 'komfeeder-url') {
+              return true;
+            } else {
+              return false;
+            }
+          });
+          if (url) {
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      };
+    }
+  ]).
+  filter('komfeederUrl', [
+    '$filter',
+    function($filter) {
+      return function(confOrText) {
+        if (confOrText) {
+          var url = _.find(confOrText.aux_items, function(aux_item) {
+            if (aux_item.tag == 'komfeeder-url') {
+              return true;
+            } else {
+              return false;
+            }
+          });
+          if (url) {
+            return url.data;
+          } else {
+            return null;
+          }
+        } else {
+          return null;
+        }
       };
     }
   ]).

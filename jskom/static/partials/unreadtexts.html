@@ -1,7 +1,10 @@
 <div ng-cloak>
   <h2 class="jskomNoWrap">
     <span ng-hide="membership == null">{{ membership.no_of_unread }} unread in</span>
-    <a href="/conferences/{{conf.conf_no}}">{{ conf.name }}</a>
+    <a href="/conferences/{{conf.conf_no}}">{{ conf | confTitle }}</a>
+    <span ng-show="conf|hasKomfeederUrl">
+      (<a href="{{ conf | komfeederUrl}}"><i class="icon-external-link"></i></a>)
+    </span>
   </h2>
   
   <ng-include src="'reader.html'|jskomTemplate"></ng-include>
