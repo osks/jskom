@@ -335,7 +335,6 @@ angular.module('jskom.services', ['jskom.settings']).
         }
         
         text.jskomFastReplies = null;
-        text.jskomMxDate = null;
         if (text.aux_items) {
           text.jskomFastReplies = _.filter(text.aux_items, function(aux_item) {
             return aux_item.tag == 'fast-reply';
