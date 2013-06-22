@@ -303,9 +303,9 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
     // <jskom:conf-input model="session.person.pers_no" only-pers></jskom:conf-input>
     
     '$log', '$window', '$timeout',
-    'templatePath', 'conferencesService', 'messagesService',
+    'templatePath', 'conferencesService', 'messagesService', 'sessionsService',
     function($log, $window, $timeout,
-             templatePath, conferencesService, messagesService) {
+             templatePath, conferencesService, messagesService, sessionsService) {
       var errorMsgText = function(wantPers, wantConfs) {
         if (!wantPers) {
           return "conference";
@@ -374,8 +374,17 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             });
             
             scope.clearMatching = function() {
-              scope.conf = null;
-              scope.matches = [];
+              function clear() {
+                scope.conf = null;
+                scope.matches = [];
+              }
+              
+              if (scope.conn.isConnected()) {
+                // If we're connected, disconnect and then clear (even if it failed).
+                sessionsService.deleteSession(scope.conn, 0).then(clear, clear);
+              } else {
+                clear();
+              }
             };
             
             scope.getConf = function() {
