@@ -7,7 +7,7 @@
           ng-options="sid as s|serverName for (sid, s) in servers"></select>
   
   <label>Person name</label>
-  <jskom:conf-input conn="connection" model="person.pers_no" only-pers>
+  <jskom:conf-input conn="connection" model="person.pers_no" only-pers disconnect-on-clear>
   </jskom:conf-input>
   
   <label>Password</label>

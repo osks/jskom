@@ -344,6 +344,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             
             scope.wantPers = true;
             scope.wantConfs = true;
+            scope.disconnectOnClear = false; // Disconnect on clearMatching()
             
             scope.matches = [];
             scope.lookup = '';
@@ -379,7 +380,7 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
                 scope.matches = [];
               }
               
-              if (scope.conn.isConnected()) {
+              if (scope.disconnectOnClear && scope.conn.isConnected()) {
                 // If we're connected, disconnect and then clear (even if it failed).
                 sessionsService.deleteSession(scope.conn, 0).then(clear, clear);
               } else {
@@ -443,6 +444,10 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
           }
           if (('onlyConfs' in iAttrs)) {
             scope.wantPers = false;
+          }
+
+          if (('disconnectOnClear' in iAttrs)) {
+            scope.disconnectOnClear = true;
           }
           
           if (('autofocus' in iAttrs)) {
