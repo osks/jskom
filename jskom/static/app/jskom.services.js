@@ -89,13 +89,6 @@ angular.module('jskom.services', ['jskom.settings']).
               }
             },
             {
-              regexp: lyskomTextNumberRegexp,
-              func: function(match, p1) {
-                return '<jskom:a text-no="' + match + '">' + escapeExpression(match) +
-                  '</jskom:a>';
-              }
-            },
-            {
               regexp: lyskomUrlLinkRegexp,
               func: function(match, p1) {
                 return '<a target="_blank" href="' + p1 + '">' + escapeExpression(match) +
@@ -105,8 +98,20 @@ angular.module('jskom.services', ['jskom.settings']).
             {
               regexp: urlRegexp,
               func: function(match) {
-                return '<a target="_blank" href="' + match + '">' + escapeExpression(match) +
+                var url = match;
+                // If the URL has no protocol, add http as default.
+                if (url.indexOf("://") === -1) {
+                  url = "http://" + url;
+                }
+                return '<a target="_blank" href="' + url + '">' + escapeExpression(match) +
                   '</a>';
+              }
+            },
+            {
+              regexp: lyskomTextNumberRegexp,
+              func: function(match, p1) {
+                return '<jskom:a text-no="' + match + '">' + escapeExpression(match) +
+                  '</jskom:a>';
               }
             },
             {

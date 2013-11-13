@@ -124,5 +124,39 @@ suite('htmlFormattingService', function() {
         service.formatBody(text),
         '<a href="/conferences/14567">&lt;möte 14567: KOMFeeder (-) www.skinnytaste.com/&gt;</a>');
     });
+
+    test('should match URLs that does not include protocol and add http:// to href but not text when missing', function () {
+      var text = "www.google.com"
+
+      assert.equal(
+        service.formatBody(text),
+        '<a target="_blank" href="http://www.google.com">www.google.com</a>');
+    });
+
+    test('should handle URLs starting with other protocols than http', function () {
+      var text = "https://www.google.com"
+
+      assert.equal(
+        service.formatBody(text),
+        '<a target="_blank" href="https://www.google.com">https://www.google.com</a>');
+    });
+
+    test('regression test for links in text 20542125', function () {
+      var text = "Dricka te och l\u00e4sa en god bok?\nSpringa Kungsholmen runt?\n\nwww.gratisistockholm.nu/viewObject.aspx?objectId=83712\n\nwww.gratisistockholm.nu/viewObject.aspx?objectId=83623\n\nEller n\u00e5got annat."
+
+      assert.equal(
+        service.formatBody(text),
+        'Dricka te och läsa en god bok?<br/>Springa Kungsholmen runt?<br/><br/><a target="_blank" href="http://www.gratisistockholm.nu/viewObject.aspx?objectId=83712">www.gratisistockholm.nu/viewObject.aspx?objectId=83712</a><br/><br/><a target="_blank" href="http://www.gratisistockholm.nu/viewObject.aspx?objectId=83623">www.gratisistockholm.nu/viewObject.aspx?objectId=83623</a><br/><br/>Eller något annat.');
+    });
+
+    test('', function () {
+      var text = "https://bugzilla.mozilla.org/show_bug.cgi?id=432710";
+      
+      assert.equal(
+        service.formatBody(text),
+        '<a target="_blank" href="https://bugzilla.mozilla.org/show_bug.cgi?id=432710">https://bugzilla.mozilla.org/show_bug.cgi?id=432710</a>');
+
+    });
+
   });
 });
