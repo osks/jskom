@@ -480,6 +480,14 @@ angular.module('jskom.services', ['jskom.settings']).
             function (response) {
               return response.data;
             });
+        },
+        
+        getUserArea: function (conn, pers_no) {
+          var request = { method: 'get', url: '/persons/' + person.pers_no + '/user-area/jskom' };
+          return conn.http(request, true, true).then(
+            function (response) {
+              console.log(response);
+            });
         }
       };
     }
