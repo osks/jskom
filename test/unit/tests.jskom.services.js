@@ -46,10 +46,10 @@ suite('htmlFormattingService', function() {
       assert.equal(service.formatBody('123'), '123');
       
       assert.equal(service.formatBody('1234'),
-                   '<jskom:a text-no="1234">1234</jskom:a>');
+                   '<a href="/texts/?text=1234">1234</a>');
       
       assert.equal(service.formatBody('a text number 1287624 in some text'),
-                   'a text number <jskom:a text-no="1287624">1287624</jskom:a> in some text');
+                   'a text number <a href="/texts/?text=1287624">1287624</a> in some text');
     });
     
     test('should linkify lyskom conf link', function() {
@@ -72,24 +72,24 @@ suite('htmlFormattingService', function() {
       assert.equal(service.formatBody('<text12345>'), '&lt;text12345&gt;');
       
       assert.equal(service.formatBody('<text  1234567>'),
-                   '<jskom:a text-no="1234567">&lt;text  1234567&gt;</jskom:a>');
+                   '<a href="/texts/?text=1234567">&lt;text  1234567&gt;</a>');
       
       assert.equal(service.formatBody('<text 4711: lite text>'),
-                   '<jskom:a text-no="4711">&lt;text 4711: lite text&gt;</jskom:a>');
+                   '<a href="/texts/?text=4711">&lt;text 4711: lite text&gt;</a>');
       
       // This test shows that a line feed character inside a lyskom
       // <text ..> tag will remain a line feed, and not be replaced by
       // a <br> tag. This is because we don't handle nested tags.
       assert.equal(service.formatBody('Man trycker C-c C-i C-l (tänk på det som "insert link" eller "infoga\nlänk") och svarar på frågorna. Eller så skriver man <text 4711: en\ntegelsten>.'),
-                   'Man trycker C-c C-i C-l (tänk på det som &quot;insert link&quot; eller &quot;infoga<br/>länk&quot;) och svarar på frågorna. Eller så skriver man <jskom:a text-no="4711">&lt;text 4711: en\ntegelsten&gt;</jskom:a>.');
+                   'Man trycker C-c C-i C-l (tänk på det som &quot;insert link&quot; eller &quot;infoga<br/>länk&quot;) och svarar på frågorna. Eller så skriver man <a href="/texts/?text=4711">&lt;text 4711: en\ntegelsten&gt;</a>.');
       
       // This test shows that a <text ...> tag cannot contain other
       // tags (i.e. you can't nest tags).
       assert.equal(service.formatBody('<text 19914766: Hej>. <text 19914766: Hej då> ' +
                                       '<text 19914766>'),
-                   '<jskom:a text-no="19914766">&lt;text 19914766: Hej&gt;</jskom:a>. ' + 
-                   '<jskom:a text-no="19914766">&lt;text 19914766: Hej då&gt;</jskom:a> ' + 
-                   '<jskom:a text-no="19914766">&lt;text 19914766&gt;</jskom:a>');
+                   '<a href="/texts/?text=19914766">&lt;text 19914766: Hej&gt;</a>. ' + 
+                   '<a href="/texts/?text=19914766">&lt;text 19914766: Hej då&gt;</a> ' + 
+                   '<a href="/texts/?text=19914766">&lt;text 19914766&gt;</a>');
     });
     
     test('should replace newlines with br tags', function() {
@@ -149,13 +149,12 @@ suite('htmlFormattingService', function() {
         'Dricka te och läsa en god bok?<br/>Springa Kungsholmen runt?<br/><br/><a target="_blank" href="http://www.gratisistockholm.nu/viewObject.aspx?objectId=83712">www.gratisistockholm.nu/viewObject.aspx?objectId=83712</a><br/><br/><a target="_blank" href="http://www.gratisistockholm.nu/viewObject.aspx?objectId=83623">www.gratisistockholm.nu/viewObject.aspx?objectId=83623</a><br/><br/>Eller något annat.');
     });
 
-    test('', function () {
+    test('bugzilla links', function () {
       var text = "https://bugzilla.mozilla.org/show_bug.cgi?id=432710";
       
       assert.equal(
         service.formatBody(text),
         '<a target="_blank" href="https://bugzilla.mozilla.org/show_bug.cgi?id=432710">https://bugzilla.mozilla.org/show_bug.cgi?id=432710</a>');
-
     });
 
   });

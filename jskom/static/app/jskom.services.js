@@ -79,7 +79,7 @@ angular.module('jskom.services', ['jskom.settings']).
             {
               regexp: lyskomTextLinkRegexp,
               func: function(match, p1) {
-                return '<jskom:a text-no="' + p1 + '">' + escapeExpression(match) + '</jskom:a>';
+                return '<a href="/texts/?text=' + p1 + '">' + escapeExpression(match) + '</a>';
               }
             },
             {
@@ -110,8 +110,8 @@ angular.module('jskom.services', ['jskom.settings']).
             {
               regexp: lyskomTextNumberRegexp,
               func: function(match, p1) {
-                return '<jskom:a text-no="' + match + '">' + escapeExpression(match) +
-                  '</jskom:a>';
+                return '<a href="/texts/?text=' + match + '">' + escapeExpression(match) +
+                  '</a>';
               }
             },
             {
@@ -148,7 +148,7 @@ angular.module('jskom.services', ['jskom.settings']).
         
         linkifyLyskomLinks: function(htmlStr) {
           var replacer = function(match, p1) {
-            return '<jskom:a text-no="' + encodeURI(p1) + '">' + p1 + '</jskom:a>';
+            return '<a href="/texts/?text=' + encodeURI(p1) + '">' + p1 + '</a>';
           };
           return htmlStr.replace(lyskomTextNumberRegexp, replacer);
         }

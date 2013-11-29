@@ -165,8 +165,8 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
     // Example:
     // <div jskom-bind-body="text.body"></div>
     
-    '$log', '$compile', 'htmlFormattingService',
-    function($log, $compile, htmlFormattingService) {
+    '$log', 'htmlFormattingService',
+    function($log, htmlFormattingService) {
       return {
         restrict: 'A',
         link: function(scope, iElement, iAttrs) {
@@ -182,7 +182,6 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
             }
             var formattedBody = htmlFormattingService.formatBody(str);
             var templateHtml = angular.element('<p>' + formattedBody + '</p>');
-            $compile(templateHtml)(scope);
             iElement.html(templateHtml);
           });
         }
