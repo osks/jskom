@@ -5,11 +5,16 @@
 angular.module('jskom.filters', ['jskom.templates']).
   filter('textDate', [
     function() {
+      function mxDateToISO8601(mxDate) {
+        return new Date(mxDateToTimestamp).toISOString(); // the lazy way
+      }
       
-      function parseMxDate(mxDate) {
-        // We have all other dates in unix timestamp format and we
-        // get the mx-date aux item in this format: "2013-06-01
-        // 04:20:00 +0200"
+      function mxDateToTimestamp(mxDate) {
+        // Convert the mx-date aux item time format to a unix
+        // timestamp. The mx-date format:
+        // 
+        // "2013-06-01 04:20:00 +0200"
+        //
         var utcMs = Date.UTC(
           parseInt(mxDate.data.substr(0, 4), 10),
           parseInt(mxDate.data.substr(5, 2), 10)-1,
@@ -18,10 +23,10 @@ angular.module('jskom.filters', ['jskom.templates']).
           parseInt(mxDate.data.substr(14, 2), 10),
           parseInt(mxDate.data.substr(17, 2), 10));
           
-          var tzOffset = (parseInt(mxDate.data.substr(20, 3), 10)*3600) +
-            (parseInt(mxDate.data.substr(23, 2), 10)*60);
+        var tzOffset = (parseInt(mxDate.data.substr(20, 3), 10)*3600) +
+          (parseInt(mxDate.data.substr(23, 2), 10)*60);
           
-          return (utcMs / 1000) - tzOffset;
+        return (utcMs / 1000) - tzOffset;
       }
       
       return function(text) {
@@ -35,13 +40,24 @@ angular.module('jskom.filters', ['jskom.templates']).
           });
           
           if (alternateDate) {
-            return parseMxDate(alternateDate);
+            return mxDateToISO8601(alternateDate);
           } else {
             return text.creation_time;
           };
         } else {
           return 0;
         }
+      };
+    }
+  ]).
+  filter('dateString', [
+    '$filter',
+    function($filter) {
+      return function(iso8601Date) {
+        if (iso8601Date === null) {
+          return null;
+        }
+        return $filter('date')(Date.parse(iso8601Date), 'yyyy-MM-dd HH:mm:ss');
       };
     }
   ]).
@@ -93,14 +109,6 @@ angular.module('jskom.filters', ['jskom.templates']).
         } else {
           return "";
         }
-      };
-    }
-  ]).
-  filter('dateString', [
-    '$filter',
-    function($filter) {
-      return function(unixTimestamp) {
-        return $filter('date')(new Date(unixTimestamp*1000), 'yyyy-MM-dd HH:mm:ss');
       };
     }
   ]).
