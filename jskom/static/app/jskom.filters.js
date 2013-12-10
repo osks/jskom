@@ -6,7 +6,9 @@ angular.module('jskom.filters', ['jskom.templates']).
   filter('textDate', [
     function() {
       function mxDateToISO8601(mxDate) {
-        return new Date(mxDateToTimestamp).toISOString(); // the lazy way
+        // the lazy way
+        var d = new Date(mxDateToTimestamp(mxDate)*1000);
+        return d.toISOString();
       }
       
       function mxDateToTimestamp(mxDate) {
@@ -25,7 +27,6 @@ angular.module('jskom.filters', ['jskom.templates']).
           
         var tzOffset = (parseInt(mxDate.data.substr(20, 3), 10)*3600) +
           (parseInt(mxDate.data.substr(23, 2), 10)*60);
-          
         return (utcMs / 1000) - tzOffset;
       }
       
