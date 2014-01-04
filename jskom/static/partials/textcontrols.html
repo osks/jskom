@@ -41,7 +41,7 @@
 <div class="row" ng-cloak>
   <div class="three mobile-one columns">
     <button type="button" class="secondary button" ng-click="writeComment()"
-            ng-disabled="!text">
+            ng-show="text">
       <i class="icon-pencil"></i>
       <span>
         <!-- Must nest hide-for-small in span because of "display: inherit" -->
