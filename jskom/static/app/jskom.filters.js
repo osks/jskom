@@ -40,13 +40,17 @@ angular.module('jskom.filters', ['jskom.templates']).
             }
           });
           
-          if (alternateDate) {
-            return mxDateToISO8601(alternateDate);
-          } else {
-            return text.creation_time;
-          };
+          try {
+            if (alternateDate) {
+              return mxDateToISO8601(alternateDate);
+            } else {
+              return text.creation_time;
+            };
+          } catch (err) {
+            return null;
+          }
         } else {
-          return 0;
+          return null;
         }
       };
     }
