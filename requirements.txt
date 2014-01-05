@@ -1,7 +1,8 @@
-Flask==0.9
-Flask-Assets==0.7
-Jinja2==2.6
-Werkzeug==0.8.3
-cssmin==0.1.4
-webassets==0.7
-wsgiref==0.1.2
+Flask==0.10.1
+Flask-Assets==0.8
+Jinja2==2.7.1
+MarkupSafe==0.18
+Werkzeug==0.9.4
+cssmin==0.2.0
+itsdangerous==0.23
+webassets==0.9
