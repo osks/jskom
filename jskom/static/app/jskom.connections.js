@@ -35,7 +35,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
              membershipListFactory, membershipListHandlerFactory) {
       var HttpkomConnection = function(httpkomServer, id, serverId, httpkomId, session) {
         this._httpkomServer = httpkomServer;
-        this.id = id; // our internal id
+        this.id = id; // jskom internal id
         this.serverId = serverId;
         this.httpkomId = httpkomId;
         this.session = session;
