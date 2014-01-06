@@ -61,6 +61,10 @@
     this._userActiveLastSent = null;
     this._userActivePromise = null;
     
+    // TODO: We pass ourself ("this") to the membershipListHandler,
+    // which isn't really nice. Also, "this" won't be correct until
+    // this constructor has returend, so MembershipListHandler must not
+    // do anything with us until later. Bad coupling.
     this.membershipListHandler = this._membershipListHandlerFactory.create(
       this, this._membershipListFactory.create());
     
@@ -398,7 +402,7 @@
       // boolean, but rather null, undefined or true depending on
       // the values. This causes angular to change state in an
       // ng-switch, and re-draw the DOM (which resets the scope).
-      return (this.session && this.session.person) ? true : false;
+      return (this.isConnected() && this.session.person) ? true : false;
     },
     
     getPersNo: function() {

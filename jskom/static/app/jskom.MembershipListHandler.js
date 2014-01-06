@@ -26,7 +26,11 @@
   
   _.extend(MembershipListHandler.prototype, {
     initialize: function () {
-      return this._initialize();
+      if (this._conn.isLoggedIn()) {
+        return this._initialize();
+      } else {
+        return this._$q.reject();
+      }
     },
 
     _initialize: function () {
@@ -241,7 +245,7 @@
       var self = this;
 
       function refresh() {
-        self.refreshUnread().then(
+        self._fetchMembershipUnreads().then(
           function() {
             scheduleRefresh(defaultIntervalMs);
           },
@@ -279,6 +283,9 @@
     refreshUnread: function () {
       var self = this;
       return this._initialize().then(function () {
+        // Reset auto refresh to delay it for a full interval after
+        // this manual refresh.
+        self._enableAutoRefresh();
         return self._fetchMembershipUnreads();
       });
     }

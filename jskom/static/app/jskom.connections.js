@@ -129,6 +129,8 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
             connections = connections || {};
             _.each(connections, function(connObj, id) {
               connections[id] = connectionFactory.createConnection(connObj);
+              // Initialize membershipListHandler
+              connections[id].membershipListHandler.initialize();
             });
             return connections;
           } catch (e) {
