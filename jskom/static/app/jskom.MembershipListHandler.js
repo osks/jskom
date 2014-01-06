@@ -1,3 +1,7 @@
+// Copyright (C) 2012-2014 Oskar Skoog.
+
+'use strict';
+
 (function (jskom) {
   // The MembershipListHandler regularly polls the server for any
   // new unread texts/memberships and upates the membership
@@ -21,7 +25,12 @@
   };
   
   _.extend(MembershipListHandler.prototype, {
+    initialize: function () {
+      return this._initialize();
+    },
+
     _initialize: function () {
+      // only initialize once
       if (this._initializePromise == null) {
         var p1 = this._fetchUnreadMemberships();
         var p2 = this._fetchMembershipUnreads();
@@ -227,19 +236,29 @@
 
     _enableAutoRefresh: function () {
       this._$log.log(this._logPrefix + "enabling auto-refresh");
+
+      var defaultIntervalMs = this._refreshIntervalSeconds * 1000;
       var self = this;
-      function scheduleReload() {
-        self._autoRefreshPromise = self._$timeout(function() {
-          self.refreshUnread().then(
-            function() {
-              scheduleReload();
-            },
-            function() {
-              self.disableAutoRefresh();
-            });
-        }, self._refreshIntervalSeconds * 1000);
+
+      function refresh() {
+        self.refreshUnread().then(
+          function() {
+            scheduleRefresh(defaultIntervalMs);
+          },
+          function() {
+            scheduleRefresh(defaultIntervalMs * 2); // failed: delay next attempt
+          });
       }
-      scheduleReload();
+
+      function scheduleRefresh(refreshIntervalMs) {
+        if (self._autoRefreshPromise != null) {
+          // If there already is a refresh scheduled, cancel it and schedule a new.
+          self._$timeout.cancel(self._autoRefreshPromise);
+        }
+        self._autoRefreshPromise = self._$timeout(refresh, refreshIntervalMs);
+      }
+
+      scheduleRefresh(defaultIntervalMs);
     },
     
     enableAutoRefresh: function () {
