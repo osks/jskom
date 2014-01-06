@@ -380,7 +380,8 @@ angular.module('jskom.services', ['jskom.settings']).
         },
         
         getLastCreatedTextsInConference: function(conn, confNo) {
-          return conn.http({ method: 'get', url: '/conferences/' + confNo + '/texts/' },
+          return conn.http({ method: 'get', url: '/conferences/' + confNo + '/texts/',
+                             params: { "no-of-texts": 100 } },
                            true, true).
             then(function(response) {
               $log.log("textsService - getLastCreatedTextsInConference(" + confNo + ") - success");

@@ -820,6 +820,9 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             $log.log("ListConfTextsCtrl - getLastCreatedTextsInConference() - success");
             $scope.isLoadingTexts = false;
             $scope.texts = texts;
+
+            $scope.currentPage = 0;
+            $scope.numberOfPages = Math.ceil($scope.texts.length / $scope.pageSize);
           },
           function (response) {
             $log.log("ListConfTextsCtrl - getLastCreatedTextsInConference() - error");
@@ -841,14 +844,18 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             messagesService.showMessage('error', 'Failed to get conference.', response.data);
           });
       }
-      
+
       $scope.confNo = $routeParams.confNo;
       $scope.conf = null;
       $scope.isLoadingTexts = false;
       $scope.texts = null;
+      $scope.membership = null;
+      $scope.pageSize = 10;
+      $scope.currentPage = 0;
+      $scope.numberOfPages = 1;
+
       getConference($scope.confNo);
       
-      $scope.membership = null;
       $scope.$watch(
         function (scope) {
           return scope.membershipList.getMembership($scope.confNo);
@@ -866,6 +873,13 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         return false;
       });
 
+      $scope.previousPage = function() {
+        $scope.currentPage = ($scope.currentPage < 1 ? 0 : $scope.currentPage - 1);
+      };
+      $scope.nextPage = function() {
+        $scope.currentPage = ($scope.currentPage >= $scope.numberOfPages -1 ?
+                              $scope.currentPage : $scope.currentPage + 1);
+      };
     }
   ]).
   controller('ShowConfCtrl', [

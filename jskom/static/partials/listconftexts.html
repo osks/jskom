@@ -48,7 +48,8 @@
         </thead>
         <tbody>
           <tr ng-show="texts.length == 0"><td>No texts</td></tr>
-          <tr ng-repeat="text in texts">
+
+          <tr ng-repeat="text in texts | startFrom:currentPage*pageSize | limitTo:pageSize">
             <td>
               <i class="icon-unread" ng-show="text.text_no|isUnread:membership"></i>
             </td>
@@ -66,6 +67,16 @@
           </tr>
         </tbody>
       </table>
+
+    <ul class="pagination">
+      <li ng-class="{'unavailable': currentPage < 1 }">
+        <a ng-click="previousPage()">Previous</a>
+      </li>
+      <li>{{currentPage+1}} / {{numberOfPages}}</li>
+      <li ng-class="{'unavailable': currentPage >= numberOfPages - 1}">
+        <a ng-click="nextPage()">Next</a>
+      </li>
+    </ul>
     </div>
   </div>
   
