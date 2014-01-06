@@ -716,18 +716,6 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.numberOfPages = 1;
       $scope.pageNumbers = [0];
       
-      $scope.currentPageClass = function (pageNumber) {
-        if (pageNumber == $scope.currentPage) {
-          return "current";
-        } else {
-          return "";
-        }
-      };
-      
-      $scope.showPage = function (pageNumber) {
-        $scope.currentPage = pageNumber;
-      };
-      
       var getMarks = function() {
         $scope.isLoading = true;
         marksService.getMarks($scope.connection).then(
