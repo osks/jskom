@@ -1,4 +1,4 @@
-// Copyright (C) 2012 Oskar Skoog.
+// Copyright (C) 2012-2014 Oskar Skoog.
 
 'use strict';
 

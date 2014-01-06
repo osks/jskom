@@ -1,3 +1,7 @@
+// Copyright (C) 2012-2014 Oskar Skoog.
+
+'use strict';
+
 (function (jskom) {
   // The MembershipList stores the memberships. It provides
   // methods for accessing the full list of membership and the
