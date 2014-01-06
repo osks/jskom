@@ -121,11 +121,9 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
   ]).
   controller('ConnectionsCtrl', [
     '$scope', '$rootScope', '$log', '$location',
-    'connectionFactory', 'connectionsService', 'httpkom', 'messagesService', 'sessionsService',
-    'keybindingService',
+    'connectionsService', 'httpkom', 'messagesService', 'sessionsService', 'keybindingService',
     function($scope, $rootScope, $log, $location,
-             connectionFactory, connectionsService, httpkom, messagesService, sessionsService,
-             keybindingService) {
+             connectionsService, httpkom, messagesService, sessionsService, keybindingService) {
       $scope.newConnection = function() {
         connectionsService.newConnectionPromise().then(
           function(conn) {
