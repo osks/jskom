@@ -51,6 +51,7 @@
       <div ng-switch-when="image"><img ng-src="{{ text.jskomImageUrl }}" /></div>
       <div ng-switch-when="text">
         <ng-switch on="textMode">
+          <div ng-switch-default jskom-bind-body="text.body"></div>
           <div ng-switch-when="text" jskom-bind-body="text.body"></div>
           <pre ng-switch-when="raw" jskom-bind-body="text.body"></pre>
           <div ng-switch-when="html" ng-bind-html="text.body"></div>
@@ -58,6 +59,7 @@
       </div>
       <div ng-switch-when="html">
         <ng-switch on="textMode">
+          <div ng-switch-default jskom-bind-body="text.body"></div>
           <div ng-switch-when="text" jskom-bind-body="text.body"></div>
           <pre ng-switch-when="raw" jskom-bind-body="text.body"></pre>
           <div><p ng-switch-when="html" ng-bind-html="text.body"></p></div>
