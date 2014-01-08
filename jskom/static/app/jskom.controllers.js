@@ -1010,7 +1010,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.reader = readerFactory.createReader($scope.connection);
       
       pageTitleService.set("Text " + $scope.textNo);
-      $rootScope.$on('$routeUpdate', function($event) {
+      $scope.$on('$routeUpdate', function($event) {
         $scope.textNo = $location.search().text;
         pageTitleService.set("Text " + $scope.textNo);
       });
@@ -1220,7 +1220,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       }
       
-      $rootScope.$on('$routeUpdate', function(event) {
+      $scope.$on('$routeUpdate', function(event) {
         // We manually clear messages. It is done on route change, but
         // we don't want to trigger route change on changing text
         // parameter, so we need to clear messages ourself here.
