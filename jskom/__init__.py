@@ -2,6 +2,8 @@
 # Copyright (C) 2012 Oskar Skoog.
 
 import os
+import logging
+from logging.handlers import TimedRotatingFileHandler
 
 from flask import Flask, render_template, send_from_directory
 from flask.ext.assets import Environment, Bundle
@@ -11,6 +13,9 @@ import version
 
 class default_settings:
     DEBUG = False
+    LOG_FILE = None
+    LOG_LEVEL = logging.WARNING
+
     SEND_FILE_MAX_AGE_DEFAULT = 0
     
     STATIC_VERSION = ''
@@ -26,6 +31,24 @@ if 'JSKOM_SETTINGS' in os.environ:
     app.config.from_envvar('JSKOM_SETTINGS')
 else:
     app.logger.info("No environment variable JSKOM_SETTINGS found, using default settings.")
+
+
+if not app.debug and app.config['LOG_FILE'] is not None:
+    # keep 7 days of logs, rotated every midnight
+    file_handler = TimedRotatingFileHandler(
+        app.config['LOG_FILE'], when='midnight', interval=1, backupCount=7)
+    
+    file_handler.setFormatter(logging.Formatter(
+           '%(asctime)s %(levelname)s: %(message)s '
+            '[in %(pathname)s:%(lineno)d]'
+            ))
+    
+    file_handler.setLevel(app.config['LOG_LEVEL'])
+    
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(app.config['LOG_LEVEL'])
+    app.logger.info("Finished setting up file logger.");
+
 
 assets = Environment(app)
 
