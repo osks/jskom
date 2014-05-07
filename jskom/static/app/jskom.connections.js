@@ -248,7 +248,9 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         var promise = deferred.promise;
         serversPromise.then(
           function(servers) {
-            var firstServer = _.first(_.values(servers));
+            var sortedServerList = _.sortBy(_.values(servers),
+                                            function (s) { return s.sort_order; });
+            var firstServer = _.first(sortedServerList);
             var serverId = null;
             if (firstServer) {
               serverId = firstServer.id;
