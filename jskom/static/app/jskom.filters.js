@@ -262,11 +262,29 @@ angular.module('jskom.filters', ['jskom.templates']).
   ]).
   filter('capitalize', [
     function() {
-      return function(str) {
+      return function (str) {
         if (_.isString(str)) {
           return str.charAt(0).toUpperCase() + str.slice(1);
         } else {
           return str;
+        }
+      };
+    }
+  ]).
+  filter('auxitemtag', [
+    function() {
+      return function (auxitemList, tag) {
+        if (auxitemList == null) {
+          return null;
+        } else {
+          var auxitems = _.filter(auxitemList, function (auxitem) {
+            if (auxitem.tag == tag) {
+              return true;
+            } else {
+              return false;
+            }
+          });
+          return auxitems;
         }
       };
     }

@@ -121,6 +121,14 @@
               <td>Closed</td>
               <td>{{conf.type.rd_prot}}</td>
             </tr>
+            <tr>
+              <td>FAQ</td>
+              <td>
+                <span ng-repeat="auxitem in conf.aux_items|auxitemtag:'faq-text'">
+                  <jskom:a text-no="{{auxitem.data}}">{{auxitem.data}}</jskom:a>
+                </span>
+              </td>
+            </tr>
           </table>
         </li>
         
