@@ -25,7 +25,10 @@
       $('body div')
         .append('<h3>Your browser is too old for jskom</h3>')
         .append('Missing support for:')
-        .append(ul);
+        .append(ul)
+        .append('<p>Note: Missing support for localStorage ' +
+                'can be because of private mode browsing, ' +
+                'which is not supported.</p>');
       return false;
     } else {
       return true;
