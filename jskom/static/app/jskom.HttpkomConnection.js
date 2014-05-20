@@ -220,6 +220,9 @@
               self._cancelAllPendingRequestsRequiringSession();
               self._resetSession();
             } else if (response.status === 500) {
+              self._$log.log("HttpkomConnection - _request() - 502: " + config.url);
+              self._cancelAllPendingRequestsRequiringSession();
+            } else if (response.status === 500) {
               self._$log.log("HttpkomConnection - _request() - 500: " + config.url);
               var error = response.data;
               if (_.isObject(error)
