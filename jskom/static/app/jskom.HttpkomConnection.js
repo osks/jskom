@@ -219,7 +219,7 @@
               // Both the httpkomId and session are invalid.
               self._cancelAllPendingRequestsRequiringSession();
               self._resetSession();
-            } else if (response.status === 500) {
+            } else if (response.status === 502) {
               self._$log.log("HttpkomConnection - _request() - 502: " + config.url);
               self._cancelAllPendingRequestsRequiringSession();
             } else if (response.status === 500) {
