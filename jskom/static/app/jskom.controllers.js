@@ -806,6 +806,19 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       };
     }
   ]).
+  controller('GoToTextCtrl', [
+    '$scope', '$location', '$log', 'pageTitleService',
+    function($scope, $location, $log, pageTitleService) {
+      pageTitleService.set("Go to text");
+
+      $scope.textNo = null;
+      $scope.goToText = function() {
+        if ($scope.textNo) {
+          $location.url('/texts/?text=' + parseInt($scope.textNo));
+        }
+      };
+    }
+  ]).
   controller('ListConfTextsCtrl', [
     '$scope', '$routeParams', '$log', '$location',
     'pageTitleService', 'conferencesService', 'messagesService', 'textsService',

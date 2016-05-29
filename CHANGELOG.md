@@ -1,5 +1,12 @@
 # Changelog for jskom
 
+## Unreleased
+
+### Added
+
+- New "Go to text" page (under the Texts menu).
+
+
 ## 0.14 (2016-05-29)
 
 ### Added
