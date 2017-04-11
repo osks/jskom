@@ -488,11 +488,11 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           }
         });
       };
-      
+
       $scope.selectTab = function(tab) {
         $scope.activeTab = tab;
       };
-      
+
       $scope.isTabActive = function(tab) {
         if ($scope.activeTab == tab) {
           return 'active';
@@ -535,6 +535,21 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         $scope.text = newText;
         $scope.activeTab = 'advanced';
       }
+
+
+      $scope.activeContentTypeTab = 'text'; // text or image
+
+      $scope.selectContentTypeTab = function(tab) {
+        $scope.activeContentTypeTab = tab;
+      };
+
+      $scope.isContentTypeTabActive = function(tab) {
+        if ($scope.activeContentTypeTab == tab) {
+          return 'active';
+        } else {
+          return '';
+        }
+      };
 
       // fixme: the onchange event will not be triggered again for the input if the same file is selected.
       $scope.loadImage = function(files) {

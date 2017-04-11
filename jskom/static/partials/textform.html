@@ -26,7 +26,8 @@
       
       <span class="label">Subject</span> <em>{{ text.subject }}</em>
     </li>
-    
+
+
     <li ng-class="isTabActive('advanced')">
       
       <div ng-repeat="commentTo in text.comment_to_list" class="row">
@@ -81,21 +82,32 @@
     </li>
   </ul>
 
-  <textarea ng-show="text.content_type == 'text/plain'" name="body" rows="5" ng-model="text.body" jskom-autofocus>
-  </textarea>
 
-  <div ng-show="text.content_type != 'text/plain'">
-    <img ng-src="data:{{imageContentType}};base64,{{text.body}}" />
-  </div>
+  <dl class="tabs pill">
+    <dd ng-class="isContentTypeTabActive('text')" >
+      <a ng-click="selectContentTypeTab('text')">Text</a>
+    </dd>
+    <dd ng-class="isContentTypeTabActive('image')" >
+      <a ng-click="selectContentTypeTab('image')">Image</a>
+    </dd>
+  </dl>
 
-  <p/>
+  <ul class="tabs-content">
+    <li ng-class="isContentTypeTabActive('text')">
+      <textarea ng-show="text.content_type == 'text/plain'" name="body" rows="5" ng-model="text.body" jskom-autofocus>
+      </textarea>
+    </li>
 
-  <div>
-    Or upload an image:
-    <input type="file" accept="image/*;capture=camera"
-           onchange="angular.element(this).scope().loadImage(this.files)"/ />
-  <div>
 
-  <p/>
+    <li ng-class="isContentTypeTabActive('image')">
+      <div ng-show="text.content_type != 'text/plain'">
+        <img ng-src="data:{{imageContentType}};base64,{{text.body}}" />
+      </div>
+
+      Select an image:
+      <input type="file" accept="image/*;capture=camera"
+             onchange="angular.element(this).scope().loadImage(this.files)"/ />
+    </li>
+  </ul>
 
 </div>
