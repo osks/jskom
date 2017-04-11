@@ -20,8 +20,8 @@ class default_settings:
     
     STATIC_VERSION = ''
     
-    # httpkom server, without trailing slash (example: 'http://localhost:5001')
-    HTTPKOM_SERVER = 'http://localhost:5001'
+    # httpkom server, without trailing slash (example: 'http://127.0.0.1:5001')
+    HTTPKOM_SERVER = 'http://127.0.0.1:5001'
     HTTPKOM_CONNECTION_HEADER = 'Httpkom-Connection'
 
 
