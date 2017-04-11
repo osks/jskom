@@ -80,7 +80,22 @@
       <input class="" type="text" name="subject" ng-model="text.subject" />
     </li>
   </ul>
-  
-  <textarea class="" name="body" rows="5" ng-model="text.body" jskom-autofocus>
+
+  <textarea ng-show="text.content_type == 'text/plain'" name="body" rows="5" ng-model="text.body" jskom-autofocus>
   </textarea>
+
+  <div ng-show="text.content_type != 'text/plain'">
+    <img ng-src="data:{{imageContentType}};base64,{{text.body}}" />
+  </div>
+
+  <p/>
+
+  <div>
+    Or upload an image:
+    <input type="file" accept="image/*;capture=camera"
+           onchange="angular.element(this).scope().loadImage(this.files)"/ />
+  <div>
+
+  <p/>
+
 </div>

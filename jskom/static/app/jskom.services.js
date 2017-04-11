@@ -1,4 +1,4 @@
-// Copyright (C) 2012-2014 Oskar Skoog.
+// Copyright (C) 2012-2017 Oskar Skoog.
 
 'use strict';
 
@@ -404,7 +404,7 @@ angular.module('jskom.services', ['jskom.settings']).
               return response.data;
             });
         },
-        
+
         createText: function(conn, text) {
           var self = this;
           return conn.http({ method: 'post', url: '/texts/', data: text }, true, true).then(
@@ -419,7 +419,7 @@ angular.module('jskom.services', ['jskom.settings']).
               return response.data;
             });
         },
-        
+
         // Is this a good way? Not sure if we want this. We should use
         // events instead.
         updateTextInCache: function(conn, textNo, textUpdateFunction) {

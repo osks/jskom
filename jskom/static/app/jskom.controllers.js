@@ -1,4 +1,4 @@
-// Copyright (C) 2012-2014 Oskar Skoog.
+// Copyright (C) 2012-2017 Oskar Skoog.
 
 'use strict';
 
@@ -449,7 +449,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.text = null;
       $scope.commentedText = null;
       $scope.activeTab = 'simple';
-      
+
       $scope.commentTypes = [
         { name: 'Comment', type: 'comment' },
         { name: 'Footnote', type: 'footnote' }
@@ -469,6 +469,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         return {
           recipient_list: [],
           content_type: 'text/plain',
+          content_encoding: null,
           subject: '',
           body: ''
         };
@@ -534,12 +535,39 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         $scope.text = newText;
         $scope.activeTab = 'advanced';
       }
-      
+
+      // fixme: the onchange event will not be triggered again for the input if the same file is selected.
+      $scope.loadImage = function(files) {
+        console.log("loadimage");
+        var file = files[0];
+        if (file) {
+          var imageReader  = new FileReader();
+          imageReader.addEventListener("load", function () {
+            $scope.$apply(function() {
+              $scope.text.content_type = imageReader.result.replace(/^data:(.*);base64,(.*)$/, "$1");
+              $scope.text.body = imageReader.result.replace(/^data:(.*);base64,(.*)$/, "$2");
+              $scope.text.content_encoding = "base64";
+          });
+          }, false);
+          $scope.text.content_type = null;
+          imageReader.readAsDataURL(file);
+        }
+      };
+      // reset doesn't work perfectly, since it doesn't handle
+      // selecting the same file twice (input change event not
+      // triggered).
+      /*$scope.resetImage = function(files) {
+        $scope.text.content_type = "text/plain";
+        $scope.text.body = "";
+        $scope.text.content_encoding = null;
+      };*/
+
+
       $scope.createText = function() {
         if ($scope.isCreating) {
           return;
         }
-        
+
         $scope.isCreating = true;
         textsService.createText($scope.connection, $scope.text).then(
           function(data) {
