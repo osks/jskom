@@ -100,8 +100,9 @@
 
 
     <li ng-class="isContentTypeTabActive('image')">
-      <div ng-show="text.content_type != 'text/plain'">
-        <img ng-src="data:{{imageContentType}};base64,{{text.body}}" />
+      <div>
+        <jskom:loading ng-show="imageIsLoading"></jskom:loading>
+        <img ng-src="{{imageDataUrl}}" ng-show="text.content_type != 'text/plain'"/>
       </div>
 
       Select an image:

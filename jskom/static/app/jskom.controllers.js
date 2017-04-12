@@ -441,11 +441,11 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
   ]).
   controller('NewTextCtrl', [
     '$scope', 'textsService', '$log', '$location', '$routeParams',
-    'messagesService', 'pageTitleService', 'keybindingService',
+    'messagesService', 'pageTitleService', 'keybindingService', 'imageService',
     function($scope, textsService, $log, $location, $routeParams,
-             messagesService, pageTitleService, keybindingService) {
+             messagesService, pageTitleService, keybindingService, imageService) {
       pageTitleService.set("New text");
-      
+
       $scope.text = null;
       $scope.commentedText = null;
       $scope.activeTab = 'simple';
@@ -551,31 +551,36 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
       };
 
-      // fixme: the onchange event will not be triggered again for the input if the same file is selected.
+      var maxImageSize = 600;
+      // can't use text.body in img ng-src, because it's updated when typing in the textarea,
+      // so therefor we have a imageDataUrl which we update only when we have a complete image.
+      $scope.imageDataUrl = null;
+      $scope.imageIsLoading = false;
       $scope.loadImage = function(files) {
-        console.log("loadimage");
         var file = files[0];
         if (file) {
+          $scope.text.content_type = null;
+          //console.log(file);
+          // TODO:
+          // * Use file.name in content type: name=<name>?
+          // * Use file.size to decide if we need to resize it?
+          // * Use EXIF info to rotate JPEGs?
           var imageReader  = new FileReader();
           imageReader.addEventListener("load", function () {
-            $scope.$apply(function() {
-              $scope.text.content_type = imageReader.result.replace(/^data:(.*);base64,(.*)$/, "$1");
-              $scope.text.body = imageReader.result.replace(/^data:(.*);base64,(.*)$/, "$2");
+            imageService.resizeImage(imageReader.result, maxImageSize, maxImageSize).then(function (scaledDataUrl) {
+              $scope.imageIsLoading = false;
+              $scope.imageDataUrl = scaledDataUrl;
+              $scope.text.content_type = scaledDataUrl.replace(/^data:(.*);base64,(.*)$/, "$1");
+              $scope.text.body = scaledDataUrl.replace(/^data:(.*);base64,(.*)$/, "$2");
               $scope.text.content_encoding = "base64";
-          });
+            });
           }, false);
-          $scope.text.content_type = null;
           imageReader.readAsDataURL(file);
+          $scope.$apply(function() {
+            $scope.imageIsLoading = true;
+          });
         }
       };
-      // reset doesn't work perfectly, since it doesn't handle
-      // selecting the same file twice (input change event not
-      // triggered).
-      /*$scope.resetImage = function(files) {
-        $scope.text.content_type = "text/plain";
-        $scope.text.body = "";
-        $scope.text.content_encoding = null;
-      };*/
 
 
       $scope.createText = function() {

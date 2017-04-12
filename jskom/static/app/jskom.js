@@ -71,7 +71,7 @@ window.jskom = {};
 angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
                          'jskom.controllers', 'jskom.filters', 'jskom.directives',
                          'jskom.connections']).
-  config(['$locationProvider', function($locationProvider) {  
+  config(['$locationProvider', function($locationProvider) {
     $locationProvider.html5Mode(true);
   }]).
   config([
