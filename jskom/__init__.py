@@ -58,6 +58,7 @@ js_libs = Bundle('lib/jquery.js',
                  'lib/underscore.js',
                  'lib/mousetrap.js',
                  'lib/modernizr.custom.js',
+                 'lib/exif.js',
                  filters='rjsmin',
                  output='gen/packed_libs.js')
 assets.register('js_libs', js_libs)
