@@ -83,32 +83,18 @@
   </ul>
 
 
-  <dl class="tabs pill">
-    <dd ng-class="isContentTypeTabActive('text')" >
-      <a ng-click="selectContentTypeTab('text')">Text</a>
-    </dd>
-    <dd ng-class="isContentTypeTabActive('image')" >
-      <a ng-click="selectContentTypeTab('image')">Image</a>
-    </dd>
-  </dl>
+  <textarea ng-show="text.content_type == 'text/plain'" name="body" rows="5" ng-model="text.body" jskom-autofocus>
+  </textarea>
 
-  <ul class="tabs-content">
-    <li ng-class="isContentTypeTabActive('text')">
-      <textarea ng-show="text.content_type == 'text/plain'" name="body" rows="5" ng-model="text.body" jskom-autofocus>
-      </textarea>
-    </li>
+  <div>
+    <jskom:loading ng-show="imageIsLoading"></jskom:loading>
+    <img ng-src="{{imageDataUrl}}" ng-show="text.content_type != 'text/plain'"/>
+  </div>
 
+  <p>
+  Or select an image:
+  <input type="file" accept="image/*;capture=camera"
+         onchange="angular.element(this).scope().loadImage(this.files)"/ />
 
-    <li ng-class="isContentTypeTabActive('image')">
-      <div>
-        <jskom:loading ng-show="imageIsLoading"></jskom:loading>
-        <img ng-src="{{imageDataUrl}}" ng-show="text.content_type != 'text/plain'"/>
-      </div>
-
-      Select an image:
-      <input type="file" accept="image/*;capture=camera"
-             onchange="angular.element(this).scope().loadImage(this.files)"/ />
-    </li>
-  </ul>
-
+  </p>
 </div>

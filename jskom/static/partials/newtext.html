@@ -1,39 +1,27 @@
 <h1 ng-cloak>
   <span ng-hide="commentedText">New text</span>
-  <span ng-show="commentedText">New comment to {{commentedText.text_no}}</span>
+  <span ng-show="commentedText">New comment</span>
 </h1>
 
 <jskom:loading ng-hide="text"></jskom:loading>
 <form ng-show="text" ng-cloak>
 
+
   <div ng-show="commentedText" ng-init="isCommentedTextVisible = false">
-    <div class="row">
-      <div class="twelve mobile-two columns end">
-        <p>
-          <button class="secondary button dropup" type="button"
-                  ng-show="isCommentedTextVisible" ng-click="isCommentedTextVisible = false">
-            Hide commented text<span class="caret"></span>
-          </button>
-          <button class="secondary button" type="button"
-                  ng-hide="isCommentedTextVisible" ng-click="isCommentedTextVisible = true">
-            Show commmented text<span class="caret"></span>
-          </button>
-        </p>
-      </div>
-    </div>
-    
-    <div class="row">
-      <div class="twelve columns">
-        <blockquote ng-show="isCommentedTextVisible">
+    <ul class="accordion">
+      <li ng-class="{ true: 'active', false: ''}[isCommentedTextVisible]">
+        <div class="title" ng-click="isCommentedTextVisible = !isCommentedTextVisible">
+          <h5>{{commentedText.text_no}} by {{ commentedText.author|personName }}</h5>
+        </div>
+        <div class="content">
           <p jskom-bind-body="commentedText.body"></p>
-          <cite>{{ commentedText.author|personName }}</cite>
-        </blockquote>
-      </div>
-    </div>
+        </div>
+      </li>
+    </ul>
   </div>
-  
+
   <ng-include src="'textform.html'|jskomTemplate"></ng-include>
-  
+
   <div id="jskomControlBar">
     <div class="row">
       <div class="three mobile-one columns">
