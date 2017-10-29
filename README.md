@@ -26,7 +26,7 @@ install phantomjs'.)
 
 
 For information: The jskom tests uses the Mocha framework
-(http://visionmedia.github.com/mocha/) and mocha-phantomjs
+(https://mochajs.org/) and mocha-phantomjs
 (http://metaskills.net/mocha-phantomjs/). Both are included with
 jskom. For mocha-phantomjs to work, mocha.js had to be patched to use
 a real diff library:
