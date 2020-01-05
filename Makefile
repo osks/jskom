@@ -4,7 +4,7 @@ PHANTOMJS=phantomjs ./test/lib/mocha-phantomjs.coffee
 all: test
 
 run-debug-server:
-	JSKOM_SETTINGS=../configs/debug.cfg ./runserver.py
+	JSKOM_SETTINGS=../configs/debug.cfg python3 ./runserver.py
 
 test: test-unit
 

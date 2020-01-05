@@ -6,9 +6,9 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 
 from flask import Flask, render_template, send_from_directory
-from flask.ext.assets import Environment, Bundle
+from flask_assets import Environment, Bundle
 
-import version
+from . import version
 
 
 class default_settings:
