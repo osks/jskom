@@ -7,7 +7,7 @@
 - Nothing
 
 
-## 0.15 (2020-01-??)
+## 0.15 (2020-01-24)
 
 - New "Go to text" page (under the Texts menu).
 - Now uses Referrer Policy "origin-when-cross-origin".
