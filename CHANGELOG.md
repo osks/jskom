@@ -6,6 +6,7 @@
 
 - New "Go to text" page (under the Texts menu).
 - Now uses Referrer Policy "origin-when-cross-origin".
+- Published on PyPI
 
 
 ## 0.14 (2016-05-29)

@@ -1,7 +1,13 @@
 PHANTOMJS=phantomjs ./test/lib/mocha-phantomjs.coffee
 
-
 all: test
+
+clean:
+	rm -rf dist
+
+dist:
+	rm -rf dist
+	python3 setup.py sdist
 
 run-debug-server:
 	JSKOM_SETTINGS=../configs/debug.cfg python3 ./runserver.py
@@ -14,4 +20,4 @@ test-unit:
 scss:
 	(cd foundation && compass compile)
 
-.PHONY: all run-debug-server test test-unit scss
+.PHONY: all clean dist run-debug-server test test-unit scss
