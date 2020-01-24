@@ -44,8 +44,6 @@ Development
 Preparing a release
 *******************
 
-TODO: How do we update the documentation on github pages?
-
 On master:
 
 1. Update and check CHANGELOG.md.
