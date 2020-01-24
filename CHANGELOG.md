@@ -7,12 +7,18 @@
 - Nothing
 
 
-## 0.15 (2020-01-24)
+## 0.16 (2020-01-24)
 
 - New "Go to text" page (under the Texts menu).
 - Now uses Referrer Policy "origin-when-cross-origin".
 - Updated versions for Flask and Werkzeug dependencies.
 - Published on PyPI.
+
+
+## 0.15 (2020-01-24)
+
+(Same as 0.16 but was discarded because a faulty dist was uploaded to
+PyPI.)
 
 
 ## 0.14 (2016-05-29)
