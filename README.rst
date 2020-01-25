@@ -82,7 +82,7 @@ Twine is used for pushing the built dist to PyPI. The examples in the
 release process depends on a ``.pypirc`` file with config for the pypi
 and testpypi repositories.
 
-Example of `.pypirc`::
+Example of ``.pypirc``::
 
     [pypi]
     username = __token__
