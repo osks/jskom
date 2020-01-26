@@ -23,8 +23,10 @@ setuptools.setup(
     install_requires=[
         'Flask>=1.1.1',
         'Quart>=0.10.0',
-        'Hypercorn=>0.9.0',
+        'Hypercorn>=0.9.0',
         'webassets',
-        'cssmin'
+        'cssmin',
+        'httpkom',
+        'pylyskom',
     ]
 )

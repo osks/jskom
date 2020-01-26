@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2012 Oskar Skoog.
 
+import asyncio
 import os
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
-from quart import Quart, render_template, send_from_directory
+from hypercorn.middleware import DispatcherMiddleware
+from hypercorn.asyncio import serve
+from hypercorn.config import Config
+from quart import Quart, render_template, send_from_directory, current_app
 from webassets import Environment, Bundle
+
+import httpkom
 
 from . import version
 
@@ -17,18 +23,45 @@ class default_settings:
     LOG_LEVEL = logging.WARNING
 
     SEND_FILE_MAX_AGE_DEFAULT = 0
-    
+
     STATIC_VERSION = ''
-    
+
     # httpkom server, without trailing slash (example: 'http://127.0.0.1:5001')
-    HTTPKOM_SERVER = 'http://127.0.0.1:5001'
+    #HTTPKOM_SERVER = 'http://127.0.0.1:5001'
+    HTTPKOM_SERVER = '/httpkom'
     HTTPKOM_CONNECTION_HEADER = 'Httpkom-Connection'
 
 
-app = Quart(__name__)
+jskom_app = Quart(__name__)
+
+httpkom_app = httpkom.app
+
+# Hypercorn includes a dispatcher middleware but it's buggy
+# https://gitlab.com/pgjones/hypercorn/issues/106
+from hypercorn.utils import invoke_asgi
+class DispatcherMiddleware:
+    def __init__(self, app, mounts=None):
+        self.app = app
+        self.mounts = mounts or {}
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] not in {"http", "websocket"}:
+            return await invoke_asgi(self.app, scope, receive, send)
+        for path, app in self.mounts.items():
+            if scope["path"].startswith(path):
+                scope["path"] = scope["path"][len(path) :] or '/'
+                return await invoke_asgi(app, scope, receive, send)
+        return await invoke_asgi(self.app, scope, receive, send)
+
+dispatcher_app = DispatcherMiddleware(
+    jskom_app,
+    {
+        "/httpkom": httpkom_app,
+    }
+)
 
 assets = Environment(
-    directory=app.static_folder,
+    directory=jskom_app.static_folder,
     url='/static')
 
 js_libs = Bundle('lib/jquery.js',
@@ -78,7 +111,11 @@ def build_assets(assets_env, bundle_names):
     return assets_urls
 
 
-def init_app(app):
+def init_app():
+    httpkom.init_app(httpkom_app)
+
+    app = jskom_app
+
     # Use Flask's Config class to read config, as Quart's config
     # handling is not identical to Flask's and it didn't work with our
     # config files.  Flask will parse the config file as it was a
@@ -124,18 +161,28 @@ def init_app(app):
         app.logger.info("Finished setting up file logger.");
 
 
-@app.route("/", defaults={ 'path': '' })
-@app.route("/<path:path>")
+def run(host, port):
+    # use 127.0.0.1 instead of localhost to avoid delays related to ipv6.
+    # http://werkzeug.pocoo.org/docs/serving/#troubleshooting
+    init_app()
+    config = Config()
+    config.bind = ["{}:{}".format(host, port)]
+    asyncio.run(serve(dispatcher_app, config))
+
+
+
+@jskom_app.route("/", defaults={ 'path': '' })
+@jskom_app.route("/<path:path>")
 async def index(path):
     # path is for html5 push state
     return await render_template('index.html',
-                                 assets_urls=app.config['ASSETS_URLS'],
+                                 assets_urls=current_app.config['ASSETS_URLS'],
                                  version=version.__version__,
-                                 static_version=app.config['STATIC_VERSION'],
-                                 httpkom_server=app.config['HTTPKOM_SERVER'],
-                                 httpkom_connection_header=app.config['HTTPKOM_CONNECTION_HEADER'])
+                                 static_version=current_app.config['STATIC_VERSION'],
+                                 httpkom_server=current_app.config['HTTPKOM_SERVER'],
+                                 httpkom_connection_header=current_app.config['HTTPKOM_CONNECTION_HEADER'])
 
-@app.route('/favicon.ico')
+@jskom_app.route('/favicon.ico')
 async def favicon():
-    return await send_from_directory(os.path.join(app.root_path, 'static'),
+    return await send_from_directory(os.path.join(current_app.root_path, 'static'),
                                'favicon.ico', mimetype='image/x-icon')
