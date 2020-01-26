@@ -23,22 +23,22 @@
         s.parentNode.insertBefore(wf, s);
       })();
     </script>
-    
-    {% assets "css_jskom" %}
-    <link rel="stylesheet" type="text/css" href="{{ ASSET_URL }}" />
-    {%- endassets %}
-    
-    {% assets "js_libs" %}
-    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-    {%- endassets %}
-    
-    {% assets "js_angular" %}
-    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-    {%- endassets %}
-    
-    {% assets "js_jskom" %}
-    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-    {%- endassets %}
+
+    {% for asset_url in assets_urls['css_jskom'] %}
+    <link rel="stylesheet" type="text/css" href="{{ asset_url }}" />
+    {%- endfor %}
+
+    {% for asset_url in assets_urls['js_libs'] %}
+    <script type="text/javascript" src="{{ asset_url }}"></script>
+    {%- endfor %}
+
+    {% for asset_url in assets_urls['js_angular'] %}
+    <script type="text/javascript" src="{{ asset_url }}"></script>
+    {%- endfor %}
+
+    {% for asset_url in assets_urls['js_jskom'] %}
+    <script type="text/javascript" src="{{ asset_url }}"></script>
+    {%- endfor %}
 
     <title>jskom</title>
   </head>
