@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2012 Oskar Skoog.
 
-import asyncio
 import os
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
-from hypercorn.middleware import DispatcherMiddleware
-from hypercorn.asyncio import serve
-from hypercorn.config import Config
+import flask
 from quart import Quart, render_template, send_from_directory, current_app
 from webassets import Environment, Bundle
 
@@ -33,7 +30,6 @@ class default_settings:
 
 
 jskom_app = Quart(__name__)
-
 httpkom_app = httpkom.app
 
 # Hypercorn includes a dispatcher middleware but it's buggy
@@ -53,7 +49,8 @@ class DispatcherMiddleware:
                 return await invoke_asgi(app, scope, receive, send)
         return await invoke_asgi(self.app, scope, receive, send)
 
-dispatcher_app = DispatcherMiddleware(
+
+app = DispatcherMiddleware(
     jskom_app,
     {
         "/httpkom": httpkom_app,
@@ -114,8 +111,6 @@ def build_assets(assets_env, bundle_names):
 def init_app():
     httpkom.init_app(httpkom_app)
 
-    app = jskom_app
-
     # Use Flask's Config class to read config, as Quart's config
     # handling is not identical to Flask's and it didn't work with our
     # config files.  Flask will parse the config file as it was a
@@ -123,52 +118,38 @@ def init_app():
     # became a string.
     #
     # Hack: Parse with Flask and then convert (via a dict) to Quart.
-
-    import flask
-    config = flask.Config(app.config.root_path)
-
+    config = flask.Config(jskom_app.config.root_path)
     config.from_object(default_settings)
     if 'JSKOM_SETTINGS' in os.environ:
-        app.logger.info("Using config file specified by JSKOM_SETTINGS environment variable: %s",
+        jskom_app.logger.info("Using config file specified by JSKOM_SETTINGS environment variable: %s",
                         os.environ['JSKOM_SETTINGS'])
         config.from_envvar('JSKOM_SETTINGS')
     else:
-        app.logger.info("No environment variable JSKOM_SETTINGS found, using default settings.")
-
+        jskom_app.logger.info("No environment variable JSKOM_SETTINGS found, using default settings.")
     # Import config to Quart's app object.
     config_dict = dict(config)
-    app.config.from_mapping(config_dict)
+    jskom_app.config.from_mapping(config_dict)
 
     # Initialize assets
     # Flask Assets and webassets jinja integration does not work with Quart.
-    assets.debug = app.debug
-    app.config['ASSETS_URLS'] = build_assets(assets, ['js_libs', 'js_angular', 'js_jskom', 'css_jskom'])
+    assets.debug = jskom_app.debug
+    jskom_app.config['ASSETS_URLS'] = build_assets(assets, ['js_libs', 'js_angular', 'js_jskom', 'css_jskom'])
 
-    if not app.debug and app.config['LOG_FILE'] is not None:
+    if not jskom_app.debug and jskom_app.config['LOG_FILE'] is not None:
         # keep 7 days of logs, rotated every midnight
         file_handler = TimedRotatingFileHandler(
-            app.config['LOG_FILE'], when='midnight', interval=1, backupCount=7)
+            jskom_app.config['LOG_FILE'], when='midnight', interval=1, backupCount=7)
 
         file_handler.setFormatter(logging.Formatter(
                '%(asctime)s %(levelname)s: %(message)s '
                 '[in %(pathname)s:%(lineno)d]'
                 ))
 
-        file_handler.setLevel(app.config['LOG_LEVEL'])
+        file_handler.setLevel(jskom_app.config['LOG_LEVEL'])
 
-        app.logger.addHandler(file_handler)
-        app.logger.setLevel(app.config['LOG_LEVEL'])
-        app.logger.info("Finished setting up file logger.");
-
-
-def run(host, port):
-    # use 127.0.0.1 instead of localhost to avoid delays related to ipv6.
-    # http://werkzeug.pocoo.org/docs/serving/#troubleshooting
-    init_app()
-    config = Config()
-    config.bind = ["{}:{}".format(host, port)]
-    asyncio.run(serve(dispatcher_app, config))
-
+        jskom_app.logger.addHandler(file_handler)
+        jskom_app.logger.setLevel(jskom_app.config['LOG_LEVEL'])
+        jskom_app.logger.info("Finished setting up file logger.");
 
 
 @jskom_app.route("/", defaults={ 'path': '' })
