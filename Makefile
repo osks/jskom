@@ -10,7 +10,7 @@ dist:
 	python3 setup.py sdist
 
 run-debug-server:
-	JSKOM_SETTINGS=../configs/debug.cfg python3 ./runserver.py
+	JSKOM_SETTINGS=../configs/debug.cfg python3 -m jskom
 
 test: test-unit
 

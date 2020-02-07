@@ -2,9 +2,25 @@
 
 ## Unreleased
 
+### Fixed
+
+- Fix version handling. It wasn't possible to install httpkom due to
+  the way we tried to single source the package version.
+
+### Changed
+
+- Run with python3 -m jskom
+- Converted from using Flask to Quart (and Hypercorn), to be able to
+  include the httpkom API in the same server process. Uses the asyncio
+  version of httpkom / pylyskom.
+
 ### Added
 
-- Nothing
+- Jskom now includes the httpkom API in the same webserver and it's
+  used by default. This is simplify the setup and to avoid having to
+  run httpkom separately (separate cert, process management, etc). It
+  is still possible to continue using jskom with a separate httpkom
+  server (using the HTTPKOM_SERVER variable).
 
 
 ## 0.16 (2020-01-24)
