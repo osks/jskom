@@ -49,7 +49,7 @@ On master:
 1. Update and check CHANGELOG.md.
 
 2. Increment version number and remove ``+dev`` suffix
-   (in ``jskom/version.py``).
+   IN BOTH ``setup.py`` AND ``jskom/version.py``!
 
 3. Test manually by using jskom.
 

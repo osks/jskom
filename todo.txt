@@ -1,0 +1,17 @@
+TODO
+====
+
+Single sourcing package version
+-------------------------------
+
+We had the version in jskom.version but when including it in setup.py
+it depends on third party libs during the setup stagge (since
+including jskom.version will include jskom.__init__), so we get a
+catch 22 when setuptools should read setup.py to install requirements,
+but can't do so because parsing setup.py requires the requirements to
+be installed already.
+
+Best alternative idea right now: setuptools_scm
+
+See also:
+https://packaging.python.org/guides/single-sourcing-package-version/
