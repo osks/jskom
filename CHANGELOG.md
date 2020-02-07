@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+
+## 0.17 (2020-02-07)
+
 ### Fixed
 
 - Fix version handling. It wasn't possible to install httpkom due to
