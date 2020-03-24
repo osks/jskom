@@ -29,6 +29,8 @@ class default_settings:
     HTTPKOM_CONNECTION_HEADER = 'Httpkom-Connection'
 
 
+log = logging.getLogger("jskom")
+
 jskom_app = Quart(__name__)
 httpkom_app = httpkom.app
 
@@ -121,11 +123,11 @@ def init_app():
     config = flask.Config(jskom_app.config.root_path)
     config.from_object(default_settings)
     if 'JSKOM_SETTINGS' in os.environ:
-        jskom_app.logger.info("Using config file specified by JSKOM_SETTINGS environment variable: %s",
-                        os.environ['JSKOM_SETTINGS'])
+        log.info("Using config file specified by JSKOM_SETTINGS environment variable: %s",
+                 os.environ['JSKOM_SETTINGS'])
         config.from_envvar('JSKOM_SETTINGS')
     else:
-        jskom_app.logger.info("No environment variable JSKOM_SETTINGS found, using default settings.")
+        log.info("No environment variable JSKOM_SETTINGS found, using default settings.")
     # Import config to Quart's app object.
     config_dict = dict(config)
     jskom_app.config.from_mapping(config_dict)

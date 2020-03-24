@@ -8,6 +8,8 @@ from hypercorn.config import Config
 
 from jskom import app, init_app
 
+log = logging.getLogger("jskom.main")
+
 
 def run(host, port):
     # use 127.0.0.1 instead of localhost to avoid delays related to ipv6.
@@ -19,7 +21,7 @@ def run(host, port):
 
 
 def main():
-    logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
+    logging.basicConfig(format='%(asctime)s %(levelname)-7s %(name)-15s %(message)s', level=logging.DEBUG)
     # use 127.0.0.1 instead of localhost to avoid delays related to ipv6.
     # http://werkzeug.pocoo.org/docs/serving/#troubleshooting
     host = "127.0.0.1"
