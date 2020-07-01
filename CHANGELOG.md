@@ -3,6 +3,13 @@
 ## Unreleased
 
 
+## 0.19 (2020-07-01)
+
+### Fixed
+
+- Exclude webassets cache files in python dist.
+
+
 ## 0.18 (2020-07-01)
 
 ### Changed
