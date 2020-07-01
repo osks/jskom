@@ -66,8 +66,6 @@ More complete::
    $ docker run -d --name=jskom --net=host --restart=always \
        -v /path/to/my-httpkom-config.cfg:/httpkom.cfg \
        -v /path/to/my-jskom-config.cfg:/jskom.cfg \
-       -e HTTPKOM_SETTINGS=/my-httpkom-config.cfg \
-       -e JSKOM_SETTINGS=/my-jskom-config.cfg \
        osks/jskom:v0.19
 
 
