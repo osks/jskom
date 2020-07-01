@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Added
+
+- Command line arguments for which host and port to listen on.
+
+### Changed
+
+- Dockerfile improvements.
+
 
 ## 0.19 (2020-07-01)
 

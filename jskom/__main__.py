@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import argparse
 import asyncio
 import logging
 
@@ -17,16 +18,26 @@ def run(host, port):
     init_app()
     config = Config()
     config.bind = ["{}:{}".format(host, port)]
-    asyncio.run(serve(app, config))
+    asyncio.run(serve(app, config), debug=True)
 
 
 def main():
     logging.basicConfig(format='%(asctime)s %(levelname)-7s %(name)-15s %(message)s', level=logging.DEBUG)
+
+    parser = argparse.ArgumentParser(description='Jskom')
+
     # use 127.0.0.1 instead of localhost to avoid delays related to ipv6.
     # http://werkzeug.pocoo.org/docs/serving/#troubleshooting
-    host = "127.0.0.1"
-    port = 5000
-    run(host, port)
+    parser.add_argument('--host', help='Hostname or IP to listen on',
+                        default='127.0.0.1')
+    parser.add_argument('--port', help='Port to listen on',
+                        type=int, default=5000)
+
+    args = parser.parse_args()
+
+    log.info("Using args: %s", args)
+
+    run(args.host, args.port)
 
 
 if __name__ == "__main__":
