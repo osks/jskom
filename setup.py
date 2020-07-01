@@ -6,7 +6,7 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name='jskom',
-    version='0.19',
+    version='0.19+dev',
     description='Jskom is a web based LysKOM client written in Javascript',
     long_description=long_description,
     long_description_content_type="text/x-rst",
