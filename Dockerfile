@@ -13,8 +13,8 @@ COPY configs configs
 
 EXPOSE 5000
 
-ENV HTTPKOM_SETTINGS="/usr/src/app/configs/debug.cfg"
-ENV JSKOM_SETTINGS="/usr/src/app/configs/httpkom-debug.cfg"
+ENV HTTPKOM_SETTINGS="/usr/src/app/configs/httpkom-debug.cfg"
+ENV JSKOM_SETTINGS="/usr/src/app/configs/debug.cfg"
 
 RUN useradd --system --create-home --shell /bin/bash jskom
 USER jskom
