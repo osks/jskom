@@ -3,6 +3,15 @@
 ## Unreleased
 
 
+## 0.18 (2020-07-01)
+
+### Changed
+
+- Updated required httpkom version to 0.16.
+- Dockerfile improvements.
+- Minor changes.
+
+
 ## 0.17 (2020-02-07)
 
 ### Fixed
