@@ -58,7 +58,7 @@ Docker
 
 Simple example::
 
-   $ docker run --name=jskom --net=host osks/jskom
+   $ docker run -ti --name=jskom --net=host osks/jskom
 
 
 More complete::
