@@ -11,6 +11,8 @@ The source code can be found at: https://github.com/osks/jskom
 
 Packages are published on PyPI: https://pypi.org/project/jskom/
 
+Docker images are published on Docker Hub: https://hub.docker.com/r/osks/jskom
+
 
 Dependencies
 ------------
@@ -36,6 +38,37 @@ a real diff library::
     require.register("browser/diff.js", function(module, exports, require){
       module.exports = JsDiff; // this row was added
     });
+
+
+Running
+-------
+
+Default port is 5000.
+
+Development
+***********
+
+::
+
+   $ make run-debug-server
+
+
+Docker
+******
+
+Simple example::
+
+   $ docker run --name=jskom --net=host osks/jskom
+
+
+More complete::
+
+   $ docker run -d --name=jskom --net=host --restart=always \
+       -v /path/to/my-httpkom-config.cfg:/my-httpkom-config.cfg \
+       -v /path/to/my-jskom-config.cfg:/my-jskom-config.cfg \
+       -e HTTPKOM_SETTINGS=/my-httpkom-config.cfg \
+       -e JSKOM_SETTINGS=/my-jskom-config.cfg \
+       osks/jskom:v0.19
 
 
 Development
