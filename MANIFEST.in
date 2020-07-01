@@ -1,2 +1,3 @@
 recursive-include jskom/templates *
 recursive-include jskom/static *
+recursive-exclude jskom/static/.webassets-cache *
