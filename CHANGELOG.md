@@ -1,12 +1,27 @@
 # Changelog for jskom
 
-## Unreleased
+## 0.21 (2020-07-03)
+
+### Added
+
+- Command line arguments for enabling debug logging (now off by default).
+
+### Fixed
+
+- Incorrect use of async methods.
+
+### Changed
+
+- Updated required httpkom version to 0.17
+
+
+## 0.20 (2020-07-03)
 
 ### Added
 
 - Command line arguments for which host and port to listen on.
 
-### Changed
+### Fixed
 
 - Dockerfile improvements.
 
