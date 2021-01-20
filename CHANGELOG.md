@@ -1,6 +1,6 @@
 # Changelog for jskom
 
-## Unreleased
+## 0.22 (2021-01-20)
 
 ### Changed
 
