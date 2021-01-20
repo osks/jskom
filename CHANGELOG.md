@@ -1,5 +1,12 @@
 # Changelog for jskom
 
+## Unreleased
+
+### Changed
+
+- Updates to work with next versions of httpkom/pylyskom (conf_name -> name).
+
+
 ## 0.21 (2020-07-03)
 
 ### Added

@@ -190,7 +190,7 @@ angular.module('jskom.filters', ['jskom.templates']).
     function() {
       return function(conf) {
         if (conf) {
-          return conf.conf_name;
+          return conf.name;
         } else {
           return "";
         }

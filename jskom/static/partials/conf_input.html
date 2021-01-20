@@ -18,7 +18,7 @@
     <div class="ten mobile-three columns">
       <input type="text" class="" tabindex="-1" readonly autocorrect="off" autocapitalize="off"
              ng-disabled="!conf"
-             ng-model="conf.conf_name" />
+             ng-model="conf.name" />
     </div>
     <div class="two mobile-one columns">
       <button type="button" class="alert button expand postfix"
@@ -33,7 +33,7 @@
       <select class=""
               ng-model="model"
               ng-disabled="!conf"
-              ng-options="mp.conf_no as mp.conf_name for mp in matches">
+              ng-options="mp.conf_no as mp.name for mp in matches">
       </select>
     </div>
     <div class="two mobile-one columns">

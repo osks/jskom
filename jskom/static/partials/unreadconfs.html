@@ -16,7 +16,7 @@
       <tr ng-repeat="membership in unreadMemberships | orderBy:['-priority']">
         <td>
           <a href="/conferences/{{ membership.conference.conf_no }}/texts/">
-            {{ membership.conference.conf_name }}
+            {{ membership.conference.name }}
           </a>
         </td>
         <td class="jskomAlignRight">

@@ -820,7 +820,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
               $scope.isLoading = false;
               
               $scope.confs = _.sortBy(conferences, function(conf) {
-                return conf.conf_name;
+                return conf.name;
               });
               $scope.currentPage = 0;
               $scope.numberOfPages = Math.ceil($scope.confs.length / $scope.pageSize);
