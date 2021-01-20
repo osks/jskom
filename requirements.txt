@@ -1,4 +1,4 @@
-httpkom==0.17
+httpkom==0.18
 pylyskom==0.5
 Flask==1.1.1
 Hypercorn==0.9.0
