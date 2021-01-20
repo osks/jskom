@@ -12,7 +12,7 @@ dist:
 run-debug-server:
 	HTTPKOM_SETTINGS=$(realpath ./configs/httpkom-debug.cfg) \
 JSKOM_SETTINGS=$(realpath ./configs/debug.cfg) \
-python3 -m jskom
+python3 -m jskom --debug
 
 test: test-unit
 

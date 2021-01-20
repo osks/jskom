@@ -1,5 +1,12 @@
 # Changelog for jskom
 
+## 0.24 (2021-01-20)
+
+### Fixed
+
+- Update httpkom version to fix serialization issues
+
+
 ## 0.23 (2021-01-20)
 
 ### Fixed
