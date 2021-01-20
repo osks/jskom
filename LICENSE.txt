@@ -1,4 +1,4 @@
-Copyright (c) 2012-2020 Oskar Skoog
+Copyright (c) 2012-2021 Oskar Skoog
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
