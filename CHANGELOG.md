@@ -1,5 +1,12 @@
 # Changelog for jskom
 
+## 0.23 (2021-01-20)
+
+### Fixed
+
+- Fixed pylyskom version in requirements.txt so the Docker image can build.
+
+
 ## 0.22 (2021-01-20)
 
 ### Changed
