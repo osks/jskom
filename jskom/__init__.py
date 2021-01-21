@@ -158,12 +158,17 @@ def init_app():
 @jskom_app.route("/<path:path>")
 async def index(path):
     # path is for html5 push state
-    return await render_template('index.html',
+    resp = await render_template('index.html',
                                  assets_urls=current_app.config['ASSETS_URLS'],
                                  version=version.__version__,
                                  static_version=current_app.config['STATIC_VERSION'],
                                  httpkom_server=current_app.config['HTTPKOM_SERVER'],
                                  httpkom_connection_header=current_app.config['HTTPKOM_CONNECTION_HEADER'])
+    # Avoid browser caching the main page, as that is where we set the
+    # static version that should break caches. This should force the
+    # browser to always update the page if you reload it.
+    headers = {"Cache-Control": "no-store"}
+    return resp, 200, headers
 
 @jskom_app.route('/favicon.ico')
 async def favicon():

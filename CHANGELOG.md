@@ -1,5 +1,22 @@
 # Changelog for jskom
 
+## Unreleased
+
+### Fixed
+
+- More work towards avoiding bad browser caching. Index page should
+  not be cached now and API requests should also use the static
+  version in URLs.
+
+### Changed
+
+- The initial fetch of membership now fetches a few (20) in the first
+  request, and then fetches more (200) per request. This is to make
+  the web page feel faster when logging in, because it's quite slow to
+  fetch memberships after logging in (as non of the uconfs are cached
+  by httpkom).
+
+
 ## 0.24 (2021-01-20)
 
 ### Fixed
