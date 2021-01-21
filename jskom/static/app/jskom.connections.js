@@ -54,7 +54,8 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
             $log, $rootScope, $q, $http,
             sessionsService, jskomCacheFactory, httpkomConnectionHeader,
             membershipListFactory, membershipListHandlerFactory,
-            httpkom.getHttpkomServer(), obj.id, obj.serverId, obj.httpkomId, obj.session);
+            httpkom.getHttpkomServer(), obj.id, obj.serverId, obj.httpkomId, obj.session,
+            httpkom.getCacheVersion());
         }
       };
     }

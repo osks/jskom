@@ -119,6 +119,7 @@
           'httpkomProvider',
           function(httpkomProvider){
             httpkomProvider.setHttpkomServer('{{ httpkom_server }}');
+            httpkomProvider.setCacheVersion('{{ static_version }}');
           }
         ]).
         config([

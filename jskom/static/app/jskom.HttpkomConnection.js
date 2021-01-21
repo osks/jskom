@@ -6,7 +6,8 @@
   var HttpkomConnection = function($log, $rootScope, $q, $http,
                                    sessionsService, jskomCacheFactory, httpkomConnectionHeader,
                                    membershipListFactory, membershipListHandlerFactory,
-                                   httpkomServer, id, serverId, httpkomId, session) {
+                                   httpkomServer, id, serverId, httpkomId, session,
+                                   cacheVersion) {
     this._$log = $log;
     this._$rootScope = $rootScope;
     this._$q = $q;
@@ -23,7 +24,13 @@
     this.serverId = serverId;
     this.httpkomId = httpkomId;
     this.session = session;
-    
+
+
+    /* Set version number to add to URLs to break caches (same as we
+     * use for static files such as templates). */
+    this._cacheVersionKey = "_v";
+    this._cacheVersion = cacheVersion;
+
     this.textsCache = this._jskomCacheFactory(this.id + '-texts', { capacity: 100 });
     this.marksCache = this._jskomCacheFactory(this.id + '-marks', { capacity: 100 });
     
@@ -382,9 +389,9 @@
     },
     
     urlFor: function(path, addHttpkomIdQueryParameter) {
-      var url = this._httpkomServer + '/' + this.serverId + path;
+      let url = this._httpkomServer + '/' + this.serverId + path;
       if (addHttpkomIdQueryParameter) {
-        var kv = encodeURIComponent(this._httpkomConnectionHeader) + '=' +
+        let kv = encodeURIComponent(this._httpkomConnectionHeader) + '=' +
           encodeURIComponent(this.httpkomId);
         if (url.indexOf('?') == -1) {
           url += '?' + kv;
@@ -392,6 +399,16 @@
           url += '&' + kv;
         }
       }
+      if (this._cacheVersion != null) {
+        let kv = encodeURIComponent(this._cacheVersionKey) + '=' +
+            encodeURIComponent(this._cacheVersion);
+        if (url.indexOf('?') == -1) {
+          url += '?' + kv;
+        } else {
+          url += '&' + kv;
+        }
+      }
+
       return url;
     },
     

@@ -14,7 +14,7 @@ angular.module('jskom.templates', []).
     var path = function(file) {
       var url = urlPrefix + file;
       if (version) {
-        return url + '?v=' + version;
+        return url + '?_v=' + version;
       } else {
         return url;
       }

@@ -44,11 +44,18 @@
 angular.module('jskom.httpkom', []).
   provider('httpkom', function() {
     var _httpkomServer = null;
-    
+    var _cacheVersion = null;
+
     this.setHttpkomServer = function(httpkomServer) {
       _httpkomServer = httpkomServer;
     };
-    
+
+    /* Set version number to add to URLs to break caches (same as we
+     * use for static files such as templates). */
+    this.setCacheVersion = function(version) {
+      _cacheVersion = version;
+    };
+
     this.$get = [
       '$http',
       function($http) {
@@ -56,9 +63,13 @@ angular.module('jskom.httpkom', []).
           getHttpkomServer: function() {
             return _httpkomServer;
           },
-          
+
+          getCacheVersion: function() {
+            return _cacheVersion;
+          },
+
           getLyskomServers: function() {
-            return $http({ method: 'get', url: _httpkomServer + '/' });
+            return $http({ method: 'get', url: _httpkomServer + '/' + '?_v=' + _cacheVersion });
           },
         };
       }
