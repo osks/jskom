@@ -187,18 +187,25 @@
     _fetchAllMemberships: function () {
       // TODO: Make sure we only have one of these requests active
       // at one time.
-      this._fetchMemberships(0, 500, 1000);
+      let noOfMemberships = 100; // Per request
+      let maxNoOfMemberships = 2000;
+      this._fetchMemberships(0, noOfMemberships, maxNoOfMemberships);
     },
-    
+
     _fetchMemberships: function (first, noOfMemberships, maxNoOfMemberships) {
       var logp = this._logPrefix + "getMemberships({ unread: false }) - ";
       var self = this;
-      var options = { unread: false, first: first, noOfMemberships: noOfMemberships }
+      // Fetch a few memberships first for feeling more responsive. After initial, fetch more each time.
+      let count = noOfMemberships;
+      if (first === 0) {
+        count = 20;
+      }
+      var options = { unread: false, first: first, noOfMemberships: count };
       return this._membershipsService.getMemberships(self._conn, options).then(
         function (membershipList) {
           self._$log.log(logp + "success");
           self._membershipList.addMemberships(membershipList.memberships);
-          var nextFirst = first + noOfMemberships;
+          var nextFirst = first + count;
           if (membershipList.has_more && nextFirst < maxNoOfMemberships) {
             self._fetchMemberships(nextFirst, noOfMemberships, maxNoOfMemberships);
           }
