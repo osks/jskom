@@ -1,5 +1,5 @@
 httpkom==0.19
-pylyskom==0.6
+pylyskom==0.7
 Flask==1.1.1
 Hypercorn==0.9.0
 Quart==0.10.0
