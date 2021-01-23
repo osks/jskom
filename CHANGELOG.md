@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Added
+
+- UI for changing presentation for persons.
+
+
+## 0.25 (2021-01-21)
+
 ### Fixed
 
 - More work towards avoiding bad browser caching. Index page should

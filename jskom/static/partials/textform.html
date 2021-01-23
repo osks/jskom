@@ -91,7 +91,7 @@
     <img ng-src="{{imageDataUrl}}" ng-show="text.content_type != 'text/plain'"/>
   </div>
 
-  <p>
+  <p ng-show="allowImage">
   Or select an image:
   <input type="file" accept="image/*;capture=camera" tabindex="-1"
          onchange="angular.element(this).scope().loadImage(this.files)"/ />

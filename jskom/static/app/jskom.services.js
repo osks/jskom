@@ -481,6 +481,25 @@ angular.module('jskom.services', ['jskom.settings']).
             function (response) {
               return response.data;
             });
+        },
+
+        setPresentation: function(conn, persNo, textNo) {
+          var data = { text_no: textNo };
+          return conn.http({ method: 'post', url: '/persons/' + persNo + '/set-presentation',
+                             data: data }, true, false);
+        },
+      };
+    }
+  ]).
+  factory('serverInfoService', [
+    '$log',
+    function($log) {
+      return {
+        getServerInfo: function(conn) {
+          return conn.http({ method: 'get', url: '/server/info' }, true, false).then(
+            function (response) {
+              return response.data;
+            });
         }
       };
     }

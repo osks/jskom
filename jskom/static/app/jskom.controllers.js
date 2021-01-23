@@ -439,6 +439,168 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       };
     }
   ]).
+  controller('ChangePresPersonCtrl', [
+    '$scope', '$log', '$location', '$routeParams', '$q', 'textsService', 'conferencesService',
+    'messagesService', 'pageTitleService', 'keybindingService', 'serverInfoService', 'personsService',
+    function($scope, $log, $location, $routeParams, $q, textsService, conferencesService,
+             messagesService, pageTitleService, keybindingService, serverInfoService, personsService) {
+      pageTitleService.set("Change presentation");
+
+      $scope.serverInfo = null;
+      $scope.persNo = $scope.connection.getPersNo();
+      $scope.conf = null;
+
+      $scope.isCreating = false;
+      $scope.text = null;
+      $scope.commentedText = null;
+      $scope.activeTab = 'simple';
+      $scope.allowImage = false;
+
+      $scope.commentTypes = [
+        { name: 'Comment', type: 'comment' },
+        { name: 'Footnote', type: 'footnote' }
+      ];
+
+      $scope.recipientTypes = [
+        { name: 'To', type: 'to' },
+        { name: 'CC', type: 'cc' },
+        { name: 'BCC', type: 'bcc' }
+      ];
+
+      $scope.newRecipient = function() {
+        return { type: 'to', recpt: {} }
+      };
+
+      $scope.selectTab = function(tab) {
+        $scope.activeTab = tab;
+      };
+
+      $scope.isTabActive = function(tab) {
+        if ($scope.activeTab == tab) {
+          return 'active';
+        } else {
+          return '';
+        }
+      };
+
+      $scope.returnUrl = $location.search().returnUrl;
+      $scope.goToReturnUrl = function() {
+        $location.url($scope.returnUrl);
+      };
+
+      function newPresText(serverInfo, conf, oldPresText) {
+        let newText = {
+          recipient_list: [
+            { "type": "to", "recpt": serverInfo.pers_pres_conf },
+          ],
+          content_type: 'text/plain',
+          content_encoding: null,
+          subject: '',
+          body: ''
+        };
+
+        if (oldPresText == null) {
+          newText.subject = $scope.conf.name;
+        } else {
+          newText.subject = oldPresText.subject;
+          newText.body = oldPresText.body;
+          newText.comment_to_list = [
+            { type: 'comment', text_no: oldPresText.text_no }
+          ];
+          _.each(oldPresText.recipient_list, function(r) {
+            if (r.type == 'to' && r.recpt.conf_no != serverInfo.pers_pres_conf.conf_no) {
+              newText.recipient_list.push(_.clone(r));
+            }
+          });
+        }
+
+        return newText;
+      }
+
+      function getServerInfo() {
+        return serverInfoService.getServerInfo($scope.connection).then(
+          function(serverInfo) {
+            $log.log("ChangePresPersonCtrl - getServerInfo() - success");
+            $scope.serverInfo = serverInfo
+          },
+          function(response) {
+            $log.log("ChangePresPersonCtrl - getSeverInfo() - error");
+            messagesService.showMessage('error', 'Failed to get server info.', response.data);
+          });
+      }
+
+      function getPersonConf() {
+        return conferencesService.getConference($scope.connection, $scope.persNo).then(
+          function(conf) {
+            $log.log("ChangePresPersonCtrl - getConference(" + $scope.persNo + ") - success");
+            $scope.conf = conf;
+          },
+          function(response) {
+            $log.log("ChangePresPersonCtrl - getConference(" + $scope.persNo + ") - error");
+            messagesService.showMessage('error', 'Failed to get conference for person.', response.data);
+          });
+      }
+
+      let getServerInfoPromise = getServerInfo();
+      let getPersonConfPromise = getPersonConf();
+
+      $q.all([getServerInfoPromise, getPersonConfPromise]).then(
+        function() {
+          if ($scope.conf.presentation == 0) {
+            // No presentation
+            $scope.commentedText = null
+            $scope.text = newPresText($scope.serverInfo, $scope.conf);
+          } else {
+            textsService.getText($scope.connection, $scope.conf.presentation).then(
+              function(text) {
+                $log.log("ChangePresPersonCtrl - getText(" + $scope.conf.presentation + ") - success");
+                $scope.commentedText = text;
+                $scope.text = newPresText($scope.serverInfo, $scope.conf, text);
+              },
+              function(response) {
+                $log.log("ChangePresPersonCtrl - getText(" + $scope.conf.presentation + ") - error");
+                messagesService.showMessage('error', 'Failed to get previous presentation text.', response.data);
+              });
+          }
+        });
+
+      $scope.createPresentation = function() {
+        if ($scope.isCreating) {
+          return;
+        }
+
+        $scope.isCreating = true;
+        textsService.createText($scope.connection, $scope.text).then(
+          function(data) {
+            $log.log("ChangePresPersonCtrl - createText() - success");
+
+            // TODO: Call set-presentation
+            personsService.setPresentation($scope.connection, $scope.persNo, data.text_no).then(
+              function() {
+                messagesService.showMessage('success', 'Successfully updated presentation.',
+                                            'Text number ' + data.text_no + ' was created.',
+                                            true);
+                if ($scope.returnUrl) {
+                  $scope.goToReturnUrl();
+                } else {
+                  $location.url('/texts/?text=' + data.text_no);
+                }
+                $scope.isCreating = false;
+              },
+              function(response) {
+                $log.log("ChangePresPersonCtrl - setPresentation() - error");
+                messagesService.showMessage('error', 'Failed to set presentation.', response.data);
+                $scope.isCreating = false;
+              });
+          },
+          function(response) {
+            $log.log("ChangePresPersonCtrl - createText() - error");
+            messagesService.showMessage('error', 'Failed to create presentation text.', response.data);
+            $scope.isCreating = false;
+          });
+      };
+    }
+  ]).
   controller('NewTextCtrl', [
     '$scope', 'textsService', '$log', '$location', '$routeParams',
     'messagesService', 'pageTitleService', 'keybindingService', 'imageService',
@@ -449,6 +611,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.text = null;
       $scope.commentedText = null;
       $scope.activeTab = 'simple';
+      $scope.allowImage = true;
 
       $scope.commentTypes = [
         { name: 'Comment', type: 'comment' },

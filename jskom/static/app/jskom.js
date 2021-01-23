@@ -143,6 +143,10 @@ angular.module('jskom', ['jskom.settings', 'jskom.templates', 'jskom.services',
           controller: 'ReadTextsCtrl',
           reloadOnSearch: false
         }).
+        when('/persons/change-presentation', {
+          templateUrl: templatePathProvider.path('change_presentation.html'),
+          controller: 'ChangePresPersonCtrl'
+        }).
         when('/help', {
           templateUrl: templatePathProvider.path('help.html'),
           controller: 'HelpCtrl'
