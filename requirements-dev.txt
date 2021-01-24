@@ -1,5 +1,5 @@
-git+git://git@github.com:osks/pylyskom.git@master#pylyskom
-git+git://git@github.com:osks/httpkom.git@master#httpkom
+git+https://github.com/osks/pylyskom.git@master#pylyskom
+git+https://github.com/osks/pylyskom.git@master#httpkom
 Flask==1.1.1
 Hypercorn==0.9.0
 Quart==0.10.0
