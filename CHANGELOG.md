@@ -4,7 +4,8 @@
 
 ### Added
 
-- UI for changing presentation for persons.
+- UI for changing the presentation of the current person.
+- UI for changing the password of the current person.
 
 
 ## 0.25 (2021-01-21)

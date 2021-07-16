@@ -44,16 +44,18 @@
         </ul>
       </li>
 
-      <li class="has-dropdown" ng-class="isMenuOpen('persons')"
+      <li class="has-dropdown" ng-class="isMenuOpen('currentPerson')"
           ng-show="connection.isLoggedIn()">
-        <a ng-click="openMenu($event, 'persons')">Persons</a>
+        <a ng-click="openMenu($event, 'currentPerson')">Current person</a>
 
         <ul class="dropdown">
           <li class="title back">
             <h5><a ng-click="closeMenu($event)">Back</a></h5>
-            <label>Persons</label>
+            <label>Current person</label>
           </li>
-          <li><a href="/persons/change-presentation">Change presentation</a></li>
+          <li><a href="/person/password">Change password</a></li>
+          <li><a href="/person/presentation">Change presentation</a></li>
+
         </ul>
       </li>
 
@@ -85,7 +87,7 @@
           <li ng-show="connection.isLoggedIn()">
             <a ng-click="logout(); unexpandTopBar()">Logout</a>
           </li>
-          
+
           <li class="divider" ng-show="connection.isLoggedIn()"></li>
           
           <li><label>Active sessions</label></li>

@@ -474,7 +474,7 @@ angular.module('jskom.services', ['jskom.settings']).
         newPerson: function() {
           return { name: '', passwd: '' };
         },
-        
+
         createPerson: function(conn, person) {
           var data = { name: person.name, passwd: person.passwd };
           return conn.http({ method: 'post', url: '/persons/', data: data }, true, false).then(
@@ -486,6 +486,12 @@ angular.module('jskom.services', ['jskom.settings']).
         setPresentation: function(conn, persNo, textNo) {
           var data = { text_no: textNo };
           return conn.http({ method: 'post', url: '/persons/' + persNo + '/set-presentation',
+                             data: data }, true, false);
+        },
+
+        setPassword: function(conn, persNo, oldPwd, newPwd) {
+          var data = { old_pwd: oldPwd, new_pwd: newPwd };
+          return conn.http({ method: 'post', url: '/persons/' + persNo + '/set-passwd',
                              data: data }, true, false);
         },
       };

@@ -439,7 +439,53 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       };
     }
   ]).
-  controller('ChangePresPersonCtrl', [
+  controller('ChangePasswordCtrl', [
+    '$scope', '$log', '$location', '$routeParams', '$q',
+    'messagesService', 'pageTitleService', 'keybindingService', 'personsService',
+    function($scope, $log, $location, $routeParams, $q,
+             messagesService, pageTitleService, keybindingService, personsService) {
+      pageTitleService.set("Change password");
+
+      $scope.persNo = $scope.connection.getPersNo();
+
+      $scope.isChanging = false;
+      $scope.oldPassword = "";
+      $scope.newPassword = "";
+      $scope.confirmPassword = "";
+
+      $scope.changePassword = function() {
+        if ($scope.isChanging) {
+          return;
+        }
+
+        if ($scope.newPassword != $scope.confirmPassword) {
+          messagesService.showMessage('error', 'The new password and confirm password does not match.');
+          $scope.isChanging = false;
+          return;
+        }
+
+        $scope.isChanging = true;
+        personsService.setPassword($scope.connection, $scope.persNo, $scope.oldPassword, $scope.newPassword).then(
+          function(data) {
+            $log.log("ChangePasswordCtrl - setPassword() - success");
+            messagesService.showMessage('success', 'Successfully changed password.',
+                                        '',
+                                        false);
+            $scope.isChanging = false;
+            $scope.oldPassword = "";
+            $scope.newPassword = "";
+            $scope.confirmPassword = "";
+          },
+          function(response) {
+            $log.log("ChangePasswordCtrl - setPassword() - error");
+            messagesService.showMessage('error', 'Failed to change password.', response.data);
+            $scope.isChanging = false;
+          });
+      };
+
+    }
+  ]).
+  controller('ChangePresentationCtrl', [
     '$scope', '$log', '$location', '$routeParams', '$q', 'textsService', 'conferencesService',
     'messagesService', 'pageTitleService', 'keybindingService', 'serverInfoService', 'personsService',
     function($scope, $log, $location, $routeParams, $q, textsService, conferencesService,
@@ -450,7 +496,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       $scope.persNo = $scope.connection.getPersNo();
       $scope.conf = null;
 
-      $scope.isCreating = false;
+      $scope.isChanging = false;
       $scope.text = null;
       $scope.commentedText = null;
       $scope.activeTab = 'simple';
@@ -520,11 +566,11 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       function getServerInfo() {
         return serverInfoService.getServerInfo($scope.connection).then(
           function(serverInfo) {
-            $log.log("ChangePresPersonCtrl - getServerInfo() - success");
+            $log.log("ChangePresentationCtrl - getServerInfo() - success");
             $scope.serverInfo = serverInfo
           },
           function(response) {
-            $log.log("ChangePresPersonCtrl - getSeverInfo() - error");
+            $log.log("ChangePresentationCtrl - getSeverInfo() - error");
             messagesService.showMessage('error', 'Failed to get server info.', response.data);
           });
       }
@@ -532,11 +578,11 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
       function getPersonConf() {
         return conferencesService.getConference($scope.connection, $scope.persNo).then(
           function(conf) {
-            $log.log("ChangePresPersonCtrl - getConference(" + $scope.persNo + ") - success");
+            $log.log("ChangePresentationCtrl - getConference(" + $scope.persNo + ") - success");
             $scope.conf = conf;
           },
           function(response) {
-            $log.log("ChangePresPersonCtrl - getConference(" + $scope.persNo + ") - error");
+            $log.log("ChangePresentationCtrl - getConference(" + $scope.persNo + ") - error");
             messagesService.showMessage('error', 'Failed to get conference for person.', response.data);
           });
       }
@@ -553,28 +599,27 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
           } else {
             textsService.getText($scope.connection, $scope.conf.presentation).then(
               function(text) {
-                $log.log("ChangePresPersonCtrl - getText(" + $scope.conf.presentation + ") - success");
+                $log.log("ChangePresentationCtrl - getText(" + $scope.conf.presentation + ") - success");
                 $scope.commentedText = text;
                 $scope.text = newPresText($scope.serverInfo, $scope.conf, text);
               },
               function(response) {
-                $log.log("ChangePresPersonCtrl - getText(" + $scope.conf.presentation + ") - error");
+                $log.log("ChangePresentationCtrl - getText(" + $scope.conf.presentation + ") - error");
                 messagesService.showMessage('error', 'Failed to get previous presentation text.', response.data);
               });
           }
         });
 
-      $scope.createPresentation = function() {
-        if ($scope.isCreating) {
+      $scope.changePresentation = function() {
+        if ($scope.isChanging) {
           return;
         }
 
-        $scope.isCreating = true;
+        $scope.isChanging = true;
         textsService.createText($scope.connection, $scope.text).then(
           function(data) {
-            $log.log("ChangePresPersonCtrl - createText() - success");
+            $log.log("ChangePresentationCtrl - createText() - success");
 
-            // TODO: Call set-presentation
             personsService.setPresentation($scope.connection, $scope.persNo, data.text_no).then(
               function() {
                 messagesService.showMessage('success', 'Successfully updated presentation.',
@@ -585,18 +630,18 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
                 } else {
                   $location.url('/texts/?text=' + data.text_no);
                 }
-                $scope.isCreating = false;
+                $scope.isChanging = false;
               },
               function(response) {
-                $log.log("ChangePresPersonCtrl - setPresentation() - error");
+                $log.log("ChangePresentationCtrl - setPresentation() - error");
                 messagesService.showMessage('error', 'Failed to set presentation.', response.data);
-                $scope.isCreating = false;
+                $scope.isChanging = false;
               });
           },
           function(response) {
-            $log.log("ChangePresPersonCtrl - createText() - error");
+            $log.log("ChangePresentationCtrl - createText() - error");
             messagesService.showMessage('error', 'Failed to create presentation text.', response.data);
-            $scope.isCreating = false;
+            $scope.isChanging = false;
           });
       };
     }
