@@ -31,4 +31,5 @@ USER jskom
 
 EXPOSE 5000
 
-CMD ["python3", "-m", "jskom"]
+ENTRYPOINT ["/usr/local/bin/python3", "-m", "jskom"]
+CMD ["--port", "5000", "--host", "0.0.0.0"]
