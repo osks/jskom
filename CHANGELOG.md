@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+
+## 0.26 (2022-09-12)
+
 ### Added
 
 - UI for changing the presentation of the current person.
