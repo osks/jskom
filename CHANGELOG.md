@@ -7,6 +7,11 @@
 - UI for changing the presentation of the current person.
 - UI for changing the password of the current person.
 
+### Fixed
+
+- Update httpkom and pylyskom versions to handle reading texts by
+  anonymous users and comments to texts by anonymous users.
+
 
 ## 0.25 (2021-01-21)
 

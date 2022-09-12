@@ -1,6 +1,6 @@
-httpkom==0.19
-pylyskom==0.7
 Flask==1.1.1
+httpkom==0.20
+pylyskom==0.8
 Hypercorn==0.9.0
 Quart==0.10.0
 cssmin==0.2.0

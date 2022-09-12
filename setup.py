@@ -19,7 +19,7 @@ setuptools.setup(
     zip_safe=False,
     python_requires='>=3.6',
     install_requires=[
-        'httpkom>=0.19',
+        'httpkom>=0.20',
         'Flask>=1.1.1',
         'Quart>=0.10.0',
         'Hypercorn>=0.9.0',
