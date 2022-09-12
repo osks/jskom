@@ -109,17 +109,19 @@ On master:
 8. Push to PyPI: ``twine upload dist/*`` and check
    https://pypi.org/project/jskom/ .
 
-9. Add ``+dev`` suffix to version number, commit and push.
-
-10. Github release: Go to https://github.com/osks/jskom/releases
+9. Github release: Go to https://github.com/osks/jskom/releases
     and draft a new release. Select tag and set title to "Version
     <version>", and then publish the release.
 
-11. Docker image::
+10. Docker image::
 
       docker build -f Dockerfile -t osks/jskom:v<version> --no-cache .
       docker login  # username and access token for password
       docker push osks/jskom:v<version>
+      docker tag osks/jskom:v<version> osks/jskom:latest
+      docker push osks/jskom:latest
+
+11. Add ``+dev`` suffix to version number, commit and push.
 
 
 
