@@ -66,11 +66,21 @@ More complete::
    $ docker run -d --name=jskom --net=host --restart=always \
        -v /path/to/my-httpkom-config.cfg:/httpkom.cfg \
        -v /path/to/my-jskom-config.cfg:/jskom.cfg \
-       osks/jskom:v0.21
+       osks/jskom:dev
 
 
 Development
 -----------
+
+Building a dev docker image
+***************************
+
+::
+
+  docker build -f Dockerfile.dev -t osks/jskom:dev --no-cache .
+  docker login  # username and access token for password
+  docker push osks/jskom:dev
+
 
 Preparing a release
 *******************
@@ -100,6 +110,17 @@ On master:
    https://pypi.org/project/jskom/ .
 
 9. Add ``+dev`` suffix to version number, commit and push.
+
+10. Github release: Go to https://github.com/osks/jskom/releases
+    and draft a new release. Select tag and set title to "Version
+    <version>", and then publish the release.
+
+11. Docker image::
+
+      docker build -f Dockerfile -t osks/jskom:v<version> --no-cache .
+      docker login  # username and access token for password
+      docker push osks/jskom:v<version>
+
 
 
 Tools
