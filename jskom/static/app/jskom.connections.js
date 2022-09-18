@@ -136,7 +136,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
               // disregard the issue with droping the knowledge of
               // existing connections (in order to simplify this code).
               if (connObj.serverId != null || connObj.server == null) {
-                $log.log("Dropping old connection, missing 'server' property: " + connObj);
+                $log.log("Dropping old connection, missing 'server' property: " + JSON.stringify(connObj));
                 return false;
               } else {
                 return true;
