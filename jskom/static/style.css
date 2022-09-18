@@ -12,3 +12,12 @@
     resize: vertical;
     min-height: 100px;
 }
+
+.top-bar ul > li.has-dropdown .dropdown li label.jskomTopBarLabelGroupHeader {
+    font-size: 12px !important;
+    color: #a2a2a2;
+}
+
+.top-bar ul > li.has-dropdown .dropdown li label.jskomTopBarLabel {
+    color: #a2a2a2;
+}

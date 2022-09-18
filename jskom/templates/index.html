@@ -93,6 +93,7 @@
           <p ng-show="connection && connection.isLoggedIn()" ng-cloak>
             {% raw %}
             Current session: <em>{{ connection.session.person|personName }}</em>
+            on <em title="{{ connection.server.name }} ({{ connection.server.host }}:{{ connection.server.port }})">{{ connection.server.name }}</em>
             {% endraw %}
           </p>
           

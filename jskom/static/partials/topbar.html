@@ -90,19 +90,25 @@
 
           <li class="divider" ng-show="connection.isLoggedIn()"></li>
           
-          <li><label>Active sessions</label></li>
-          <li ng-repeat="conn in connections">
-            <a ng-click="selectConnection(conn); unexpandTopBar()">
-              <i class="icon-user" ng-show="conn.id == connection.id"></i>
-              <span ng-show="conn.isLoggedIn()">
-                {{conn.session.person|personName}}
-              </span>
-              <span ng-hide="conn.isLoggedIn()">(Not logged in)</span>
-            </a>
+          <li>
+            <label class="jskomTopBarLabelGroupHeader">Active sessions</label>
           </li>
-          
+
+          <li ng-repeat="obj in connectionsWithServerHeaders">
+            <ng-switch on="obj.header">
+              <label ng-switch-when="true" class="jskomTopBarLabel">{{ obj.server.name }}</label>
+              <a ng-switch-when="false" ng-click="selectConnection(obj.conn); unexpandTopBar()">
+                <i class="icon-user" ng-show="obj.conn.id == connection.id"></i>
+                <span ng-show="obj.conn.isLoggedIn()">
+                  {{obj.conn.session.person|personName}}
+                </span>
+                <span ng-hide="obj.conn.isLoggedIn()">(Not logged in)</span>
+              </a>
+            </ng-switch>
+          </li>
+
           <li class="divider"></li>
-          
+
           <li>
             <a ng-click="newConnection(); unexpandTopBar()">New session...</a>
           </li>

@@ -136,7 +136,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
                                         response.data);
           });
       };
-      
+
       $scope.selectConnection = function(conn) {
         var curConn = connectionsService.getCurrentConnection();
         if (conn !== curConn) {
@@ -146,11 +146,54 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         }
         connectionsService.setCurrentConnection(conn);
       };
-      
+
+      $scope.connections = null;
       $scope.$watch(connectionsService.getConnections, function(newConnMap) {
         $scope.connections = newConnMap;
       });
-      
+
+      // Create data structure required for list of connections in the top bar.
+      $scope.connectionsWithServerHeaders = [];
+      $scope.$watch(
+        function (scope) {
+          var val = JSON.stringify(_.map(scope.connections, function (conn) { return conn.toObject(); }));
+          return val;
+        },
+        function(newConns, oldConns, scope) {
+          var serversById = {};
+          var connectionsByServer = _.groupBy(scope.connections, function (conn) {
+            if (conn.server == null) {
+              return null;
+            } else {
+              if (!(conn.server.id in serversById)) {
+                serversById[conn.server.id] = conn.server;
+              }
+              return conn.server.id;
+            }
+          });
+          var sortedServerIds = _.sortBy(_.keys(connectionsByServer), function (serverId) {
+            if (serverId == null) {
+              return null;
+            } else {
+              return serversById[serverId].name;
+            }
+          });
+          var connectionsWithServerHeaders = [];
+          _.each(sortedServerIds, function (serverId) {
+            var conns = connectionsByServer[serverId];
+            if (conns.length < 1) {
+              return;
+            }
+            var server = _.first(conns).server;
+            connectionsWithServerHeaders.push({ header: true, server: server});
+            _.each(conns, function (conn) {
+              connectionsWithServerHeaders.push({ header: false, conn: conn});
+            });
+          });
+          scope.connectionsWithServerHeaders = connectionsWithServerHeaders;
+        }, true);
+
+      $scope.connection = null;
       $scope.$watch(connectionsService.getCurrentConnection, function(newCurrentConn, oldConn) {
         if (newCurrentConn) {
           $log.log("New current connection (" + newCurrentConn.id + ") - session: " +
@@ -176,7 +219,7 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
             connectionsService.removeConnection($scope.connection);
           });
       };
-      
+
       $scope.servers = null;
       connectionsService.getServers().then(
         function(servers) {
@@ -188,10 +231,9 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
         },
         function(response) {
           $log.log("ConnectionsCtrl - getServers() - error");
-          messagesService.showMessage('error', 'Failed to get server list.', response.data);
+          messagesService.showMessage('error', 'Failed to get servers.', response.data);
         });
-      
-      
+
       $scope.selectNextConnection = function() {
         if (_.size($scope.connections) > 1) {
           var newConn;
@@ -259,10 +301,10 @@ angular.module('jskom.controllers', ['jskom.httpkom', 'jskom.services', 'jskom.s
     }
   ]).
   controller('LoginCtrl', [
-    '$scope', '$log', 'sessionsService', 'messagesService', 'connectionsStorage',
-    function($scope, $log, sessionsService, messagesService, connectionsStorage) {
+    '$scope', '$log', 'sessionsService', 'messagesService',
+    function($scope, $log, sessionsService, messagesService) {
       $scope.isLoggingIn = false;
-      
+
       $scope.reset = function() {
         if ($scope.connection.isConnected()) {
           $scope.isReseting = true;

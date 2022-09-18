@@ -2,9 +2,9 @@
 
 <form ng-controller="LoginCtrl">
   <label>LysKOM server</label>
-  <select class="" ng-model="connection.serverId" ng-show="servers"
+  <select class="" ng-model="connection.server" ng-show="servers"
           ng-disabled="connection.isConnected()"
-          ng-options="sid as s|serverName for (sid, s) in servers"></select>
+          ng-options="s as s|serverName for (sid, s) in servers"></select>
   
   <label>Person name</label>
   <jskom:conf-input conn="connection" model="person.pers_no" only-pers disconnect-on-clear>

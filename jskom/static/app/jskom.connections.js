@@ -47,14 +47,14 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         createConnection: function(obj) {
           obj = obj || {};
           obj.id = obj.id || newId();
-          obj.serverId = obj.serverId || null;
+          obj.server = obj.server || null;
           obj.httpkomId = obj.httpkomId || null;
           obj.session = obj.session || null;
           return new jskom.HttpkomConnection(
             $log, $rootScope, $q, $http,
             sessionsService, jskomCacheFactory, httpkomConnectionHeader,
             membershipListFactory, membershipListHandlerFactory,
-            httpkom.getHttpkomServer(), obj.id, obj.serverId, obj.httpkomId, obj.session,
+            httpkom.getHttpkomServer(), obj.id, obj.server, obj.httpkomId, obj.session,
             httpkom.getCacheVersion());
         }
       };
@@ -124,10 +124,24 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         loadConnections: function() {
           if (!hasStorage) return {};
           
-          // If there is list of connections in storage, create one.
           try {
             var connections = angular.fromJson(storage.getItem("connections"));
             connections = connections || {};
+            connections = _.pick(connections, function(connObj, id) {
+              // In jskom 0.27 HttpkomConnection "serverId" was
+              // replaced by "server", this code handles saved
+              // connections that don't have conn.server. Nowadays
+              // upgrading jskom typically means restarting httpkom
+              // and losing all connected sockets anyway, so we
+              // disregard the issue with droping the knowledge of
+              // existing connections (in order to simplify this code).
+              if (connObj.serverId != null || connObj.server == null) {
+                $log.log("Dropping old connection, missing 'server' property: " + connObj);
+                return false;
+              } else {
+                return true;
+              }
+            });
             _.each(connections, function(connObj, id) {
               connections[id] = connectionFactory.createConnection(connObj);
               // Initialize membershipListHandler
@@ -144,7 +158,6 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         
         saveConnections: function(connections) {
           if (!hasStorage) return;
-          
           try {
             var objs = {};
             _.each(connections, function(conn, id) {
@@ -224,9 +237,9 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         _.each(connections, function(conn) {
           // Remove connections to servers that don't exist, because
           // we can't do anything with them.
-          if (!_.has(servers, conn.serverId)) {
-            $log.log("connectionsService - removing invalid connection (unknown serverId: " +
-                     conn.serverId + "): " + conn.id);
+          if (!_.has(servers, conn.server.id)) {
+            $log.log("connectionsService - removing invalid connection (unknown server.id: " +
+                     conn.server.id + "): " + conn.id);
             removeConnection(conn);
           }
         });
@@ -241,7 +254,7 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
         },
         function(response) {
           $log.log("connectionsService - getServers() - error");
-            return $q.reject(response);            
+          return $q.reject(response);
         });
       
       var createNewConnectionPromise = function() {
@@ -252,11 +265,11 @@ angular.module('jskom.connections', ['jskom.httpkom', 'jskom.services']).
             var sortedServerList = _.sortBy(_.values(servers),
                                             function (s) { return s.sort_order; });
             var firstServer = _.first(sortedServerList);
-            var serverId = null;
+            var server = null;
             if (firstServer) {
-              serverId = firstServer.id;
+              server = firstServer;
             }
-            var conn = connectionFactory.createConnection({ serverId: serverId });
+            var conn = connectionFactory.createConnection({ server: server });
             deferred.resolve(conn);
           },
           function(response) {

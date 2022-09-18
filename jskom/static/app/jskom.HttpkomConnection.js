@@ -6,7 +6,7 @@
   var HttpkomConnection = function($log, $rootScope, $q, $http,
                                    sessionsService, jskomCacheFactory, httpkomConnectionHeader,
                                    membershipListFactory, membershipListHandlerFactory,
-                                   httpkomServer, id, serverId, httpkomId, session,
+                                   httpkomServer, id, server, httpkomId, session,
                                    cacheVersion) {
     this._$log = $log;
     this._$rootScope = $rootScope;
@@ -21,7 +21,7 @@
 
     this._httpkomServer = httpkomServer;
     this.id = id; // jskom internal id
-    this.serverId = serverId;
+    this.server = server;
     this.httpkomId = httpkomId;
     this.session = session;
 
@@ -389,7 +389,7 @@
     },
     
     urlFor: function(path, addHttpkomIdQueryParameter) {
-      let url = this._httpkomServer + '/' + this.serverId + path;
+      let url = this._httpkomServer + '/' + this.server.id + path;
       if (addHttpkomIdQueryParameter) {
         let kv = encodeURIComponent(this._httpkomConnectionHeader) + '=' +
           encodeURIComponent(this.httpkomId);
@@ -437,8 +437,8 @@
       return {
         id: this.id,
         httpkomId: this.httpkomId,
-        serverId: this.serverId,
-        session: this.session
+        server: this.server,
+        session: this.session,
       };
     }
   });

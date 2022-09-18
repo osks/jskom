@@ -2,9 +2,9 @@
 
 <form ng-controller="NewPersonCtrl" ng-cloak>
   <label>LysKOM server</label>
-  <select class="" ng-model="connection.serverId" ng-show="servers"
+  <select class="" ng-model="connection.server" ng-show="servers"
           ng-disabled="connection.isConnected()"
-          ng-options="sid as s|serverName for (sid, s) in servers"></select>
+          ng-options="s as s|serverName for (sid, s) in servers"></select>
   
   <label>Person name (use your full name, like &quot;Sven Svensson&quot;)</label>
   <input type="text" class="" required ng-model="person.name" />
