@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+
+- Showing in the footer which server the current session is on.
+- Grouping sessions by server in the sessions menu.
+
 
 ## 0.26 (2022-09-12)
 
