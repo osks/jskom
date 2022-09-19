@@ -3,9 +3,11 @@
 
 import os
 import logging
+from collections import OrderedDict
 from logging.handlers import TimedRotatingFileHandler
 
 import flask
+from hypercorn.middleware import DispatcherMiddleware
 from quart import Quart, render_template, send_from_directory, current_app
 from webassets import Environment, Bundle
 
@@ -34,30 +36,12 @@ log = logging.getLogger("jskom")
 jskom_app = Quart(__name__)
 httpkom_app = httpkom.app
 
-# Hypercorn includes a dispatcher middleware but it's buggy
-# https://gitlab.com/pgjones/hypercorn/issues/106
-from hypercorn.utils import invoke_asgi
-class DispatcherMiddleware:
-    def __init__(self, app, mounts=None):
-        self.app = app
-        self.mounts = mounts or {}
-
-    async def __call__(self, scope, receive, send):
-        if scope["type"] not in {"http", "websocket"}:
-            return await invoke_asgi(self.app, scope, receive, send)
-        for path, app in self.mounts.items():
-            if scope["path"].startswith(path):
-                scope["path"] = scope["path"][len(path) :] or '/'
-                return await invoke_asgi(app, scope, receive, send)
-        return await invoke_asgi(self.app, scope, receive, send)
-
-
-app = DispatcherMiddleware(
-    jskom_app,
-    {
-        "/httpkom": httpkom_app,
-    }
-)
+# Need OrderedDict in order for httpkom to be handled first? (/ is a
+# prefix also in /httpkom, so /httpkom need to be checked first).
+mounts = OrderedDict()
+mounts["/httpkom"] = httpkom_app
+mounts["/"] = jskom_app
+app = DispatcherMiddleware(mounts)
 
 assets = Environment(
     directory=jskom_app.static_folder,
@@ -173,4 +157,4 @@ async def index(path):
 @jskom_app.route('/favicon.ico')
 async def favicon():
     return await send_from_directory(os.path.join(current_app.root_path, 'static'),
-                               'favicon.ico', mimetype='image/x-icon')
+                                     'favicon.ico', mimetype='image/x-icon')

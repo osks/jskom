@@ -17,12 +17,12 @@ setuptools.setup(
     classifiers=[],
     include_package_data=True,
     zip_safe=False,
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     install_requires=[
-        'httpkom>=0.20',
-        'Flask>=1.1.1',
-        'Quart>=0.10.0',
-        'Hypercorn>=0.9.0',
+        'httpkom>=0.21',
+        'Flask>=2.2.2',
+        'Quart>=0.18.0',
+        'Hypercorn>=0.14.3',
         'webassets>=2.0',
         'cssmin>=0.2.0',
     ]

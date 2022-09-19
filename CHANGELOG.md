@@ -7,6 +7,15 @@
 - Showing in the footer which server the current session is on.
 - Grouping sessions by server in the sessions menu.
 
+### Changed
+
+- Update dependencies to newer Quart and Hypercorn, and thus also
+  newer httpkom and newer Flask.
+- Use DispatcherMiddleware from Hypercorn instead of our own, which no
+  longer worked after updating Hypercorn.
+- Python 3.7 i minimum. 3.6 is not supported (wasn't supported before
+  either, the information in setup.py was incorrect).
+
 
 ## 0.26 (2022-09-12)
 

@@ -1,8 +1,8 @@
-httpkom==0.20
+httpkom==0.21
 pylyskom==0.8
-Flask==1.1.3
-Hypercorn==0.9.0
-Quart==0.10.0
+Flask==2.2.2
+Hypercorn==0.14.3
+Quart==0.18.0
 cssmin==0.2.0
 webassets==2.0
-MarkupSafe<2.0.1
+
