@@ -188,6 +188,41 @@ angular.module('jskom.directives', ['jskom.services', 'ngSanitize']).
       };
     }
   ]).
+  directive('jskomBindBodyRot13', [
+    // Example:
+    // <div jskom-bind-body-rot13="text.body"></div>
+    
+    '$log', 'htmlFormattingService',
+    function($log, htmlFormattingService) {
+      // https://codereview.stackexchange.com/questions/132125/rot13-javascript
+      function rot13(str) {
+        var input     = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+        var output    = 'NOPQRSTUVWXYZABCDEFGHIJKLMnopqrstuvwxyzabcdefghijklm';
+        var index     = x => input.indexOf(x);
+        var translate = x => index(x) > -1 ? output[index(x)] : x;
+        return str.split('').map(translate).join('');
+      }
+      return {
+        restrict: 'A',
+        link: function(scope, iElement, iAttrs) {
+          scope.$watch(iAttrs.jskomBindBodyRot13, function(value) {
+            var str;
+            if (!value) {
+              str = "";
+            }
+            else if (_.isObject(value)) {
+              str = angular.toJson(value);
+            } else {
+              str = value.toString();
+            }
+            var formattedBody = htmlFormattingService.formatBody(str);
+            var templateHtml = angular.element('<p>' + rot13(formattedBody) + '</p>');
+            iElement.html(templateHtml);
+          });
+        }
+      };
+    }
+  ]).
   directive('jskomBindLinkified', [
     // Example:
     // <span jskom-bind-linkified="text.body"></span>
