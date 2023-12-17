@@ -11,7 +11,7 @@
 ### Changed
 
 - Update dependencies to newer Quart and Hypercorn, and thus also
-  newer httpkom and newer Flask.
+  newer httpkom and newer Flask. And pin Werkzeug <3.
 - Use DispatcherMiddleware from Hypercorn instead of our own, which no
   longer worked after updating Hypercorn.
 - Python 3.7 is minimum. 3.6 is not supported (wasn't supported before
