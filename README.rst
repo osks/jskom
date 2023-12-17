@@ -157,5 +157,5 @@ Oskar Skoog <oskar@osd.se>
 Copyright and license
 ---------------------
 
-Copyright (c) 2012-2022 Oskar Skoog. jskom is provided under the MIT
+Copyright (c) 2012-2023 Oskar Skoog. jskom is provided under the MIT
 license. See the included LICENSE.txt file for specifics.
