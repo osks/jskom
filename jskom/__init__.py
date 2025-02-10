@@ -112,6 +112,7 @@ def init_app():
         config.from_envvar('JSKOM_SETTINGS')
     else:
         log.info("No environment variable JSKOM_SETTINGS found, using default settings.")
+
     # Import config to Quart's app object.
     config_dict = dict(config)
     jskom_app.config.from_mapping(config_dict)
