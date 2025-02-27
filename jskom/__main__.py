@@ -18,7 +18,11 @@ def run(host, port):
     init_app()
     config = Config()
     config.bind = ["{}:{}".format(host, port)]
-    asyncio.run(serve(app, config), debug=True)
+    try:
+        asyncio.run(serve(app, config), debug=True)
+    except asyncio.CancelledError:
+        log.info("Got asyncio.CancelledError in main asyncio.run")
+        pass
 
 
 def main():
